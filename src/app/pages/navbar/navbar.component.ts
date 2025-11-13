@@ -2,11 +2,12 @@ import { Component, ViewChild, ElementRef, ViewChildren, QueryList, AfterViewIni
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterLink, RouterLinkActive, NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { PreloadOnHoverDirective } from './preload-on-hover.directive';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterLink, RouterLinkActive, PreloadOnHoverDirective],
   templateUrl: './navbar.component.html',
 })
 export class NavbarComponent implements AfterViewInit {
