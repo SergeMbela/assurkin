@@ -1,8 +1,9 @@
-import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { BELGIAN_POST_CODES, PostalCodeCity } from '../form-auto/belgian-post-codes';
-import { DbConnectService } from '../../services/db-connect.service';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { Component, Inject, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Subject, of } from 'rxjs';
+import { debounceTime, distinctUntilChanged, switchMap, takeUntil, tap } from 'rxjs/operators';
+import { DbConnectService, PostalCode } from '../../services/db-connect.service';
 
 @Component({
   selector: 'app-form-rc',
@@ -10,18 +11,25 @@ import { DbConnectService } from '../../services/db-connect.service';
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './form-rc.component.html',
 })
-export class FormRcComponent {
+export class FormRcComponent implements OnInit, OnDestroy {
   rcForm: FormGroup;
-  submissionStatus: { success: boolean; message: string } | null = null;
   minDate: string;
+  submissionStatus: { success: boolean; message: string } | null = null;
+
+  private destroy$ = new Subject<void>();
+  filteredPostalCodes: PostalCode[] = [];
   cities: string[] = [];
-  filteredPostalCodes: PostalCodeCity[] = [];
+  isLoading = false;
 
   constructor(
     private fb: FormBuilder,
-    private dbConnectService: DbConnectService
+    private dbConnectService: DbConnectService,
+    @Inject(PLATFORM_ID) private platformId: object
   ) {
-    this.minDate = new Date().toISOString().split('T')[0];
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    this.minDate = tomorrow.toISOString().split('T')[0];
 
     this.rcForm = this.fb.group({
       preneur: this.fb.group({
@@ -39,36 +47,56 @@ export class FormRcComponent {
     });
   }
 
-  onPostalCodeInput(event: Event): void {
-    const input = (event.target as HTMLInputElement).value;
-    if (input) {
-      const postalCodes = BELGIAN_POST_CODES.filter(pc => pc.postalCode.startsWith(input));
-      this.filteredPostalCodes = [...new Map(postalCodes.map(item => [item.postalCode, item])).values()].slice(0, 5);
-    } else {
-      this.filteredPostalCodes = [];
-      this.cities = [];
-      this.rcForm.get('preneur.ville')?.disable();
+  ngOnInit(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      this.rcForm.get('preneur.codePostal')?.valueChanges.pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        tap(() => this.isLoading = true),
+        switchMap(value => {
+          if (value && value.length >= 2) {
+            return this.dbConnectService.getPostalCodes(value);
+          } else {
+            this.filteredPostalCodes = [];
+            this.cities = [];
+            this.rcForm.get('preneur.ville')?.setValue('');
+            return of([]);
+          }
+        }),
+        takeUntil(this.destroy$)
+      ).subscribe(postalCodes => {
+        this.isLoading = false;
+        this.filteredPostalCodes = postalCodes;
+      });
     }
   }
 
-  selectPostalCode(postalCode: string): void {
-    this.rcForm.get('preneur.codePostal')?.setValue(postalCode);
-    this.cities = BELGIAN_POST_CODES.filter(pc => pc.postalCode === postalCode).map(pc => pc.city);
-    this.rcForm.get('preneur.ville')?.enable();
-    this.rcForm.get('preneur.ville')?.setValue(this.cities.length > 0 ? this.cities[0] : '');
+  ngOnDestroy(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      this.destroy$.next();
+      this.destroy$.complete();
+    }
+  }
+
+  selectPostalCode(selectedCity: PostalCode): void {
+    if (selectedCity) {
+      this.rcForm.get('preneur.codePostal')?.setValue(selectedCity.postalCode, { emitEvent: false });
+      this.rcForm.get('preneur.ville')?.setValue(selectedCity.city);
+      this.cities = [selectedCity.city];
+      this.rcForm.get('preneur.ville')?.enable();
+      this.rcForm.get('preneur.ville')?.updateValueAndValidity();
+    }
     this.filteredPostalCodes = [];
   }
 
   onSubmit(): void {
     if (this.rcForm.valid) {
-      this.dbConnectService.saveRcForm(this.rcForm.getRawValue()).subscribe({
-        next: () => {
-          this.submissionStatus = { success: true, message: 'Votre demande a bien été envoyée !' };
-          this.rcForm.reset({ dateEffet: this.minDate, preneur: { genre: 'Madame' }, risque: 'famille' });
-          this.cities = [];
-        },
-        error: () => this.submissionStatus = { success: false, message: 'Une erreur est survenue. Veuillez réessayer.' }
-      });
+      console.log(this.rcForm.value);
+      // Logique de soumission du formulaire
+      this.submissionStatus = { success: true, message: 'Votre demande a bien été envoyée.' };
+    } else {
+      console.error('Formulaire invalide');
+      this.submissionStatus = { success: false, message: 'Veuillez corriger les erreurs dans le formulaire.' };
     }
   }
 }

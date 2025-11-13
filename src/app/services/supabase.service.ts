@@ -6,17 +6,21 @@ import { environment } from '../../environments/environment';
   providedIn: 'root'
 })
 export class SupabaseService {
-
-  private supabase: SupabaseClient;
+  public supabase: SupabaseClient;
 
   constructor() {
     this.supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
   }
 
-  /**
-   * The Supabase client instance.
-   */
-  get client(): SupabaseClient {
-    return this.supabase;
+  insertData(table: string, data: any) {
+    return this.supabase
+      .from(table)
+      .insert([data]);
+  }
+
+  fetchData(table: string, query: string) {
+    return this.supabase
+      .from(table)
+      .select(query);
   }
 }

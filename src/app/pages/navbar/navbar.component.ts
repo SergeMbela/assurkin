@@ -1,22 +1,84 @@
-import { Component } from '@angular/core';
-import { RouterModule } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { Component, ViewChild, ElementRef, ViewChildren, QueryList, AfterViewInit, ChangeDetectorRef, HostListener, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { RouterLink, RouterLinkActive, NavigationEnd, Router } from '@angular/router';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [RouterModule, CommonModule],
+  imports: [CommonModule, RouterLink, RouterLinkActive],
   templateUrl: './navbar.component.html',
-  styleUrl: './navbar.component.css'
 })
-export class NavbarComponent {
-  menuOpen = false;
-  showParticulierSubMenu = false; // Pour le menu desktop
-  particulierSubMenuOpen = false; // Pour le menu mobile
-  showProfessionelSubMenu = false; // Pour le menu desktop
-  professionelSubMenuOpen = false; // Pour le menu mobile
+export class NavbarComponent implements AfterViewInit {
+  @ViewChild('underline') private underlineRef!: ElementRef<HTMLDivElement>;
+  @ViewChild('scrollProgressBar') private scrollProgressBarRef!: ElementRef<HTMLDivElement>;
+  @ViewChildren('menuLink', { read: ElementRef }) private menuLinks!: QueryList<ElementRef>;
 
-  toggleMenu() {
+  menuOpen = false;
+  showParticulierSubMenu = false;
+  showProfessionelSubMenu = false;
+  particulierSubMenuOpen = false;
+  professionelSubMenuOpen = false;
+
+  constructor(
+    private router: Router,
+    private cdr: ChangeDetectorRef,
+    @Inject(PLATFORM_ID) private platformId: object
+  ) {}
+
+  ngAfterViewInit(): void {
+    // Positionne le trait sur l'élément actif au chargement et après chaque navigation
+    this.router.events.pipe(
+      filter((event): event is NavigationEnd => event instanceof NavigationEnd)
+    ).subscribe(() => {
+      this.moveUnderlineToActiveLink();
+    });
+
+    // Positionnement initial
+    this.moveUnderlineToActiveLink();
+  }
+
+  @HostListener('window:scroll', [])
+  onWindowScroll(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      const element = document.documentElement;
+      const body = document.body;
+      const scrollTop = element.scrollTop || body.scrollTop;
+      const scrollHeight = element.scrollHeight || body.scrollHeight;
+      const clientHeight = element.clientHeight;
+
+      const scrollPercent = (scrollTop / (scrollHeight - clientHeight)) * 100;
+
+      this.scrollProgressBarRef.nativeElement.style.width = `${scrollPercent}%`;
+    }
+  }
+
+  toggleMenu(): void {
     this.menuOpen = !this.menuOpen;
+  }
+
+  onLinkHover(event: MouseEvent): void {
+    this.moveUnderline(event.currentTarget as HTMLElement);
+  }
+
+  onMenuLeave(): void {
+    this.moveUnderlineToActiveLink();
+  }
+
+  private moveUnderlineToActiveLink(): void {
+    // Utilise setTimeout pour s'assurer que les classes routerLinkActive sont appliquées
+    setTimeout(() => {
+      const activeLink = this.menuLinks.find(el => el.nativeElement.classList.contains('text-indigo-600'));
+      if (activeLink) {
+        this.moveUnderline(activeLink.nativeElement);
+      }
+      this.cdr.detectChanges();
+    }, 0);
+  }
+
+  private moveUnderline(element: HTMLElement): void {
+    const underline = this.underlineRef.nativeElement;
+    underline.style.width = `${element.offsetWidth}px`;
+    underline.style.transform = `translateX(${element.offsetLeft}px)`;
   }
 }

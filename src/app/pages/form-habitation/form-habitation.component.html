@@ -6,10 +6,14 @@
       <div class="text-center lg:text-left">
         <h1 class="text-4xl font-bold tracking-tight text-white sm:text-6xl">Assurance Habitation</h1>
         <p class="mt-6 text-lg leading-8 text-gray-300">Protégez votre foyer et vos biens les plus précieux contre les imprévus. Une assurance essentielle pour votre tranquillité.</p>
+        <div class="mt-10 flex items-center justify-center gap-x-6 lg:justify-start">
+          <a href="#form" class="rounded-md bg-white px-3.5 py-2.5 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">Souscrire</a>
+          <a href="/contact" class="text-sm font-semibold leading-6 text-white">Contact <span aria-hidden="true">→</span></a>
+        </div>
       </div>
       <!-- Colonne de droite : Image -->
       <div class="flex justify-center lg:justify-end">
-        <img src="https://firebasestorage.googleapis.com/v0/b/dev-aksantimed.firebasestorage.app/o/accueil_assurkin.webp?alt=media&token=4963b33e-3cb1-4b28-b365-d9844735643e" alt="Assurance" class="w-full max-w-xs rounded-xl shadow-xl ring-1 ring-gray-400/10 lg:max-w-md">
+        <img src="https://fqopliwvpuiprdegxytz.supabase.co/storage/v1/object/sign/img_website/ahabitation.webp?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV81MmJmNDFiNC0yNGQ0LTQ3ZTktYmEzNi04YWZmY2NjMzEzNzIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJpbWdfd2Vic2l0ZS9haGFiaXRhdGlvbi53ZWJwIiwiaWF0IjoxNzYzMDI1NjMxLCJleHAiOjIwNzgzODU2MzF9.XXro16g7nOi_EJfF2jVBFAaRCfCcf0xoHrcUfIUUo70" alt="Assurance" class="w-full max-w-xs rounded-xl shadow-xl ring-1 ring-gray-400/10 lg:max-w-md">
       </div>
     </div>
   </div>
@@ -19,7 +23,7 @@
 <div class="container mx-auto p-4 py-16 sm:py-24">
   <div class="grid grid-cols-1 lg:grid-cols-2 lg:gap-12">
     <!-- Colonne de gauche pour le texte -->
-    <div class="text-gray-700 prose lg:prose-lg">
+    <div class="text-gray-700 prose lg:prose-lg max-w-none prose-h2:mb-4 prose-p:mt-4 prose-ul:mt-4">
       <h2 class="text-2xl font-bold">L’assurance habitation est-elle vraiment indispensable ?</h2>
       <p>Assurkin vous propose une assurance habitation qui vous offre une protection complète contre les dommages causés à votre habitation et à vos biens, ainsi que votre responsabilité civile envers autrui.</p>
       <p>Si vous êtes propriétaire, il est crucial de protéger votre habitation et vos biens mobiliers contre divers risques tels que l'incendie, l'inondation, les catastrophes naturelles, etc. Si vous êtes locataire, l'assurance habitation couvre votre responsabilité en cas de dommages causés au logement que vous occupez.</p>
@@ -42,7 +46,7 @@
     </div>
 
     <!-- Colonne de droite pour le formulaire -->
-    <form [formGroup]="habitationForm" (ngSubmit)="onSubmit()" class="space-y-12 bg-white p-8 rounded-lg shadow-md mt-8 lg:mt-0">
+    <form id="form" [formGroup]="habitationForm" (ngSubmit)="onSubmit()" class="space-y-12 bg-white p-8 rounded-lg shadow-md mt-8 lg:mt-0">
 
     <!-- Message de statut de soumission -->
     <div *ngIf="submissionStatus" class="p-4 mb-4 text-sm rounded-lg"
@@ -97,9 +101,15 @@
         <div>
           <div class="relative">
             <label for="code-postal" class="block text-sm font-medium text-gray-700">Code Postal</label>
-            <input type="text" id="code-postal" formControlName="codePostal" (input)="onPostalCodeInput($event)" required autocomplete="off" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+            <input type="text" id="code-postal" formControlName="codePostal" required autocomplete="off" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+            <div *ngIf="isLoading" class="absolute inset-y-0 right-0 flex items-center pr-3 top-6">
+              <svg class="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            </div>
             <ul *ngIf="filteredPostalCodes.length > 0" class="absolute z-10 w-full bg-white border border-gray-300 rounded-md mt-1 max-h-40 overflow-y-auto">
-              <li *ngFor="let pc of filteredPostalCodes" (click)="selectPostalCode(pc.postalCode)" class="px-3 py-2 cursor-pointer hover:bg-gray-100">
+              <li *ngFor="let pc of filteredPostalCodes" (click)="selectPostalCode(pc)" class="px-3 py-2 cursor-pointer hover:bg-gray-100">
                 {{ pc.postalCode }} - {{ pc.city }}
               </li>
             </ul>
@@ -107,8 +117,8 @@
         </div>
         <div>
           <label for="ville" class="block text-sm font-medium text-gray-700">Ville</label>
-          <select id="ville" formControlName="ville" required class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm disabled:bg-gray-100">
-            <option *ngIf="cities.length === 0" value="">Saisir un code postal</option>
+          <select id="ville" formControlName="ville" required [disabled]="cities.length === 0" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm disabled:bg-gray-100">
+            <option *ngIf="cities.length === 0" value="">Sélectionner une ville</option>
             <option *ngFor="let city of cities" [value]="city">
               {{ city }}
             </option>
@@ -185,12 +195,13 @@
             <div class="flex items-start"><div class="flex h-5 items-center"><input id="garantie-pj" formControlName="protectionJuridique" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"></div><div class="ml-3 text-sm"><label for="garantie-pj" class="font-medium text-gray-700">Protection Juridique</label></div></div>
             <div class="flex items-start"><div class="flex h-5 items-center"><input id="garantie-assistance" formControlName="assistance" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"></div><div class="ml-3 text-sm"><label for="garantie-assistance" class="font-medium text-gray-700">Assistance</label></div></div>
         </div>
-        <div class="pt-4">
-          <label for="date-effet" class="block text-sm font-medium text-gray-700">Date d'effet souhaitée</label>
-          <input type="date" id="date-effet" formControlName="dateEffet" [min]="minDate" required class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
-        </div>
       </div>
     </fieldset>
+
+    <div class="pt-4 border-t">
+      <label for="date-effet" class="block text-sm font-medium text-gray-700">Date d'effet souhaitée</label>
+      <input type="date" id="date-effet" formControlName="dateEffet" [min]="minDate" required class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+    </div>
 
     <!-- Bouton de soumission -->
     <div class="flex justify-end pt-6">

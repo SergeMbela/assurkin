@@ -34,7 +34,10 @@ export class FormContactComponent {
           this.submissionStatus = { success: true, message: 'Votre message a bien été envoyé !' };
           this.contactForm.reset();
         },
-        error: () => this.submissionStatus = { success: false, message: 'Une erreur est survenue. Veuillez réessayer.' }
+        error: (err) => {
+          console.error('An error occurred during form submission:', err);
+          this.submissionStatus = { success: false, message: 'Une erreur est survenue. Veuillez réessayer.' };
+        }
       });
     }
   }

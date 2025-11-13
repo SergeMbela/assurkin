@@ -1,0 +1,131 @@
+<div class="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md">
+  <h2 class="text-2xl font-bold text-center text-gray-800 mb-8">Créer un compte</h2>
+
+  <!-- Message de succès -->
+  <div *ngIf="successMessage" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+    <span class="block sm:inline">{{ successMessage }}</span>
+  </div>
+  <!-- Message d'erreur -->
+  <div *ngIf="errorMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+    <span class="block sm:inline">{{ errorMessage }}</span>
+  </div>
+
+  <form [formGroup]="accountForm" (ngSubmit)="onSubmit()" class="space-y-6">
+
+    <!-- Genre -->
+    <div>
+      <label for="gender" class="block text-sm font-medium text-gray-700">Genre</label>
+      <select id="gender" formControlName="gender"
+              class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              [ngClass]="{ 'border-red-500': submitted && f['gender'].errors, 'border-gray-300': !submitted || !f['gender'].errors }">
+        <option value="" disabled>Sélectionnez votre genre</option>
+        <option value="male">Homme</option>
+        <option value="female">Femme</option>
+        <option value="other">Autre</option>
+      </select>
+      <div *ngIf="submitted && f['gender'].errors" class="text-red-600 text-sm mt-1">
+        <p *ngIf="f['gender'].errors['required']">Le genre est requis.</p>
+      </div>
+    </div>
+
+    <!-- Nom -->
+    <div>
+      <label for="lastName" class="block text-sm font-medium text-gray-700">Nom</label>
+      <input type="text" id="lastName" formControlName="lastName"
+             class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+             [ngClass]="{ 'border-red-500': submitted && f['lastName'].errors, 'border-gray-300': !submitted || !f['lastName'].errors }">
+      <div *ngIf="submitted && f['lastName'].errors" class="text-red-600 text-sm mt-1">
+        <p *ngIf="f['lastName'].errors['required']">Le nom est requis.</p>
+      </div>
+    </div>
+
+    <!-- Prénom -->
+    <div>
+      <label for="firstName" class="block text-sm font-medium text-gray-700">Prénom</label>
+      <input type="text" id="firstName" formControlName="firstName"
+             class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+             [ngClass]="{ 'border-red-500': submitted && f['firstName'].errors, 'border-gray-300': !submitted || !f['firstName'].errors }">
+      <div *ngIf="submitted && f['firstName'].errors" class="text-red-600 text-sm mt-1">
+        <p *ngIf="f['firstName'].errors['required']">Le prénom est requis.</p>
+      </div>
+    </div>
+
+    <!-- Adresse email -->
+    <div>
+      <label for="email" class="block text-sm font-medium text-gray-700">Adresse email</label>
+      <input type="email" id="email" formControlName="email"
+             class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+             [ngClass]="{ 'border-red-500': submitted && f['email'].errors, 'border-gray-300': !submitted || !f['email'].errors }">
+      <div *ngIf="submitted && f['email'].errors" class="text-red-600 text-sm mt-1">
+        <p *ngIf="f['email'].errors['required']">L'adresse email est requise.</p>
+        <p *ngIf="f['email'].errors['email']">L'adresse email est invalide.</p>
+      </div>
+    </div>
+
+    <!-- Vérification Adresse email -->
+    <div>
+      <label for="confirmEmail" class="block text-sm font-medium text-gray-700">Confirmez l'adresse email</label>
+      <input type="email" id="confirmEmail" formControlName="confirmEmail"
+             class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+             [ngClass]="{ 'border-red-500': submitted && f['confirmEmail'].errors, 'border-gray-300': !submitted || !f['confirmEmail'].errors }">
+      <div *ngIf="submitted && f['confirmEmail'].errors" class="text-red-600 text-sm mt-1">
+        <p *ngIf="f['confirmEmail'].errors['required']">La confirmation de l'email est requise.</p>
+        <p *ngIf="f['confirmEmail'].errors['mustMatch']">Les adresses email ne correspondent pas.</p>
+      </div>
+    </div>
+
+    <!-- Mot de passe -->
+    <div>
+      <label for="password" class="block text-sm font-medium text-gray-700">Mot de passe</label>
+      <input type="password" id="password" formControlName="password"
+             class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+             [ngClass]="{ 'border-red-500': submitted && f['password'].errors, 'border-gray-300': !submitted || !f['password'].errors }">
+      <div *ngIf="submitted && f['password'].errors" class="text-red-600 text-sm mt-1">
+        <p *ngIf="f['password'].errors['required']">Le mot de passe est requis.</p>
+        <p *ngIf="f['password'].errors['minlength']">Le mot de passe doit contenir au moins 6 caractères.</p>
+      </div>
+    </div>
+
+    <!-- Vérification Mot de passe -->
+    <div>
+      <label for="confirmPassword" class="block text-sm font-medium text-gray-700">Confirmez le mot de passe</label>
+      <input type="password" id="confirmPassword" formControlName="confirmPassword"
+             class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+             [ngClass]="{ 'border-red-500': submitted && f['confirmPassword'].errors, 'border-gray-300': !submitted || !f['confirmPassword'].errors }">
+      <div *ngIf="submitted && f['confirmPassword'].errors" class="text-red-600 text-sm mt-1">
+        <p *ngIf="f['confirmPassword'].errors['required']">La confirmation du mot de passe est requise.</p>
+        <p *ngIf="f['confirmPassword'].errors['mustMatch']">Les mots de passe ne correspondent pas.</p>
+      </div>
+    </div>
+
+    <!-- Numéro de gsm -->
+    <div>
+      <label for="mobileNumber" class="block text-sm font-medium text-gray-700">Numéro de GSM</label>
+      <input type="tel" id="mobileNumber" formControlName="mobileNumber"
+             class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+             [ngClass]="{ 'border-red-500': submitted && f['mobileNumber'].errors, 'border-gray-300': !submitted || !f['mobileNumber'].errors }">
+      <div *ngIf="submitted && f['mobileNumber'].errors" class="text-red-600 text-sm mt-1">
+        <p *ngIf="f['mobileNumber'].errors['required']">Le numéro de GSM est requis.</p>
+      </div>
+    </div>
+
+    <!-- Conditions générales -->
+    <div class="flex items-start">
+      <div class="flex items-center h-5">
+        <input id="terms" formControlName="terms" type="checkbox" class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
+      </div>
+      <div class="ml-3 text-sm">
+        <label for="terms" class="font-medium text-gray-700">J'accepte les conditions générales</label>
+        <div *ngIf="submitted && f['terms'].errors" class="text-red-600 text-sm mt-1">
+          <p>Vous devez accepter les conditions générales.</p>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+        Créer le compte
+      </button>
+    </div>
+  </form>
+</div>

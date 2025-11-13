@@ -8,8 +8,18 @@ import { AssuranceJuridiqueComponent } from './pages/assurance-juridique/assuran
 import { AssuranceVoyageComponent } from './pages/assurance-voyage/assurance-voyage.component';
 import { MentionsLegalesComponent } from './pages/mentions-legales/mentions-legales.component';
 import { FormContactComponent } from './pages/form-contact/form-contact.component';
+// Importez les nouveaux composants depuis leur nouvel emplacement
+import { AccountLoginComponent } from './pages/account-login/account-login.component';
+import { AccountComponent } from './pages/account/account.component';
+import { AccountCreationComponent } from './pages/account-creation/account-creation.component';
+import { MydataComponent } from './pages/mydata/mydata.component';
+import {AccountPasswordLostComponent} from "./pages/account-password-lost/account-password-lost.component";
+import {AccountPasswordResetComponent} from "./pages/account-password-reset/account-password-reset.component";
+import { authGuard } from './auth.guard';
+
 
 export const routes: Routes = [
+    // Routes existantes
     { path: 'accueil', component: AccueilComponent },
     { path: 'contact', component: FormContactComponent },
     { path: 'particulier/auto', component: FormAutoComponent },
@@ -20,5 +30,14 @@ export const routes: Routes = [
     { path: 'particulier/annulation-voyage', component: AssuranceVoyageComponent },
     { path: 'mentions-legales', component: MentionsLegalesComponent },
 
-    { path: '', redirectTo: 'accueil', pathMatch: 'full' },
+    // Nouvelles routes pour l'authentification
+    { path: 'account', component: AccountComponent },
+    { path: 'login', component: AccountLoginComponent },
+    { path: 'create-account', component: AccountCreationComponent },
+    { path: 'lost-password', component: AccountPasswordLostComponent },
+    { path: 'reset-password', component: AccountPasswordResetComponent },
+    { path: 'mydata', component: MydataComponent, canActivate: [authGuard] },
+    // Redirections
+    { path: '', redirectTo: 'accueil', pathMatch: 'full' }, // Redirige la racine vers l'accueil
+    { path: '**', redirectTo: 'accueil' } // Redirige les routes inconnues vers l'accueil
 ];

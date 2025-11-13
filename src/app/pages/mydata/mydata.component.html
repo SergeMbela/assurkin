@@ -1,0 +1,113 @@
+<div class="container mx-auto p-4 py-16 sm:py-24">
+  <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+
+    <!-- Colonne de gauche : Navigation -->
+    <div class="lg:col-span-1">
+      <div class="bg-white p-4 rounded-lg shadow-md">
+        <ul class="space-y-2">
+          <li>
+            <a (click)="setView('donnees')" class="flex items-center p-3 text-base font-bold text-gray-900 rounded-lg cursor-pointer group hover:shadow" [ngClass]="{'bg-gray-100 hover:bg-gray-200': activeView === 'donnees', 'hover:bg-gray-100': activeView !== 'donnees'}">
+              <i class="fas fa-user-circle w-6 h-6 text-gray-500"></i>
+              <span class="ml-3">Mes Données</span>
+            </a>
+          </li>
+          <li>
+            <a (click)="setView('habitation')" class="flex items-center p-3 text-base font-bold text-gray-900 rounded-lg cursor-pointer group hover:shadow" [ngClass]="{'bg-gray-100 hover:bg-gray-200': activeView === 'habitation', 'hover:bg-gray-100': activeView !== 'habitation'}">
+              <i class="fas fa-home w-6 h-6 text-gray-500"></i>
+              <span class="ml-3">Habitation</span>
+            </a>
+          </li>
+          <li>
+            <a (click)="setView('auto')" class="flex items-center p-3 text-base font-bold text-gray-900 rounded-lg cursor-pointer group hover:shadow" [ngClass]="{'bg-gray-100 hover:bg-gray-200': activeView === 'auto', 'hover:bg-gray-100': activeView !== 'auto'}">
+              <i class="fas fa-car w-6 h-6 text-gray-500"></i>
+              <span class="ml-3">Assurance Auto</span>
+            </a>
+          </li>
+          <li>
+            <a (click)="setView('obseques')" class="flex items-center p-3 text-base font-bold text-gray-900 rounded-lg cursor-pointer group hover:shadow" [ngClass]="{'bg-gray-100 hover:bg-gray-200': activeView === 'obseques', 'hover:bg-gray-100': activeView !== 'obseques'}">
+              <i class="fas fa-hand-holding-heart w-6 h-6 text-gray-500"></i>
+              <span class="ml-3">Obsèques</span>
+            </a>
+          </li>
+          <li>
+            <a (click)="setView('juridique')" class="flex items-center p-3 text-base font-bold text-gray-900 rounded-lg cursor-pointer group hover:shadow" [ngClass]="{'bg-gray-100 hover:bg-gray-200': activeView === 'juridique', 'hover:bg-gray-100': activeView !== 'juridique'}">
+              <i class="fas fa-balance-scale w-6 h-6 text-gray-500"></i>
+              <span class="ml-3">Protection Juridique</span>
+            </a>
+          </li>
+          <li>
+            <a (click)="setView('voyage')" class="flex items-center p-3 text-base font-bold text-gray-900 rounded-lg cursor-pointer group hover:shadow" [ngClass]="{'bg-gray-100 hover:bg-gray-200': activeView === 'voyage', 'hover:bg-gray-100': activeView !== 'voyage'}">
+              <i class="fas fa-plane-slash w-6 h-6 text-gray-500"></i>
+              <span class="ml-3">Annulation Voyage</span>
+            </a>
+          </li>
+          <!-- Bouton de déconnexion -->
+          <li class="border-t pt-2 mt-2">
+            <a (click)="logout()" class="flex items-center p-3 text-base font-bold text-red-600 rounded-lg cursor-pointer hover:bg-red-50 group hover:shadow">
+              <i class="fas fa-sign-out-alt w-6 h-6 text-red-500"></i>
+              <span class="ml-3">Déconnexion</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Colonne de droite : Contenu -->
+    <div class="lg:col-span-3">
+      <div class="bg-white p-8 rounded-lg shadow-md">
+        <!-- Section Mes Données -->
+        <div *ngIf="activeView === 'donnees'">
+          <div *ngIf="loading" class="text-center">
+            <p>Chargement des données...</p>
+          </div>
+          <div *ngIf="!loading && user">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800">Mes Données Personnelles</h2>
+            <div class="space-y-4">
+              <div>
+                <h3 class="text-lg font-semibold text-gray-700">Adresse e-mail</h3>
+                <p class="text-gray-600">{{ user.email }}</p>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-gray-700">Dernière connexion</h3>
+                <p class="text-gray-600">{{ user.last_sign_in_at | date:'dd/MM/yyyy à HH:mm' }}</p>
+              </div>
+            </div>
+          </div>
+          <div *ngIf="!loading && !user" class="text-center text-gray-500"><p>Vous n'êtes pas connecté.</p></div>
+        </div>
+
+        <!-- Sections des contrats -->
+        <div *ngIf="activeView !== 'donnees'">
+          <h2 class="text-2xl font-bold mb-6 text-gray-800">Mes contrats {{ activeView | titlecase }}</h2>
+          <div *ngIf="contractsLoading" class="text-center"><p>Chargement des contrats...</p></div>
+          <div *ngIf="!contractsLoading && contracts.length > 0" class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Catégorie</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dénomination</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Contrat</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Validité</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Terme</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <tr *ngFor="let contract of contracts">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ contract.categorie }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ contract.denomination }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ contract.date_contract | date:'dd/MM/yyyy' }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ contract.date_validite | date:'dd/MM/yyyy' }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ contract.date_terme | date:'dd/MM/yyyy' }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full" [ngClass]="{'bg-green-100 text-green-800': contract.statut === 'actif', 'bg-red-100 text-red-800': contract.statut === 'inactif', 'bg-yellow-100 text-yellow-800': contract.statut === 'en attente'}">{{ contract.statut }}</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div *ngIf="!contractsLoading && contracts.length === 0" class="text-center text-gray-500"><p>Aucun contrat trouvé pour cette catégorie.</p></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
