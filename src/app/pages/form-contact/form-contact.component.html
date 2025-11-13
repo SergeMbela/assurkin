@@ -1,0 +1,53 @@
+<div class="container mx-auto p-4 pt-24">
+  <h1 class="text-3xl font-bold mb-8 text-center text-gray-800">Contactez-nous</h1>
+
+  <div class="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md">
+    <p class="mb-6 text-gray-700 text-center">
+      Vous avez des questions, besoin d'un conseil personnalisé ou souhaitez obtenir une offre ?
+      Remplissez le formulaire ci-dessous et nous vous recontacterons dans les plus brefs délais.
+    </p>
+
+    <!-- Message de statut de soumission -->
+    <div *ngIf="submissionStatus" class="p-4 mb-4 text-sm rounded-lg"
+         [ngClass]="{'bg-green-100 text-green-800': submissionStatus.success, 'bg-red-100 text-red-800': !submissionStatus.success}"
+         role="alert">
+      {{ submissionStatus.message }}
+    </div>
+
+    <form [formGroup]="contactForm" (ngSubmit)="onSubmit()" class="space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label for="nom" class="block text-sm font-medium text-gray-700">Nom</label>
+          <input type="text" id="nom" formControlName="nom" autocomplete="family-name" required
+                 class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+        </div>
+        <div>
+          <label for="prenom" class="block text-sm font-medium text-gray-700">Prénom</label>
+          <input type="text" id="prenom" formControlName="prenom" autocomplete="given-name" required
+                 class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+        </div>
+      </div>
+      <div>
+        <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+        <input type="email" id="email" formControlName="email" autocomplete="email" required
+               class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+      </div>
+      <div>
+        <label for="gsm" class="block text-sm font-medium text-gray-700">Numéro de téléphone (GSM)</label>
+        <input type="tel" id="gsm" formControlName="gsm" autocomplete="tel"
+               class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+      </div>
+      <div>
+        <label for="message" class="block text-sm font-medium text-gray-700">Votre message</label>
+        <textarea id="message" formControlName="message" rows="5" required
+                  class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm"></textarea>
+      </div>
+      <div class="flex justify-end">
+        <button type="submit" [disabled]="!contactForm.valid"
+                class="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed">
+          Envoyer le message
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

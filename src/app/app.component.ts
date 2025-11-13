@@ -1,12 +1,15 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { NavbarComponent } from "./pages/navbar/navbar.component";
+import { FooterComponent } from './pages/footer/footer.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  standalone: true,
+  imports: [RouterOutlet, NavbarComponent, FooterComponent],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+  styles: [':host { display: flex; flex-direction: column; min-height: 100vh; } main { flex: 1; }']
 })
 export class AppComponent {
-  title = 'assurkins';
+  title = 'assurkin';
 }

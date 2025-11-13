@@ -1,0 +1,144 @@
+<!-- Hero Section -->
+<div class="relative isolate bg-black px-6 pt-14 lg:px-8" id="hero">
+  <div class="mx-auto max-w-7xl py-8 sm:py-12 lg:py-16">
+    <div class="grid grid-cols-1 items-center gap-x-8 gap-y-16 lg:grid-cols-2">
+      <!-- Colonne de gauche : Texte -->
+      <div class="text-center lg:text-left">
+        <h1 class="text-4xl font-bold tracking-tight text-white sm:text-6xl">Assurance Obsèques</h1>
+        <p class="mt-6 text-lg leading-8 text-gray-300">Anticipez les frais funéraires pour soulager vos proches d'un poids financier et garantir le respect de vos volontés.</p>
+      </div>
+      <!-- Colonne de droite : Image -->
+      <div class="flex justify-center lg:justify-end">
+        <img src="https://firebasestorage.googleapis.com/v0/b/dev-aksantimed.firebasestorage.app/o/accueil_assurkin.webp?alt=media&token=4963b33e-3cb1-4b28-b365-d9844735643e" alt="Assurance" class="w-full max-w-xs rounded-xl shadow-xl ring-1 ring-gray-400/10 lg:max-w-md">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Contenu de la page -->
+<div class="container mx-auto p-4 py-16 sm:py-24">
+  <div class="grid grid-cols-1 lg:grid-cols-2 lg:gap-12">
+    <!-- Colonne de gauche pour le texte -->
+    <div class="text-gray-700 prose lg:prose-lg">
+      <h2 class="text-2xl font-bold">Assurance obsèques</h2>
+      <p>La perte d’un proche est toujours un moment chargé d’émotions. Prévoir et prendre en charge les frais de ses propres obsèques est de plus en plus courant. Un dernier geste fort apprécié par vos proches, à qui vous évitez bien des tracas financiers.</p>
+
+      <h3 class="text-xl font-bold mt-8">Qu’est-ce qu’une assurance obsèques ?</h3>
+      <p>L'assurance obsèques couvre les frais funéraires et de rapatriement du défunt, soulageant financièrement la famille. En revanche, l'assurance décès offre un capital qui peut être utilisé à d'autres fins que les funérailles. De nombreux plans de prévoyance offrent également une assistance administrative pour soulager la famille des formalités nécessaires dans de telles situations.</p>
+
+      <h3 class="text-xl font-bold mt-8">Les avantages d’un plan de prévoyance obsèques</h3>
+      <p>De plus en plus de Belges choisissent d'organiser leurs funérailles à l'avance, offrant ainsi un soulagement à leurs proches et garantissant que leurs souhaits seront respectés. Les avantages de cette démarche sont nombreux :</p>
+      <ul>
+        <li>Vous déterminez librement le montant assuré, fixe pendant toute la durée du contrat (entre 1 500 et 10 000€).</li>
+        <li>Vous avez le choix de l'entrepreneur de pompes funèbres et des modalités des funérailles.</li>
+        <li>Vous prépayez les coûts des funérailles, dès le premier paiement de la prime mensuelle.</li>
+        <li>Le capital assuré est indexé chaque année pour s'adapter à l'évolution du coût de la vie.</li>
+        <li>Les enfants jusqu'à 18 ans sont inclus dans l'assurance obsèques.</li>
+        <li>Vos proches bénéficient d'une assistance pour les formalités administratives.</li>
+      </ul>
+
+      <h3 class="text-xl font-bold mt-8">Comment se calcule la prime ?</h3>
+      <p>L’assistance aux proches est toujours comprise dans le plan de base. Ce service offre à votre famille un accompagnement professionnel pour toutes les formalités pratiques et administratives après un décès.</p>
+      <p>Le montant de la prime dépend de plusieurs critères ; il se calcule en fonction de votre âge, du capital souhaité en cas de décès, du terme du paiement de la prime et peut dépendre d’une approbation médicale.</p>
+    </div>
+
+    <!-- Colonne de droite pour le formulaire -->
+    <form [formGroup]="obsequesForm" (ngSubmit)="onSubmit()" class="space-y-12 bg-white p-8 rounded-lg shadow-md mt-8 lg:mt-0">
+
+    <!-- Section Preneur d'Assurance -->
+    <fieldset class="border-t pt-6" formGroupName="preneur">
+      <legend class="text-xl font-semibold px-2 text-gray-700 mb-4">1. Informations sur le preneur</legend>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div>
+          <label for="preneur-genre" class="block text-sm font-medium text-gray-700">Genre</label>
+          <select id="preneur-genre" formControlName="genre" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+            <option selected>Madame</option>
+            <option>Monsieur</option>
+            <option>Autre</option>
+          </select>
+        </div>
+        <div>
+          <label for="preneur-nom" class="block text-sm font-medium text-gray-700">Nom</label>
+          <input type="text" id="preneur-nom" formControlName="nom" (input)="updatePreneurSiAssure()" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+        </div>
+        <div>
+          <label for="preneur-prenom" class="block text-sm font-medium text-gray-700">Prénom</label>
+          <input type="text" id="preneur-prenom" formControlName="prenom" (input)="updatePreneurSiAssure()" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+        </div>
+        <div>
+          <label for="preneur-dob" class="block text-sm font-medium text-gray-700">Date de naissance</label>
+          <input type="date" id="preneur-dob" formControlName="dateNaissance" (input)="updatePreneurSiAssure()" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+        </div>
+        <div class="lg:col-span-2">
+          <label for="preneur-email" class="block text-sm font-medium text-gray-700">Email</label>
+          <input type="email" id="preneur-email" formControlName="email" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+        </div>
+        <div class="md:col-span-2">
+          <label for="preneur-adresse" class="block text-sm font-medium text-gray-700">Adresse</label>
+          <input type="text" id="preneur-adresse" formControlName="adresse" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+        </div>
+        <div>
+          <label for="preneur-cp" class="block text-sm font-medium text-gray-700">Code Postal</label>
+          <input type="text" id="preneur-cp" formControlName="codePostal" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- Section Assurés -->
+    <fieldset class="border-t pt-6">
+      <legend class="text-xl font-semibold px-2 text-gray-700 mb-4">2. Personnes à assurer</legend>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div>
+          <label for="nombre-assures" class="block text-sm font-medium text-gray-700">Nombre de personnes à assurer</label>
+          <select id="nombre-assures" formControlName="nombreAssures" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+            <option [ngValue]="1">1</option>
+            <option [ngValue]="2">2</option>
+            <option [ngValue]="3">3</option>
+            <option [ngValue]="4">4</option>
+            <option [ngValue]="5">5</option>
+          </select>
+        </div>
+        <div class="flex items-end pb-1">
+          <div class="flex items-center">
+            <input id="preneur-est-assure" type="checkbox" formControlName="preneurEstAssure" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+            <label for="preneur-est-assure" class="ml-2 block text-sm text-gray-900">Le preneur est aussi un des assurés</label>
+          </div>
+        </div>
+      </div>
+
+      <div formArrayName="assures" class="space-y-6">
+        <div *ngFor="let assure of assures.controls; let i=index" [formGroupName]="i" class="p-4 border rounded-md">
+          <h3 class="font-semibold text-gray-800 mb-4">Assuré {{ i + 1 }}</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div>
+              <label [for]="'assure-nom-' + i" class="block text-sm font-medium text-gray-700">Nom</label>
+              <input [id]="'assure-nom-' + i" type="text" formControlName="nom" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+            </div>
+            <div>
+              <label [for]="'assure-prenom-' + i" class="block text-sm font-medium text-gray-700">Prénom</label>
+              <input [id]="'assure-prenom-' + i" type="text" formControlName="prenom" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+            </div>
+            <div>
+              <label [for]="'assure-dob-' + i" class="block text-sm font-medium text-gray-700">Date de naissance</label>
+              <input [id]="'assure-dob-' + i" type="date" formControlName="dateNaissance" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+            </div>
+            <div>
+              <label [for]="'assure-capital-' + i" class="block text-sm font-medium text-gray-700">Capital souhaité (€)</label>
+              <input [id]="'assure-capital-' + i" type="number" formControlName="capital" max="15000" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+            </div>
+          </div>
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- Bouton de soumission -->
+    <div class="flex justify-end pt-6">
+      <button type="submit" [disabled]="!obsequesForm.valid" class="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400">
+        Recevoir mon offre
+      </button>
+    </div>
+
+    </form>
+  
+</div>

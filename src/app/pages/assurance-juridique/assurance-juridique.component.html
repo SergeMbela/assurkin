@@ -1,0 +1,73 @@
+<!-- Hero Section -->
+<div class="relative isolate bg-black px-6 pt-14 lg:px-8" id="hero">
+  <div class="mx-auto max-w-7xl py-8 sm:py-12 lg:py-16">
+    <div class="grid grid-cols-1 items-center gap-x-8 gap-y-16 lg:grid-cols-2">
+      <!-- Colonne de gauche : Texte -->
+      <div class="text-center lg:text-left">
+        <h1 class="text-4xl font-bold tracking-tight text-white sm:text-6xl">Assurance Protection Juridique</h1>
+        <p class="mt-6 text-lg leading-8 text-gray-300">Défendez vos droits sans vous soucier des frais. Nous vous offrons une assistance complète pour tous vos litiges.</p>
+      </div>
+      <!-- Colonne de droite : Image -->
+      <div class="flex justify-center lg:justify-end">
+        <img src="https://firebasestorage.googleapis.com/v0/b/dev-aksantimed.firebasestorage.app/o/accueil_assurkin.webp?alt=media&token=4963b33e-3cb1-4b28-b365-d9844735643e" alt="Assurance" class="w-full max-w-xs rounded-xl shadow-xl ring-1 ring-gray-400/10 lg:max-w-md">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Contenu de la page -->
+<div class="container mx-auto p-4 py-16 sm:py-24">
+  <div class="grid grid-cols-1 lg:grid-cols-2 lg:gap-12">
+    <!-- Colonne de gauche pour le formulaire -->
+    <div class="bg-white p-8 rounded-lg shadow-md">
+      <h2 class="text-2xl font-bold mb-6 text-gray-800">Demande de renseignement</h2>
+      <!-- Message de statut de soumission -->
+      <div *ngIf="submissionStatus" class="p-4 mb-4 text-sm rounded-lg"
+           [ngClass]="{'bg-green-100 text-green-800': submissionStatus.success, 'bg-red-100 text-red-800': !submissionStatus.success}"
+           role="alert">
+        {{ submissionStatus.message }}
+      </div>
+      <form [formGroup]="infoForm" (ngSubmit)="onSubmit()" class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label for="nom" class="block text-sm font-medium text-gray-700">Nom</label>
+            <input type="text" id="nom" formControlName="nom" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          </div>
+          <div>
+            <label for="prenom" class="block text-sm font-medium text-gray-700">Prénom</label>
+            <input type="text" id="prenom" formControlName="prenom" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          </div>
+        </div>
+        <div>
+          <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+          <input type="email" id="email" formControlName="email" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+        </div>
+        <div>
+          <label for="gsm" class="block text-sm font-medium text-gray-700">GSM</label>
+          <input type="tel" id="gsm" formControlName="gsm" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+        </div>
+        <div>
+          <label for="message" class="block text-sm font-medium text-gray-700">Message</label>
+          <textarea id="message" formControlName="message" rows="4" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm"></textarea>
+        </div>
+        <div class="flex justify-end">
+          <button type="submit" [disabled]="!infoForm.valid" class="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed">
+            Envoyer
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Colonne de droite pour le texte -->
+    <div class="text-gray-700 prose lg:prose-lg mt-8 lg:mt-0">
+      <h2 class="text-2xl font-bold">Assurance Protection Juridique</h2>
+      <p>Personne n'est à l'abri d'un incident susceptible de causer des dommages. Dans de telles situations, il est crucial de faire valoir ses droits pour obtenir une indemnisation équitable. Toutefois, engager ces démarches sans l'aide d'un professionnel peut s'avérer difficile, sans oublier les frais administratifs ou juridiques qui peuvent rapidement s'accumuler.</p>
+
+      <h3 class="text-xl font-bold mt-8">Une assurance protection juridique : Pour quelles raisons ?</h3>
+      <p>Que ce soit une cuisine mal installée, une facture d’électricité erronée, ou un litige avec un employeur, la protection juridique intervient dans diverses situations où vous subissez des dommages causés par un tiers. Bien que ces incidents ne surviennent pas fréquemment, leur impact peut être considérable. Contrairement à l'assurance responsabilité civile familiale, la protection juridique vous aide à faire valoir vos droits et à obtenir une indemnisation pour les dommages subis à cause d'un tiers.</p>
+
+      <h3 class="text-xl font-bold mt-8">Quels avantages ?</h3>
+      <p>Quel que soit votre problème, vous bénéficiez d'une assistance juridique par téléphone pour obtenir des réponses à vos questions. Après évaluation de votre situation, vous serez guidé sur les recours possibles, qu'ils soient amiables ou judiciaires. En cas de litige, vous pouvez choisir votre avocat devant les juridictions belges, européennes ou mondiales, avec la possibilité pour votre assureur de vous représenter dans les négociations d'indemnisation. Il est à noter que l'assurance protection juridique peut être déductible fiscalement, sous certaines conditions.</p>
+    </div>
+  </div>
+</div>

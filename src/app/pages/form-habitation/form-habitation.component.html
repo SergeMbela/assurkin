@@ -1,0 +1,204 @@
+<!-- Hero Section -->
+<div class="relative isolate bg-black px-6 pt-14 lg:px-8" id="hero">
+  <div class="mx-auto max-w-7xl py-8 sm:py-12 lg:py-16">
+    <div class="grid grid-cols-1 items-center gap-x-8 gap-y-16 lg:grid-cols-2">
+      <!-- Colonne de gauche : Texte -->
+      <div class="text-center lg:text-left">
+        <h1 class="text-4xl font-bold tracking-tight text-white sm:text-6xl">Assurance Habitation</h1>
+        <p class="mt-6 text-lg leading-8 text-gray-300">Protégez votre foyer et vos biens les plus précieux contre les imprévus. Une assurance essentielle pour votre tranquillité.</p>
+      </div>
+      <!-- Colonne de droite : Image -->
+      <div class="flex justify-center lg:justify-end">
+        <img src="https://firebasestorage.googleapis.com/v0/b/dev-aksantimed.firebasestorage.app/o/accueil_assurkin.webp?alt=media&token=4963b33e-3cb1-4b28-b365-d9844735643e" alt="Assurance" class="w-full max-w-xs rounded-xl shadow-xl ring-1 ring-gray-400/10 lg:max-w-md">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Contenu de la page -->
+<div class="container mx-auto p-4 py-16 sm:py-24">
+  <div class="grid grid-cols-1 lg:grid-cols-2 lg:gap-12">
+    <!-- Colonne de gauche pour le texte -->
+    <div class="text-gray-700 prose lg:prose-lg">
+      <h2 class="text-2xl font-bold">L’assurance habitation est-elle vraiment indispensable ?</h2>
+      <p>Assurkin vous propose une assurance habitation qui vous offre une protection complète contre les dommages causés à votre habitation et à vos biens, ainsi que votre responsabilité civile envers autrui.</p>
+      <p>Si vous êtes propriétaire, il est crucial de protéger votre habitation et vos biens mobiliers contre divers risques tels que l'incendie, l'inondation, les catastrophes naturelles, etc. Si vous êtes locataire, l'assurance habitation couvre votre responsabilité en cas de dommages causés au logement que vous occupez.</p>
+      <p>Dans certains cas, vous pourriez être contraint de souscrire une assurance incendie, qui constitue la base de toute assurance habitation. En tant que propriétaire, votre banque pourrait l'exiger dans le cadre de l'obtention d'un prêt. Si vous êtes locataire, l'assurance habitation peut être une clause incluse dans votre contrat de location. Assurkin vous accompagne pour choisir la meilleure protection adaptée à vos besoins et à votre situation.</p>
+
+      <h2 class="text-2xl font-bold mt-8">Que couvre l’assurance habitation ?</h2>
+      <p>L'assurance habitation, souvent multirisques, détaille les garanties incluses comme la couverture incendie, les dégâts des eaux et d'autres risques comme les dommages météorologiques, les cambriolages ou les bris de vitrage. Des mesures de protection sont nécessaires pour bénéficier de l'assurance. En plus des couvertures obligatoires, des options facultatives comme la couverture vol et vandalisme sont proposées, avec des services supplémentaires comme l'assistance d'urgence. Diverses ouvertures en option sont disponibles telles que la couverture pour une activité professionnelle à domicile ou pour une piscine.</p>
+
+      <h2 class="text-2xl font-bold mt-8">Comment être certain d’obtenir le meilleur prix ?</h2>
+      <p>Pour comparer les assurances habitation, Internet est le moyen le plus simple et rapide. Cependant, il est crucial de comparer des offres similaires en termes de garanties et de services, en plus des prix. Il est donc essentiel de vérifier minutieusement les risques couverts par chaque police d'assurance proposée. Étant donné la complexité de cette tâche, nous recommandons vivement de consulter nos courtiers avant de prendre une décision !</p>
+      <p>Le coût d'une assurance habitation dépend de plusieurs critères, notamment le type de matériaux utilisés, le risque de cambriolage lié à l'emplacement de la résidence, les options de couverture choisies, la valeur estimée de la propriété et le montant de la franchise.</p>
+
+      <h2 class="text-2xl font-bold mt-8">Quels changements doit-on signaler à son assureur ?</h2>
+      <p>Il est crucial de déclarer tout changement à votre assureur, même si cela peut entraîner une augmentation de la prime. Ne pas le faire expose à un risque de sous-indemnisation ou même de refus d'indemnisation si le bien assuré n'est plus conforme.</p>
+      <p>L'assureur évalue le montant de la prime en tenant compte des caractéristiques de votre bien. Tout ajout tel qu'une pièce supplémentaire, un étage, une piscine ou un spa doit être signalé. À noter qu'installer un système d'alarme peut entraîner une réduction de la prime.</p>
+      <p>De plus, si vous exercez des activités professionnelles à domicile ou stockez du matériel professionnel, la couverture peut être limitée. Il est donc recommandé d'en discuter avec votre courtier. Enfin, souscrire une assurance responsabilité civile est essentiel, notamment si vous recevez des clients à domicile.</p>
+
+      <h2 class="text-2xl font-bold mt-8">Les objets de valeur sont-ils couverts ?</h2>
+      <p>Les bijoux comme les objets d’art et autres objets de valeur peuvent être couverts. Mais pas toujours. Dans ce cas, l’assureur peut soit appliquer une surprime, soit proposer une assurance spécifique.</p>
+    </div>
+
+    <!-- Colonne de droite pour le formulaire -->
+    <form [formGroup]="habitationForm" (ngSubmit)="onSubmit()" class="space-y-12 bg-white p-8 rounded-lg shadow-md mt-8 lg:mt-0">
+
+    <!-- Message de statut de soumission -->
+    <div *ngIf="submissionStatus" class="p-4 mb-4 text-sm rounded-lg"
+         [ngClass]="{'bg-green-100 text-green-800': submissionStatus.success, 'bg-red-100 text-red-800': !submissionStatus.success}"
+         role="alert">
+      {{ submissionStatus.message }}
+    </div>
+
+    <!-- Section Preneur d'Assurance -->
+    <fieldset class="border-t pt-6" formGroupName="preneur">
+      <legend class="text-xl font-semibold px-2 text-gray-700 mb-4">1. Informations sur le preneur</legend>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label for="preneur-genre" class="block text-sm font-medium text-gray-700">Genre</label>
+          <select id="preneur-genre" formControlName="genre" required class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+            <option>Madame</option>
+            <option>Monsieur</option>
+            <option>Autre</option>
+          </select>
+        </div>
+        <div>
+          <label for="preneur-nom" class="block text-sm font-medium text-gray-700">Nom</label>
+          <input type="text" id="preneur-nom" formControlName="nom" required class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+        </div>
+        <div>
+          <label for="preneur-prenom" class="block text-sm font-medium text-gray-700">Prénom</label>
+          <input type="text" id="preneur-prenom" formControlName="prenom" required class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+        </div>
+        <div>
+          <label for="preneur-dob" class="block text-sm font-medium text-gray-700">Date de naissance</label>
+          <input type="date" id="preneur-dob" formControlName="dateNaissance" required class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+        </div>
+        <div>
+          <label for="preneur-tel" class="block text-sm font-medium text-gray-700">Numéro de téléphone</label>
+          <input type="tel" id="preneur-tel" formControlName="telephone" required class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+        </div>
+        <div>
+          <label for="preneur-email" class="block text-sm font-medium text-gray-700">Email</label>
+          <input type="email" id="preneur-email" formControlName="email" required class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- Section Bâtiment -->
+    <fieldset class="border-t pt-6" formGroupName="batiment">
+      <legend class="text-xl font-semibold px-2 text-gray-700 mb-4">2. Bâtiment à assurer</legend>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="md:col-span-2">
+          <label for="adresse" class="block text-sm font-medium text-gray-700">Rue et numéro</label>
+          <input type="text" id="adresse" formControlName="adresse" required class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+        </div>
+        <div>
+          <div class="relative">
+            <label for="code-postal" class="block text-sm font-medium text-gray-700">Code Postal</label>
+            <input type="text" id="code-postal" formControlName="codePostal" (input)="onPostalCodeInput($event)" required autocomplete="off" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+            <ul *ngIf="filteredPostalCodes.length > 0" class="absolute z-10 w-full bg-white border border-gray-300 rounded-md mt-1 max-h-40 overflow-y-auto">
+              <li *ngFor="let pc of filteredPostalCodes" (click)="selectPostalCode(pc.postalCode)" class="px-3 py-2 cursor-pointer hover:bg-gray-100">
+                {{ pc.postalCode }} - {{ pc.city }}
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div>
+          <label for="ville" class="block text-sm font-medium text-gray-700">Ville</label>
+          <select id="ville" formControlName="ville" required class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm disabled:bg-gray-100">
+            <option *ngIf="cities.length === 0" value="">Saisir un code postal</option>
+            <option *ngFor="let city of cities" [value]="city">
+              {{ city }}
+            </option>
+          </select>
+        </div>
+        <div>
+          <label for="type-maison" class="block text-sm font-medium text-gray-700">Type de maison</label>
+          <select id="type-maison" formControlName="typeMaison" required class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+            <option>Maison 2 façades</option>
+            <option>Maison 3 façades</option>
+            <option>Maison 4 façades (villa)</option>
+            <option>Appartement</option>
+            <option>Studio</option>
+            <option>Autre</option>
+          </select>
+        </div>
+        <div>
+          <label for="superficie" class="block text-sm font-medium text-gray-700">Superficie (m²)</label>
+          <input type="number" id="superficie" formControlName="superficie" required class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+        </div>
+        <div>
+          <label for="loyer" class="block text-sm font-medium text-gray-700">Loyer mensuel (charges comprises)</label>
+          <input type="number" id="loyer" formControlName="loyer" placeholder="€" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- Section Évaluation -->
+    <fieldset class="border-t pt-6" formGroupName="evaluation">
+      <legend class="text-xl font-semibold px-2 text-gray-700 mb-4">3. Évaluation des biens</legend>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div>
+          <label class="text-base font-medium text-gray-900">Valeur du bâtiment</label>
+          <fieldset class="mt-2">
+            <div class="space-y-2">
+              <div class="flex items-center">
+                <input id="valeur-bat-expertise" formControlName="valeurBatiment" value="expertise" type="radio" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                <label for="valeur-bat-expertise" class="ml-3 block text-sm font-medium text-gray-700">Selon expertise</label>
+              </div>
+              <div class="flex items-center">
+                <input id="valeur-bat-libre" formControlName="valeurBatiment" value="libre" type="radio" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                <label for="valeur-bat-libre" class="ml-3 block text-sm font-medium text-gray-700">Valeur librement déterminée</label>
+              </div>
+            </div>
+          </fieldset>
+        </div>
+        <div>
+          <label class="text-base font-medium text-gray-900">Valeur du contenu</label>
+          <fieldset class="mt-2">
+            <div class="space-y-2">
+              <div class="flex items-center">
+                <input id="valeur-cont-courtier" formControlName="valeurContenu" value="courtier" type="radio" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                <label for="valeur-cont-courtier" class="ml-3 block text-sm font-medium text-gray-700">Déterminée par le courtier (basé sur le bâtiment)</label>
+              </div>
+              <div class="flex items-center">
+                <input id="valeur-cont-prospect" formControlName="valeurContenu" value="prospect" type="radio" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                <label for="valeur-cont-prospect" class="ml-3 block text-sm font-medium text-gray-700">Déterminée par vous-même</label>
+              </div>
+            </div>
+          </fieldset>
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- Section Garanties -->
+    <fieldset class="border-t pt-6" formGroupName="garanties">
+      <legend class="text-xl font-semibold px-2 text-gray-700 mb-4">4. Garanties souhaitées</legend>
+      <div class="space-y-4">
+        <p class="text-sm text-gray-600">La garantie de base (RC Bâtiment) est toujours incluse.</p>
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div class="flex items-start"><div class="flex h-5 items-center"><input id="garantie-contenu" formControlName="contenu" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"></div><div class="ml-3 text-sm"><label for="garantie-contenu" class="font-medium text-gray-700">Contenu</label></div></div>
+            <div class="flex items-start"><div class="flex h-5 items-center"><input id="garantie-vol" formControlName="vol" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"></div><div class="ml-3 text-sm"><label for="garantie-vol" class="font-medium text-gray-700">Vol</label></div></div>
+            <div class="flex items-start"><div class="flex h-5 items-center"><input id="garantie-pertes" formControlName="pertesIndirectes" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"></div><div class="ml-3 text-sm"><label for="garantie-pertes" class="font-medium text-gray-700">Pertes indirectes</label></div></div>
+            <div class="flex items-start"><div class="flex h-5 items-center"><input id="garantie-pj" formControlName="protectionJuridique" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"></div><div class="ml-3 text-sm"><label for="garantie-pj" class="font-medium text-gray-700">Protection Juridique</label></div></div>
+            <div class="flex items-start"><div class="flex h-5 items-center"><input id="garantie-assistance" formControlName="assistance" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"></div><div class="ml-3 text-sm"><label for="garantie-assistance" class="font-medium text-gray-700">Assistance</label></div></div>
+        </div>
+        <div class="pt-4">
+          <label for="date-effet" class="block text-sm font-medium text-gray-700">Date d'effet souhaitée</label>
+          <input type="date" id="date-effet" formControlName="dateEffet" [min]="minDate" required class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- Bouton de soumission -->
+    <div class="flex justify-end pt-6">
+      <button type="submit" [disabled]="!habitationForm.valid" class="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed">
+        Recevoir mon offre
+      </button>
+    </div>
+    </form>
+
+  </div>
+</div>
