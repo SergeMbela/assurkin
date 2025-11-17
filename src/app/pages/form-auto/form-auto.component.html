@@ -7,8 +7,8 @@
         <h1 class="text-4xl font-bold tracking-tight text-white sm:text-6xl">Assurance Auto</h1>
         <p class="mt-6 text-lg leading-8 text-gray-300">Souscrire une assurance auto, c’est rouler l’esprit tranquille ! Elle vous protège en cas d’accident et prend en charge les réparations de votre véhicule. Sans elle, les imprévus peuvent coûter très cher et entraîner des sanctions. Avec la bonne couverture, vous êtes serein sur la route et en sécurité, tout en protégeant les autres.</p>
         <div class="mt-10 flex items-center justify-center gap-x-6 lg:justify-start">
-          <a href="#form" class="rounded-md bg-white px-3.5 py-2.5 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">Souscrire</a>
-          <a href="/contact" class="text-sm font-semibold leading-6 text-white">Contact <span aria-hidden="true">→</span></a>
+          <button (click)="scrollToSection('content')" class="rounded-md bg-white px-3.5 py-2.5 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">Souscrire</button>
+          <a routerLink="/contact" class="text-sm font-semibold leading-6 text-white">Contact <span aria-hidden="true">→</span></a>
         </div>
       </div>
       <!-- Colonne de droite : Image -->
@@ -20,7 +20,7 @@
 </div>
 
 <!-- Contenu de la page -->
-<div class="container mx-auto p-4 py-16 sm:py-24">
+<div id="content" class="container mx-auto p-4 py-16 sm:py-24">
   <div class="grid grid-cols-1 lg:grid-cols-2 lg:gap-12">
     <!-- Colonne de gauche pour le texte -->
     <div class="text-gray-700 prose lg:prose-lg max-w-none prose-h2:mb-4 prose-p:mt-4 prose-ul:mt-4">
@@ -39,15 +39,22 @@
     </div>
 
     <!-- Colonne de droite pour le formulaire -->
-    <form id="form" class="space-y-12 bg-white p-8 rounded-lg shadow-md mt-8 lg:mt-0">
+    <form id="form" [formGroup]="autoForm" (ngSubmit)="onSubmit()" class="space-y-12 bg-white p-8 rounded-lg shadow-md mt-8 lg:mt-0">
+
+    <!-- Message de statut de soumission -->
+    <div *ngIf="submissionStatus" class="p-4 mb-4 text-sm rounded-lg"
+         [ngClass]="{'bg-green-100 text-green-800': submissionStatus.success, 'bg-red-100 text-red-800': !submissionStatus.success}"
+         role="alert">
+      <span [innerHTML]="submissionStatus.message"></span>
+    </div>
 
     <!-- Section Preneur d'Assurance -->
-    <fieldset class="border-t pt-6">
+    <fieldset class="border-t pt-6" formGroupName="preneur">
       <legend class="text-xl font-semibold px-2 text-gray-700 mb-4">1. Preneur d'assurance</legend>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div>
           <label for="preneur-genre" class="block text-sm font-medium text-gray-700">Genre</label>
-          <select id="preneur-genre" name="preneur-genre" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          <select id="preneur-genre" formControlName="genre" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'ring-red-500': autoForm.get('preneur.genre')?.invalid && autoForm.get('preneur.genre')?.touched}">
             <option>Madame</option>
             <option>Monsieur</option>
             <option>Autre</option>
@@ -55,32 +62,48 @@
         </div>
         <div>
           <label for="preneur-nom" class="block text-sm font-medium text-gray-700">Nom</label>
-          <input type="text" id="preneur-nom" name="preneur-nom" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          <input type="text" id="preneur-nom" formControlName="nom" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'ring-red-500': autoForm.get('preneur.nom')?.invalid && autoForm.get('preneur.nom')?.touched}">
         </div>
         <div>
           <label for="preneur-prenom" class="block text-sm font-medium text-gray-700">Prénom</label>
-          <input type="text" id="preneur-prenom" name="preneur-prenom" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          <input type="text" id="preneur-prenom" formControlName="prenom" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'ring-red-500': autoForm.get('preneur.prenom')?.invalid && autoForm.get('preneur.prenom')?.touched}">
         </div>
         <div>
           <label for="preneur-dob" class="block text-sm font-medium text-gray-700">Date de naissance</label>
-          <input type="date" id="preneur-dob" name="preneur-dob" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          <input type="date" id="preneur-dob" formControlName="dateNaissance" [max]="maxDate" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'ring-red-500': autoForm.get('preneur.dateNaissance')?.invalid && autoForm.get('preneur.dateNaissance')?.touched}">
+          <div *ngIf="autoForm.get('preneur.dateNaissance')?.invalid && (autoForm.get('preneur.dateNaissance')?.touched || autoForm.get('preneur.dateNaissance')?.dirty)" class="text-red-600 text-sm mt-1">
+            <div *ngIf="autoForm.get('preneur.dateNaissance')?.hasError('required')">
+              La date de naissance est requise.
+            </div>
+            <div *ngIf="autoForm.get('preneur.dateNaissance')?.hasError('minAge')">
+              L'âge minimum requis est de 14 ans.
+            </div>
+          </div>
         </div>
         <div>
           <label for="preneur-tel" class="block text-sm font-medium text-gray-700">Numéro de téléphone</label>
-          <input type="tel" id="preneur-tel" name="preneur-tel" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          <input type="tel" id="preneur-tel" formControlName="telephone" appPhoneFormat placeholder="+32 4XX XX XX XX" maxlength="18" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'ring-red-500': autoForm.get('preneur.telephone')?.invalid && autoForm.get('preneur.telephone')?.touched}">
         </div>
         <div>
           <label for="preneur-email" class="block text-sm font-medium text-gray-700">Email</label>
-          <input type="email" id="preneur-email" name="preneur-email" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          <input type="email" id="preneur-email" formControlName="email" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'ring-red-500': autoForm.get('preneur.email')?.invalid && autoForm.get('preneur.email')?.touched}">
+          <div *ngIf="autoForm.get('preneur.email')?.hasError('emailExists') && autoForm.get('preneur.email')?.touched" class="text-green-800 bg-green-100 p-2 rounded-md text-sm mt-2">
+            Bonne nouvelle ! Cet email est déjà connu chez nous.
+            <a routerLink="/account" class="font-bold underline hover:text-green-700">Connectez-vous</a>
+            pour récupérer vos données et accélérer votre demande.
+          </div>
+          <div *ngIf="autoForm.get('preneur.email')?.hasError('email') && !autoForm.get('preneur.email')?.hasError('required')" class="text-red-600 text-sm mt-1">
+            Le format de l'adresse email est invalide.
+          </div>
         </div>
         <div class="lg:col-span-2">
           <label for="preneur-adresse" class="block text-sm font-medium text-gray-700">Rue et numéro</label>
-          <input type="text" id="preneur-adresse" name="preneur-adresse" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          <input type="text" id="preneur-adresse" formControlName="adresse" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'ring-red-500': autoForm.get('preneur.adresse')?.invalid && autoForm.get('preneur.adresse')?.touched}">
         </div>
         <div>
           <div class="relative">
             <label for="preneur-cp" class="block text-sm font-medium text-gray-700">Code Postal</label>
-            <input type="text" id="preneur-cp" name="preneur-cp" [(ngModel)]="preneurPostalCode" (input)="onPostalCodeInput($event, 'preneur')" autocomplete="off" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 pl-3 pr-10 ring-1 ring-slate-200 shadow-sm">
+            <input type="text" id="preneur-cp" formControlName="codePostal" (input)="onPostalCodeInput($event, 'preneur')" autocomplete="off" maxlength="4" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 pl-3 pr-10 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'ring-red-500': autoForm.get('preneur.codePostal')?.invalid && autoForm.get('preneur.codePostal')?.touched}">
             <div *ngIf="isLoading" class="absolute inset-y-0 right-0 flex items-center pr-3">
               <svg class="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -96,7 +119,7 @@
         </div>
         <div>
           <label for="preneur-ville" class="block text-sm font-medium text-gray-700">Ville</label>
-          <select id="preneur-ville" name="preneur-ville" [(ngModel)]="preneurCity" [disabled]="preneurCities.length === 0" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm disabled:bg-gray-100">
+          <select id="preneur-ville" formControlName="ville" [disabled]="preneurCities.length === 0" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm disabled:bg-gray-100" [ngClass]="{'ring-red-500': autoForm.get('preneur.ville')?.invalid && autoForm.get('preneur.ville')?.touched}">
             <option *ngIf="preneurCities.length === 0" value="">Ville</option>
             <option *ngFor="let city of preneurCities" [value]="city">
               {{ city }}
@@ -105,11 +128,22 @@
         </div>
         <div>
           <label for="preneur-permis" class="block text-sm font-medium text-gray-700">Numéro de permis de conduire</label>
-          <input type="text" id="preneur-permis" name="preneur-permis" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          <input type="text" id="preneur-permis" formControlName="permis" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'ring-red-500': autoForm.get('preneur.permis')?.invalid && autoForm.get('preneur.permis')?.touched}">
+          <div *ngIf="autoForm.get('preneur.permis')?.hasError('permisExists')" class="text-green-800 bg-green-100 p-2 rounded-md text-sm mt-2">
+            Bonne nouvelle ! Ce permis est déjà connu chez nous.
+            <a routerLink="/account" class="font-bold underline hover:text-green-700">Connectez-vous</a>
+            ou
+            <a routerLink="/createuseraccount" class="font-bold underline hover:text-green-700">créez un compte</a> pour récupérer vos données.
+          </div>
         </div>
         <div>
           <label for="preneur-permis-date" class="block text-sm font-medium text-gray-700">Date d'obtention du permis</label>
-          <input type="date" id="preneur-permis-date" name="preneur-permis-date" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          <input type="date" id="preneur-permis-date" formControlName="datePermis" [max]="maxDate" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'ring-red-500': autoForm.get('preneur.datePermis')?.invalid && autoForm.get('preneur.datePermis')?.touched}">
+          <div *ngIf="autoForm.get('preneur.datePermis')?.invalid && (autoForm.get('preneur.datePermis')?.touched || autoForm.get('preneur.datePermis')?.dirty)" class="text-red-600 text-sm mt-1">
+            <div *ngIf="autoForm.get('preneur.datePermis')?.hasError('dateNotInPast')">
+              La date doit être antérieure à aujourd'hui.
+            </div>
+          </div>
         </div>
       </div>
     </fieldset>
@@ -118,15 +152,15 @@
     <fieldset class="border-t pt-6">
       <legend class="text-xl font-semibold px-2 text-gray-700 mb-4">2. Conducteur principal (si différent)</legend>
       <div class="flex items-center mb-4">
-        <input id="conducteur-diff" name="conducteur-diff" type="checkbox" [(ngModel)]="isConducteurDifferent" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+        <input id="conducteur-diff" formControlName="conducteurDifferent" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
         <label for="conducteur-diff" class="ml-2 block text-sm text-gray-900">Le conducteur principal est différent du preneur d'assurance.</label>
       </div>
 
       <!-- Champs pour le conducteur différent, à afficher conditionnellement -->
-      <div *ngIf="isConducteurDifferent" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div *ngIf="autoForm.get('conducteurDifferent')?.value" formGroupName="conducteur" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div>
           <label for="conducteur-genre" class="block text-sm font-medium text-gray-700">Genre</label>
-          <select id="conducteur-genre" name="conducteur-genre" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          <select id="conducteur-genre" formControlName="genre" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'ring-red-500': autoForm.get('conducteur.genre')?.invalid && autoForm.get('conducteur.genre')?.touched}">
             <option>Madame</option>
             <option>Monsieur</option>
             <option>Autre</option>
@@ -134,24 +168,28 @@
         </div>
         <div>
           <label for="conducteur-nom" class="block text-sm font-medium text-gray-700">Nom</label>
-          <input type="text" id="conducteur-nom" name="conducteur-nom" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          <input type="text" id="conducteur-nom" formControlName="nom" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'ring-red-500': autoForm.get('conducteur.nom')?.invalid && autoForm.get('conducteur.nom')?.touched}">
         </div>
         <div>
           <label for="conducteur-prenom" class="block text-sm font-medium text-gray-700">Prénom</label>
-          <input type="text" id="conducteur-prenom" name="conducteur-prenom" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          <input type="text" id="conducteur-prenom" formControlName="prenom" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'ring-red-500': autoForm.get('conducteur.prenom')?.invalid && autoForm.get('conducteur.prenom')?.touched}">
         </div>
         <div>
           <label for="conducteur-dob" class="block text-sm font-medium text-gray-700">Date de naissance</label>
-          <input type="date" id="conducteur-dob" name="conducteur-dob" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
-        </div>
-        <div class="lg:col-span-2">
-          <label for="conducteur-adresse" class="block text-sm font-medium text-gray-700">Rue et numéro</label>
-          <input type="text" id="conducteur-adresse" name="conducteur-adresse" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          <input type="date" id="conducteur-dob" formControlName="dateNaissance" [max]="maxDate" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'ring-red-500': autoForm.get('conducteur.dateNaissance')?.invalid && autoForm.get('conducteur.dateNaissance')?.touched}">
+          <div *ngIf="autoForm.get('conducteur.dateNaissance')?.invalid && (autoForm.get('conducteur.dateNaissance')?.touched || autoForm.get('conducteur.dateNaissance')?.dirty)" class="text-red-600 text-sm mt-1">
+            <div *ngIf="autoForm.get('conducteur.dateNaissance')?.hasError('required')">
+              La date de naissance est requise.
+            </div>
+            <div *ngIf="autoForm.get('conducteur.dateNaissance')?.hasError('minAge')">
+              L'âge minimum requis est de 14 ans.
+            </div>
+          </div>
         </div>
         <div>
           <div class="relative">
             <label for="conducteur-cp" class="block text-sm font-medium text-gray-700">Code Postal</label>
-            <input type="text" id="conducteur-cp" name="conducteur-cp" [(ngModel)]="conducteurPostalCode" (input)="onPostalCodeInput($event, 'conducteur')" autocomplete="off" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 pl-3 pr-10 ring-1 ring-slate-200 shadow-sm">
+            <input type="text" id="conducteur-cp" formControlName="codePostal" (input)="onPostalCodeInput($event, 'conducteur')" autocomplete="off" maxlength="4" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 pl-3 pr-10 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'ring-red-500': autoForm.get('conducteur.codePostal')?.invalid && autoForm.get('conducteur.codePostal')?.touched}">
             <div *ngIf="isLoading" class="absolute inset-y-0 right-0 flex items-center pr-3">
               <svg class="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -167,8 +205,8 @@
         </div>
         <div>
           <label for="conducteur-ville" class="block text-sm font-medium text-gray-700">Ville</label>
-          <select id="conducteur-ville" name="conducteur-ville" [(ngModel)]="conducteurCity" [disabled]="conducteurCities.length === 0" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm disabled:bg-gray-100">
-            <option *ngIf="conducteurCities.length === 0" value="">Saisir un code postal</option>
+          <select id="conducteur-ville" formControlName="ville" [disabled]="conducteurCities.length === 0" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm disabled:bg-gray-100" [ngClass]="{'ring-red-500': autoForm.get('conducteur.ville')?.invalid && autoForm.get('conducteur.ville')?.touched}">
+            <option *ngIf="conducteurCities.length === 0" value="">Ville</option>
             <option *ngFor="let city of conducteurCities" [value]="city">
               {{ city }}
             </option>
@@ -176,27 +214,43 @@
         </div>
         <div>
           <label for="conducteur-permis" class="block text-sm font-medium text-gray-700">Numéro de permis de conduire</label>
-          <input type="text" id="conducteur-permis" name="conducteur-permis" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          <input type="text" id="conducteur-permis" formControlName="permis" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'ring-red-500': autoForm.get('conducteur.permis')?.invalid && autoForm.get('conducteur.permis')?.touched}">
         </div>
         <div>
           <label for="conducteur-permis-date" class="block text-sm font-medium text-gray-700">Date d'obtention du permis</label>
-          <input type="date" id="conducteur-permis-date" name="conducteur-permis-date" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          <input type="date" id="conducteur-permis-date" formControlName="datePermis" [max]="maxDate" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'ring-red-500': autoForm.get('conducteur.datePermis')?.invalid && autoForm.get('conducteur.datePermis')?.touched}">
+          <div *ngIf="autoForm.get('conducteur.datePermis')?.invalid && (autoForm.get('conducteur.datePermis')?.touched || autoForm.get('conducteur.datePermis')?.dirty)" class="text-red-600 text-sm mt-1">
+            <div *ngIf="autoForm.get('conducteur.datePermis')?.hasError('dateNotInPast')">
+              La date doit être antérieure à aujourd'hui.
+            </div>
+          </div>
         </div>
       </div>
     </fieldset>
 
     <!-- Section Véhicule -->
-    <fieldset class="border-t pt-6">
+    <fieldset class="border-t pt-6" formGroupName="vehicule">
       <legend class="text-xl font-semibold px-2 text-gray-700 mb-4">3. Informations sur le véhicule</legend>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div>
           <label for="vehicule-type" class="block text-sm font-medium text-gray-700">Type de véhicule</label>
-          <input type="text" id="vehicule-type" name="vehicule-type" placeholder="Ex: Voiture, Camionnette" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          <select id="vehicule-type" formControlName="type" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'ring-red-500': autoForm.get('vehicule.type')?.invalid && autoForm.get('vehicule.type')?.touched}">
+            <option value="" disabled>Sélectionnez un type</option>
+            <option>Voiture</option>
+            <option>Camionnette</option>
+            <option>Camion</option>
+            <option>Bus</option>
+            <option>Mini Bus</option>
+            <option>Voiture sans permis</option>
+            <option>Moto</option>
+            <option>Cyclomoteur</option>
+            <option>Trottinette</option>
+          </select>
         </div>
         <div>
           <div class="relative">
             <label for="vehicule-marque" class="block text-sm font-medium text-gray-700">Marque</label>
-            <input type="text" id="vehicule-marque" name="vehicule-marque" [(ngModel)]="marque" (input)="onMarqueInput($event)" (focus)="onMarqueInput($event)" autocomplete="off" placeholder="Ex: Volkswagen" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+            <input type="text" id="vehicule-marque" formControlName="marque" (input)="onMarqueInput($event)" autocomplete="off" placeholder="Ex: Volkswagen" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'ring-red-500': autoForm.get('vehicule.marque')?.invalid && autoForm.get('vehicule.marque')?.touched}">
             <div *ngIf="isMarqueLoading" class="absolute inset-y-0 right-0 flex items-center pr-3 top-6">
               <svg class="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
             </div>
@@ -210,11 +264,17 @@
         <div>
           <div class="relative">
             <label for="vehicule-modele" class="block text-sm font-medium text-gray-700">Modèle</label>
-            <input type="text" id="vehicule-modele" name="vehicule-modele" [(ngModel)]="modele" (input)="onModeleInput($event)" [disabled]="!selectedMarque" autocomplete="off" placeholder="Ex: Golf" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm disabled:bg-gray-100">
+            <!-- Champ d'input qui affiche le modèle sélectionné et gère la validation visuelle -->
+            <input type="text" id="vehicule-modele" formControlName="modele" readonly
+                   [placeholder]="!selectedMarque ? 'Sélectionnez une marque' : (isModeleLoading ? 'Chargement...' : 'Cliquez pour choisir un modèle')"
+                   class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm bg-gray-50 cursor-pointer"
+                   [ngClass]="{'ring-red-500': autoForm.get('vehicule.modele')?.invalid && autoForm.get('vehicule.modele')?.touched, 'cursor-not-allowed': !selectedMarque}">
+
             <div *ngIf="isModeleLoading" class="absolute inset-y-0 right-0 flex items-center pr-3 top-6">
               <svg class="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
             </div>
-            <ul *ngIf="filteredModeles.length > 0" class="absolute z-10 w-full bg-white border border-gray-300 rounded-md mt-1 max-h-40 overflow-y-auto">
+            <!-- Liste déroulante pour la sélection -->
+            <ul *ngIf="selectedMarque && !isModeleLoading && filteredModeles.length > 0" class="absolute z-10 w-full bg-white border border-gray-300 rounded-md mt-1 max-h-40 overflow-y-auto">
               <li *ngFor="let mdl of filteredModeles" (click)="selectModele(mdl)" class="px-3 py-2 cursor-pointer hover:bg-gray-100">
                 {{ mdl.nom }}
               </li>
@@ -223,30 +283,35 @@
         </div>
         <div>
           <label for="vehicule-puissance" class="block text-sm font-medium text-gray-700">Puissance (kW)</label>
-          <input type="number" id="vehicule-puissance" name="vehicule-puissance" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          <input type="number" id="vehicule-puissance" formControlName="puissance" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'ring-red-500': autoForm.get('vehicule.puissance')?.invalid && autoForm.get('vehicule.puissance')?.touched}">
         </div>
         <div>
           <label for="vehicule-places" class="block text-sm font-medium text-gray-700">Nombre de places (conducteur inclus)</label>
-          <input type="number" id="vehicule-places" name="vehicule-places" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          <input type="number" id="vehicule-places" formControlName="places" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'ring-red-500': autoForm.get('vehicule.places')?.invalid && autoForm.get('vehicule.places')?.touched}">
         </div>
         <div>
           <label for="vehicule-circu-date" class="block text-sm font-medium text-gray-700">Date de 1ère mise en circulation</label>
-          <input type="date" id="vehicule-circu-date" name="vehicule-circu-date" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          <input type="date" id="vehicule-circu-date" formControlName="dateCirculation" [max]="maxDate" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'ring-red-500': autoForm.get('vehicule.dateCirculation')?.invalid && autoForm.get('vehicule.dateCirculation')?.touched}">
+          <div *ngIf="autoForm.get('vehicule.dateCirculation')?.invalid && (autoForm.get('vehicule.dateCirculation')?.touched || autoForm.get('vehicule.dateCirculation')?.dirty)" class="text-red-600 text-sm mt-1">
+            <div *ngIf="autoForm.get('vehicule.dateCirculation')?.hasError('dateNotInPast')">
+              La date doit être antérieure à aujourd'hui.
+            </div>
+          </div>
         </div>
         <div>
           <label for="vehicule-valeur" class="block text-sm font-medium text-gray-700">Valeur catalogue/facture (si Omnium)</label>
-          <input type="number" id="vehicule-valeur" name="vehicule-valeur" placeholder="€" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          <input type="number" id="vehicule-valeur" formControlName="valeur" placeholder="€" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
         </div>
       </div>
     </fieldset>
 
     <!-- Section Garanties -->
-    <fieldset class="border-t pt-6">
+    <fieldset class="border-t pt-6" formGroupName="garanties">
       <legend class="text-xl font-semibold px-2 text-gray-700 mb-4">4. Garanties souhaitées</legend>
       <div class="space-y-4">
         <div class="flex items-start">
           <div class="flex h-5 items-center">
-            <input id="garantie-base" name="garantie-base" type="checkbox" checked class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+            <input id="garantie-base" formControlName="base" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
           </div>
           <div class="ml-3 text-sm">
             <label for="garantie-base" class="font-medium text-gray-700">Garantie de base (Responsabilité Civile + Protection Juridique)</label>
@@ -254,18 +319,18 @@
         </div>
         <div>
           <label class="text-base font-medium text-gray-900">Omnium</label>
-          <fieldset class="mt-2">
+          <fieldset class="mt-2"> <!-- Pas de formGroupName ici car les radios partagent le même formControlName -->
             <div class="space-y-2 sm:flex sm:items-center sm:space-y-0 sm:space-x-10">
               <div class="flex items-center">
-                <input id="omnium-non" name="omnium" type="radio" checked class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                <input id="omnium-non" formControlName="omnium" value="non" type="radio" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500">
                 <label for="omnium-non" class="ml-3 block text-sm font-medium text-gray-700">Non souhaitée</label>
               </div>
               <div class="flex items-center">
-                <input id="omnium-partiel" name="omnium" type="radio" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                <input id="omnium-partiel" formControlName="omnium" value="partiel" type="radio" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500">
                 <label for="omnium-partiel" class="ml-3 block text-sm font-medium text-gray-700">Omnium Partielle</label>
               </div>
               <div class="flex items-center">
-                <input id="omnium-total" name="omnium" type="radio" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                <input id="omnium-total" formControlName="omnium" value="total" type="radio" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500">
                 <label for="omnium-total" class="ml-3 block text-sm font-medium text-gray-700">Omnium Totale</label>
               </div>
             </div>
@@ -273,7 +338,7 @@
         </div>
         <div class="flex items-start">
           <div class="flex h-5 items-center">
-            <input id="garantie-conducteur" name="garantie-conducteur" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+            <input id="garantie-conducteur" formControlName="conducteur" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
           </div>
           <div class="ml-3 text-sm">
             <label for="garantie-conducteur" class="font-medium text-gray-700">Assurance Conducteur</label>
@@ -281,24 +346,33 @@
         </div>
         <div class="flex items-start">
           <div class="flex h-5 items-center">
-            <input id="garantie-assistance" name="garantie-assistance" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+            <input id="garantie-assistance" formControlName="assistance" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
           </div>
           <div class="ml-3 text-sm">
             <label for="garantie-assistance" class="font-medium text-gray-700">Assistance</label>
           </div>
         </div>
-        <div class="pt-4">
-          <label for="date-effet" class="block text-sm font-medium text-gray-700">Date d'effet souhaitée</label>
-          <input type="date" id="date-effet" name="date-effet" [min]="minDate" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
-        </div>
       </div>
     </fieldset>
 
+    <div class="pt-4 border-t">
+      <label for="date-effet" class="block text-sm font-medium text-gray-700">Date d'effet souhaitée</label>
+      <input type="date" id="date-effet" formControlName="dateEffet" [min]="minDate" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'ring-red-500': autoForm.get('dateEffet')?.invalid && autoForm.get('dateEffet')?.touched}">
+    </div>
+
     <!-- Bouton de soumission -->
-    <div class="flex justify-end pt-6">
-      <button type="submit" class="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+    <div class="pt-6">
+      <!-- Message de statut de soumission (en bas) -->
+      <div *ngIf="submissionStatus" class="p-4 mb-4 text-sm rounded-lg"
+           [ngClass]="{'bg-green-100 text-green-800': submissionStatus.success, 'bg-red-100 text-red-800': !submissionStatus.success}"
+           role="alert">
+        <span [innerHTML]="submissionStatus.message"></span>
+      </div>
+      <div class="flex justify-end">
+        <button type="submit" [disabled]="autoForm.invalid" class="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed">
         Recevoir mon offre
-      </button>
+        </button>
+      </div>
     </div>
 
     </form>

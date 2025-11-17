@@ -1,5 +1,6 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Component, Inject, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Subject, of } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, takeUntil, tap } from 'rxjs/operators';
@@ -8,7 +9,7 @@ import { DbConnectService, PostalCode } from '../../services/db-connect.service'
 @Component({
   selector: 'app-form-rc',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './form-rc.component.html',
 })
 export class FormRcComponent implements OnInit, OnDestroy {
@@ -95,8 +96,27 @@ export class FormRcComponent implements OnInit, OnDestroy {
       // Logique de soumission du formulaire
       this.submissionStatus = { success: true, message: 'Votre demande a bien été envoyée.' };
     } else {
-      console.error('Formulaire invalide');
+      this.markAllAsTouched(this.rcForm);
       this.submissionStatus = { success: false, message: 'Veuillez corriger les erreurs dans le formulaire.' };
+    }
+  }
+
+  private markAllAsTouched(formGroup: FormGroup) {
+    Object.values(formGroup.controls).forEach(control => {
+      control.markAsTouched();
+
+      if (control instanceof FormGroup) {
+        this.markAllAsTouched(control);
+      }
+    });
+  }
+
+  scrollToSection(sectionId: string): void {
+    if (isPlatformBrowser(this.platformId)) {
+      const element = document.getElementById(sectionId);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     }
   }
 }

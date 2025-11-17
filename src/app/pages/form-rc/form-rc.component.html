@@ -8,8 +8,7 @@
         <p class="mt-6 text-lg leading-8 text-gray-300">Une assurance responsabilité civile familiale est indispensable pour protéger votre famille contre les conséquences financières d’un dommage causé involontairement à autrui. Elle couvre les blessures, les dégâts matériels ou les accidents impliquant les membres de votre foyer, y compris vos enfants et vos animaux. Sans cette protection, vous pourriez être tenu personnellement responsable et devoir assumer des frais importants. Cette assurance vous apporte donc tranquillité d’esprit et sécurité au quotidien.
 Vivez chaque jour l’esprit tranquille, en sachant que vous êtes couvert en cas de coup dur.</p>
         <div class="mt-10 flex items-center justify-center gap-x-6 lg:justify-start">
-          <a href="#form" class="rounded-md bg-white px-3.5 py-2.5 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">Souscrire</a>
-          <a href="/contact" class="text-sm font-semibold leading-6 text-white">Contact <span aria-hidden="true">→</span></a>
+          <button (click)="scrollToSection('content')" class="rounded-md bg-white px-3.5 py-2.5 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">Souscrire</button>          <a routerLink="/contact" class="text-sm font-semibold leading-6 text-white">Contact <span aria-hidden="true">→</span></a>
         </div>
       </div>
       <!-- Colonne de droite : Image -->
@@ -21,7 +20,7 @@ Vivez chaque jour l’esprit tranquille, en sachant que vous êtes couvert en ca
 </div>
 
 <!-- Contenu de la page -->
-<div class="container mx-auto p-4 py-16 sm:py-24">
+<div id="content" class="container mx-auto p-4 py-16 sm:py-24">
   <div class="grid grid-cols-1 lg:grid-cols-2 lg:gap-12">
     <!-- Colonne de gauche pour le texte -->
     <div class="text-gray-700 prose lg:prose-lg max-w-none prose-h2:mb-4 prose-p:mt-4 prose-ul:mt-4">
@@ -60,11 +59,11 @@ Vivez chaque jour l’esprit tranquille, en sachant que vous êtes couvert en ca
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div>
           <label for="preneur-nom" class="block text-sm font-medium text-gray-700">Nom</label>
-          <input type="text" id="preneur-nom" formControlName="nom" required class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          <input type="text" id="preneur-nom" formControlName="nom" required class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'ring-red-500': rcForm.get('preneur.nom')?.invalid && rcForm.get('preneur.nom')?.touched}">
         </div>
         <div>
           <label for="preneur-prenom" class="block text-sm font-medium text-gray-700">Prénom</label>
-          <input type="text" id="preneur-prenom" formControlName="prenom" required class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          <input type="text" id="preneur-prenom" formControlName="prenom" required class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'ring-red-500': rcForm.get('preneur.prenom')?.invalid && rcForm.get('preneur.prenom')?.touched}">
         </div>
         <div>
           <label for="preneur-genre" class="block text-sm font-medium text-gray-700">Genre</label>
@@ -76,20 +75,20 @@ Vivez chaque jour l’esprit tranquille, en sachant que vous êtes couvert en ca
         </div>
         <div>
           <label for="preneur-tel" class="block text-sm font-medium text-gray-700">Numéro de téléphone</label>
-          <input type="tel" id="preneur-tel" formControlName="telephone" required class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          <input type="tel" id="preneur-tel" formControlName="telephone" required class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'ring-red-500': rcForm.get('preneur.telephone')?.invalid && rcForm.get('preneur.telephone')?.touched}">
         </div>
         <div>
           <label for="preneur-email" class="block text-sm font-medium text-gray-700">Email</label>
-          <input type="email" id="preneur-email" formControlName="email" required class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          <input type="email" id="preneur-email" formControlName="email" required class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'ring-red-500': rcForm.get('preneur.email')?.invalid && rcForm.get('preneur.email')?.touched}">
         </div>
         <div class="lg:col-span-2">
           <label for="preneur-adresse" class="block text-sm font-medium text-gray-700">Rue et numéro</label>
-          <input type="text" id="preneur-adresse" formControlName="adresse" required class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          <input type="text" id="preneur-adresse" formControlName="adresse" required class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'ring-red-500': rcForm.get('preneur.adresse')?.invalid && rcForm.get('preneur.adresse')?.touched}">
         </div>
         <div>
           <div class="relative">
             <label for="preneur-cp" class="block text-sm font-medium text-gray-700">Code Postal</label>
-            <input type="text" id="preneur-cp" formControlName="codePostal" required autocomplete="off" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+            <input type="text" id="preneur-cp" formControlName="codePostal" required autocomplete="off" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'ring-red-500': rcForm.get('preneur.codePostal')?.invalid && rcForm.get('preneur.codePostal')?.touched}">
             <div *ngIf="isLoading" class="absolute inset-y-0 right-0 flex items-center pr-3 top-6">
               <svg class="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -138,10 +137,18 @@ Vivez chaque jour l’esprit tranquille, en sachant que vous êtes couvert en ca
     </fieldset>
 
     <!-- Bouton de soumission -->
-    <div class="flex justify-end pt-6">
-      <button type="submit" [disabled]="!rcForm.valid" class="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed">
+    <div class="pt-6">
+      <!-- Message de statut de soumission (en bas) -->
+      <div *ngIf="submissionStatus" class="p-4 mb-4 text-sm rounded-lg"
+           [ngClass]="{'bg-green-100 text-green-800': submissionStatus.success, 'bg-red-100 text-red-800': !submissionStatus.success}"
+           role="alert">
+        {{ submissionStatus.message }}
+      </div>
+      <div class="flex justify-end">
+        <button type="submit" [disabled]="!rcForm.valid" class="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed">
         Recevoir mon offre
-      </button>
+        </button>
+      </div>
     </div>
 
     </form>

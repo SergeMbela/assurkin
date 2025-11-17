@@ -16,9 +16,12 @@ import { MydataComponent } from './pages/mydata/mydata.component';
 import {AccountPasswordLostComponent} from "./pages/account-password-lost/account-password-lost.component";
 import {AccountPasswordResetComponent} from "./pages/account-password-reset/account-password-reset.component";
 import { authGuard } from './auth.guard';
-
+import { CreateuseraccountComponent } from './pages/createuseraccount/createuseraccount.component';
+//Page details assurance
+import { DetailsAssuranceComponent } from './pages/details-assurance/details-assurance.component';
 
 export const routes: Routes = [
+    
     // Routes existantes
     { path: 'accueil', component: AccueilComponent },
     { path: 'contact', component: FormContactComponent },
@@ -37,7 +40,12 @@ export const routes: Routes = [
     { path: 'lost-password', component: AccountPasswordLostComponent },
     { path: 'reset-password', component: AccountPasswordResetComponent },
     { path: 'mydata', component: MydataComponent, canActivate: [authGuard] },
+    { path: 'createuseraccount', component: CreateuseraccountComponent },
+   // Détails assurance (le :id est un paramètre dynamique)
+   { path: 'assurance_auto/:id', component: DetailsAssuranceComponent },
+   { path: 'assurance_habitation/:id', component: DetailsAssuranceComponent }, // Route pour les détails habitation
+   { path: 'assurance_obseques/:id', component: DetailsAssuranceComponent },
     // Redirections
     { path: '', redirectTo: 'accueil', pathMatch: 'full' }, // Redirige la racine vers l'accueil
-    { path: '**', redirectTo: 'accueil' } // Redirige les routes inconnues vers l'accueil
+    { path: '**', redirectTo: 'accueil' } ,// Redirige les routes inconnues vers l'accueil
 ];

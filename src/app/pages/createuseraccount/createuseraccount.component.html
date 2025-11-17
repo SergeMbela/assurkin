@@ -1,0 +1,61 @@
+<div class="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md">
+  <h1 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-4">Création de votre compte</h1>
+
+  <p class="mb-6 text-gray-600">
+    Pour finaliser votre demande de devis et accéder à votre espace personnel, veuillez créer un compte. Vos informations personnelles ont été pré-remplies pour vous faciliter la tâche.
+  </p>
+
+  <div *ngIf="submissionStatus" class="p-4 mb-4 text-sm rounded-lg"
+       [ngClass]="{'bg-red-100 text-red-700': !submissionStatus.success, 'bg-green-100 text-green-700': submissionStatus.success}">
+    {{ submissionStatus.message }}
+  </div>
+
+  <form [formGroup]="accountForm" (ngSubmit)="onSubmit()" novalidate>
+    <!-- Section Informations personnelles -->
+    <fieldset class="mb-8 p-4 border rounded-md">
+      <legend class="text-xl font-semibold text-gray-700 px-2">Informations personnelles</legend>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+        <!-- Nom -->
+        <div>
+          <label for="nom" class="block text-sm font-medium text-gray-700">Nom</label>
+          <input type="text" id="nom" formControlName="nom" class="mt-1 block w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md shadow-sm cursor-not-allowed">
+        </div>
+
+        <!-- Prénom -->
+        <div>
+          <label for="prenom" class="block text-sm font-medium text-gray-700">Prénom</label>
+          <input type="text" id="prenom" formControlName="prenom" class="mt-1 block w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md shadow-sm cursor-not-allowed">
+        </div>
+
+        <!-- Email -->
+        <div>
+          <label for="email" class="block text-sm font-medium text-gray-700">Adresse e-mail</label>
+          <input type="email" id="email" formControlName="email" class="mt-1 block w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md shadow-sm cursor-not-allowed">
+        </div>
+
+        <!-- Numéro de permis -->
+        <div>
+          <label for="permis" class="block text-sm font-medium text-gray-700">Numéro de permis</label>
+          <input type="text" id="permis" formControlName="permis" class="mt-1 block w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md shadow-sm cursor-not-allowed">
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- Section Sécurité du compte -->
+    <fieldset class="mb-8 p-4 border rounded-md">
+      <legend class="text-xl font-semibold text-gray-700 px-2">Sécurité du compte</legend>
+      <div class="mt-4">
+        <label for="password" class="block text-sm font-medium text-gray-700">Choisissez un mot de passe</label>
+        <input type="password" id="password" formControlName="password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+        <!-- Affichage des erreurs de validation pour le mot de passe -->
+      </div>
+    </fieldset>
+
+    <div class="flex justify-end">
+      <button type="submit" [disabled]="accountForm.invalid" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400">
+        Créer mon compte et voir mon devis
+      </button>
+    </div>
+  </form>
+</div>

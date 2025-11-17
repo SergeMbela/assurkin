@@ -5,35 +5,58 @@
       <!-- Colonne de gauche : Texte -->
       <div class="text-center lg:text-left">
         <h1 class="text-4xl font-bold tracking-tight text-white sm:text-6xl">Assurances Voyage</h1>
-        <p class="mt-6 text-lg leading-8 text-gray-300">Une assurance voyage vous protège contre les imprévus lors de vos déplacements, comme les accidents, maladies ou pertes de bagages. Elle prend en charge les frais médicaux à l’étranger et le rapatriement si nécessaire. Elle offre également une assistance en cas d’annulation ou de retard de voyage. Ainsi, elle vous permet de voyager l’esprit tranquille, en toute sécurité.</p>
+        <p class="mt-6 text-lg leading-8 text-gray-300">Une assurance voyage vous protège contre les imprévus lors de
+          vos déplacements, comme les accidents, maladies ou pertes de bagages. Elle prend en charge les frais médicaux
+          à l’étranger et le rapatriement si nécessaire. Elle offre également une assistance en cas d’annulation ou de
+          retard de voyage. Ainsi, elle vous permet de voyager l’esprit tranquille, en toute sécurité.</p>
+        <div class="mt-10 flex items-center justify-center gap-x-6 lg:justify-start">
+          <button (click)="scrollToSection('content')"
+            class="rounded-md bg-white px-3.5 py-2.5 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">Souscrire</button>          <a routerLink="/contact" class="text-sm font-semibold leading-6 text-white">Contact <span aria-hidden="true">→</span></a>
+        </div>
       </div>
       <!-- Colonne de droite : Image -->
       <div class="flex justify-center lg:justify-end">
-        <img src="https://fqopliwvpuiprdegxytz.supabase.co/storage/v1/object/sign/img_website/avoyage.webp?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV81MmJmNDFiNC0yNGQ0LTQ3ZTktYmEzNi04YWZmY2NjMzEzNzIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJpbWdfd2Vic2l0ZS9hdm95YWdlLndlYnAiLCJpYXQiOjE3NjMwMjUwOTQsImV4cCI6MjA3ODM4NTA5NH0.yFs3cX7_iROkZ6x-qAyECADU2cW_UmOp2gVtYOl03oc" alt="Assurance" class="w-full max-w-xs rounded-xl shadow-xl ring-1 ring-gray-400/10 lg:max-w-md">
+        <img
+          src="https://fqopliwvpuiprdegxytz.supabase.co/storage/v1/object/sign/img_website/avoyage.webp?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV81MmJmNDFiNC0yNGQ0LTQ3ZTktYmEzNi04YWZmY2NjMzEzNzIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJpbWdfd2Vic2l0ZS9hdm95YWdlLndlYnAiLCJpYXQiOjE3NjMwMjUwOTQsImV4cCI6MjA3ODM4NTA5NH0.yFs3cX7_iROkZ6x-qAyECADU2cW_UmOp2gVtYOl03oc"
+          alt="Assurance" class="w-full max-w-xs rounded-xl shadow-xl ring-1 ring-gray-400/10 lg:max-w-md">
       </div>
     </div>
   </div>
 </div>
 
 <!-- Contenu de la page -->
-<div class="container mx-auto p-4 py-16 sm:py-24">
+<div id="content" class="container mx-auto p-4 py-16 sm:py-24">
   <div class="grid grid-cols-1 lg:grid-cols-2 lg:gap-12">
     <!-- Colonne de gauche pour le texte -->
     <div class="text-gray-700 prose lg:prose-lg">
-      <p>L’assurance voyage n’est pas obligatoire, mais vous permet de partir en toute quiétude. Les garanties sont diverses et variées : annulation de dernière minute, frais médicaux à l’étranger, rapatriement, perte de bagages, etc.</p>
+      <p>L’assurance voyage n’est pas obligatoire, mais vous permet de partir en toute quiétude. Les garanties sont
+        diverses et variées : annulation de dernière minute, frais médicaux à l’étranger, rapatriement, perte de
+        bagages, etc.</p>
 
       <h3 class="text-xl font-bold mt-8">L’assistance Annuelle</h3>
-      <p>Comme l’indique son nom, elle est active tout au long de l’année dès lors que vous vous trouvez à l’étranger. Cela vous permet ainsi de partir en voyage dès que l’envie vous en prend et ce, sans devoir vous soucier des risques.</p>
-      <p>Bien sûr, il existe autant de formules qu’il existe de possibilités. Par exemple, si vous ne voyagez qu’au sein de l’Union Européenne, il est inutile de souscrire une assurance voyage dans le monde entier. De plus, vous pourrez opter pour des services complémentaires tels que l’assistance dépannage, l’assurance bagages, etc.</p>
-      <p>En toutes circonstances cependant, vous bénéficierez d’une couverture santé optimale (remboursement des frais médicaux à l’étranger, rapatriement en cas d’accident ou de maladie, retour anticipé dans l’éventualité d’un proche hospitalisé ou décédé…).</p>
+      <p>Comme l’indique son nom, elle est active tout au long de l’année dès lors que vous vous trouvez à l’étranger.
+        Cela vous permet ainsi de partir en voyage dès que l’envie vous en prend et ce, sans devoir vous soucier des
+        risques.</p>
+      <p>Bien sûr, il existe autant de formules qu’il existe de possibilités. Par exemple, si vous ne voyagez qu’au sein
+        de l’Union Européenne, il est inutile de souscrire une assurance voyage dans le monde entier. De plus, vous
+        pourrez opter pour des services complémentaires tels que l’assistance dépannage, l’assurance bagages, etc.</p>
+      <p>En toutes circonstances cependant, vous bénéficierez d’une couverture santé optimale (remboursement des frais
+        médicaux à l’étranger, rapatriement en cas d’accident ou de maladie, retour anticipé dans l’éventualité d’un
+        proche hospitalisé ou décédé…).</p>
 
       <h3 class="text-xl font-bold mt-8">L’assistance temporaire</h3>
-      <p>Cette formule, semblable à la précédente, est particulièrement appréciée par les vacanciers occasionnels cherchant à profiter de leur séjour sans souci. Elle comprend même des options spécifiques pour le ski !</p>
+      <p>Cette formule, semblable à la précédente, est particulièrement appréciée par les vacanciers occasionnels
+        cherchant à profiter de leur séjour sans souci. Elle comprend même des options spécifiques pour le ski !</p>
       <p>Cependant, il est important de noter que la durée du voyage est généralement limitée à moins de 45 jours.</p>
-      <p>Comme toujours, il est recommandé de choisir une assurance qui correspond à vos besoins spécifiques, avec des options modulables en fonction de critères tels que la durée du séjour, la destination et la période de l'année.</p>
+      <p>Comme toujours, il est recommandé de choisir une assurance qui correspond à vos besoins spécifiques, avec des
+        options modulables en fonction de critères tels que la durée du séjour, la destination et la période de l'année.
+      </p>
 
       <h3 class="text-xl font-bold mt-8">L’assurance annulation</h3>
-      <p>Comme son nom l'indique, ce type d'assurance est spécifiquement conçu pour couvrir l'annulation de votre voyage. Ainsi, si des circonstances imprévues vous obligent à renoncer ou à écourter votre séjour à l'étranger, que ce soit pour des raisons de santé, le décès d'un proche ou une situation instable dans le pays de destination, les frais associés seront pris en charge.</p>
+      <p>Comme son nom l'indique, ce type d'assurance est spécifiquement conçu pour couvrir l'annulation de votre
+        voyage. Ainsi, si des circonstances imprévues vous obligent à renoncer ou à écourter votre séjour à l'étranger,
+        que ce soit pour des raisons de santé, le décès d'un proche ou une situation instable dans le pays de
+        destination, les frais associés seront pris en charge.</p>
     </div>
 
     <!-- Colonne de droite pour le formulaire -->
@@ -41,35 +64,41 @@
       <h2 class="text-2xl font-bold mb-6 text-gray-800">Demande de renseignement</h2>
       <!-- Message de statut de soumission -->
       <div *ngIf="submissionStatus" class="p-4 mb-4 text-sm rounded-lg"
-           [ngClass]="{'bg-green-100 text-green-800': submissionStatus.success, 'bg-red-100 text-red-800': !submissionStatus.success}"
-           role="alert">
+        [ngClass]="{'bg-green-100 text-green-800': submissionStatus.success, 'bg-red-100 text-red-800': !submissionStatus.success}"
+        role="alert">
         {{ submissionStatus.message }}
       </div>
       <form [formGroup]="infoForm" (ngSubmit)="onSubmit()" class="space-y-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label for="nom" class="block text-sm font-medium text-gray-700">Nom</label>
-            <input type="text" id="nom" formControlName="nom" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+            <input type="text" id="nom" formControlName="nom"
+              class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
           </div>
           <div>
             <label for="prenom" class="block text-sm font-medium text-gray-700">Prénom</label>
-            <input type="text" id="prenom" formControlName="prenom" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+            <input type="text" id="prenom" formControlName="prenom"
+              class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
           </div>
         </div>
         <div>
           <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-          <input type="email" id="email" formControlName="email" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          <input type="email" id="email" formControlName="email"
+            class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
         </div>
         <div>
           <label for="gsm" class="block text-sm font-medium text-gray-700">GSM</label>
-          <input type="tel" id="gsm" formControlName="gsm" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          <input type="tel" id="gsm" formControlName="gsm"
+            class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
         </div>
         <div>
           <label for="message" class="block text-sm font-medium text-gray-700">Message</label>
-          <textarea id="message" formControlName="message" rows="4" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm"></textarea>
+          <textarea id="message" formControlName="message" rows="4"
+            class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm"></textarea>
         </div>
         <div class="flex justify-end">
-          <button type="submit" [disabled]="!infoForm.valid" class="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed">
+          <button type="submit" [disabled]="!infoForm.valid"
+            class="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed">
             Envoyer
           </button>
         </div>

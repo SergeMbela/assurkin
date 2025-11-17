@@ -1,0 +1,176 @@
+<div class="container mx-auto p-4 py-16 sm:py-24">
+  <div *ngIf="devisDetails$ | async as devis; else loadingOrError">
+    <div class="mb-8">
+      <a routerLink="/mydata" class="text-indigo-600 hover:text-indigo-800">&larr; Retour à mes contrats</a>
+      <h1 class="text-3xl font-bold tracking-tight text-gray-900 mt-4">Détails du contrat #{{ devis.id }}</h1>
+      <p class="text-lg text-gray-600">Date d'effet : {{ devis.date_effet | date:'dd/MM/yyyy' }}</p>
+    </div>
+
+    <div class="space-y-8">
+      <!-- Informations sur le véhicule (si contrat auto) -->
+      <div *ngIf="devis.vehicule" class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-xl font-semibold text-gray-800 border-b pb-2 mb-4">Véhicule assuré</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <p class="text-sm text-gray-500">Marque & Modèle</p>
+            <p class="font-medium">{{ devis.vehicule.marque }} {{ devis.vehicule.modele }}</p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500">Type</p>
+            <p class="font-medium">{{ devis.vehicule.type }}</p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500">1ère mise en circulation</p>
+            <p class="font-medium">{{ devis.vehicule.date_circulation | date:'dd/MM/yyyy' }}</p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500">Puissance</p>
+            <p class="font-medium">{{ devis.vehicule.puissance_kw }} kW</p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500">Nombre de places</p>
+            <p class="font-medium">{{ devis.vehicule.places }}</p>
+          </div>
+          <div *ngIf="devis.vehicule.valeur">
+            <p class="text-sm text-gray-500">Valeur catalogue</p>
+            <p class="font-medium">{{ devis.vehicule.valeur | currency:'EUR' }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Informations sur le bâtiment (si contrat habitation) -->
+      <div *ngIf="devis.batiment_adresse" class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-xl font-semibold text-gray-800 border-b pb-2 mb-4">Bâtiment assuré</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <p class="text-sm text-gray-500">Adresse</p>
+            <p class="font-medium">{{ devis.batiment_adresse }}, {{ devis.batiment_code_postal }} {{ devis.batiment_ville }}</p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500">Type de maison</p>
+            <p class="font-medium">{{ devis.batiment_type_maison }}</p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500">Superficie</p>
+            <p class="font-medium">{{ devis.evaluation_superficie }} m²</p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500">Nombre de pièces</p>
+            <p class="font-medium">{{ devis.evaluation_nombre_pieces }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Informations sur le devis obsèques -->
+      <div *ngIf="devis.assures" class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-xl font-semibold text-gray-800 border-b pb-2 mb-4">Personnes assurées</h2>
+        <div *ngFor="let assure of devis.assures; let i = index" class="py-2 border-b last:border-b-0">
+          <h3 class="font-semibold text-gray-700">Assuré {{ i + 1 }}</h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
+            <p><strong class="text-gray-500">Nom:</strong> {{ assure.prenom }} {{ assure.nom }}</p>
+            <p><strong class="text-gray-500">Né(e) le:</strong> {{ assure.dateNaissance | date:'dd/MM/yyyy' }}</p>
+            <p><strong class="text-gray-500">Capital:</strong> {{ assure.capital | currency:'EUR' }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Garanties -->
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-xl font-semibold text-gray-800 border-b pb-2 mb-4">Garanties souscrites</h2>
+        <!-- Garanties Auto -->
+        <ul *ngIf="devis.garantie_omnium_niveau" class="list-disc list-inside space-y-2">
+          <li [ngClass]="{'text-green-600': devis.garantie_base_rc, 'text-gray-400': !devis.garantie_base_rc}">
+            <i class="fas" [ngClass]="{'fa-check-circle': devis.garantie_base_rc, 'fa-times-circle': !devis.garantie_base_rc}"></i>
+            Responsabilité Civile & Protection Juridique
+          </li>
+          <li class="text-gray-600">
+            <i class="fas fa-shield-alt"></i>
+            Omnium : <span class="font-semibold capitalize">{{ devis.garantie_omnium_niveau }}</span>
+          </li>
+          <li [ngClass]="{'text-green-600': devis.garantie_conducteur, 'text-gray-400': !devis.garantie_conducteur}">
+            <i class="fas" [ngClass]="{'fa-check-circle': devis.garantie_conducteur, 'fa-times-circle': !devis.garantie_conducteur}"></i>
+            Assurance Conducteur
+          </li>
+          <li [ngClass]="{'text-green-600': devis.garantie_assistance, 'text-gray-400': !devis.garantie_assistance}">
+            <i class="fas" [ngClass]="{'fa-check-circle': devis.garantie_assistance, 'fa-times-circle': !devis.garantie_assistance}"></i>
+            Assistance
+          </li>
+        </ul>
+        <!-- Garanties Habitation -->
+        <ul *ngIf="devis.garantie_contenu !== undefined" class="list-disc list-inside space-y-2">
+          <li class="text-green-600">
+            <i class="fas fa-check-circle"></i>
+            Responsabilité Civile Bâtiment (Base)
+          </li>
+          <li [ngClass]="{'text-green-600': devis.garantie_contenu, 'text-gray-400': !devis.garantie_contenu}">
+            <i class="fas" [ngClass]="{'fa-check-circle': devis.garantie_contenu, 'fa-times-circle': !devis.garantie_contenu}"></i> Contenu
+          </li>
+          <li [ngClass]="{'text-green-600': devis.garantie_vol, 'text-gray-400': !devis.garantie_vol}">
+            <i class="fas" [ngClass]="{'fa-check-circle': devis.garantie_vol, 'fa-times-circle': !devis.garantie_vol}"></i> Vol
+          </li>
+          <li [ngClass]="{'text-green-600': devis.garantie_pertes_indirectes, 'text-gray-400': !devis.garantie_pertes_indirectes}">
+            <i class="fas" [ngClass]="{'fa-check-circle': devis.garantie_pertes_indirectes, 'fa-times-circle': !devis.garantie_pertes_indirectes}"></i> Pertes indirectes
+          </li>
+          <li [ngClass]="{'text-green-600': devis.garantie_protection_juridique, 'text-gray-400': !devis.garantie_protection_juridique}">
+            <i class="fas" [ngClass]="{'fa-check-circle': devis.garantie_protection_juridique, 'fa-times-circle': !devis.garantie_protection_juridique}"></i> Protection Juridique
+          </li>
+          <li [ngClass]="{'text-green-600': devis.garantie_assistance, 'text-gray-400': !devis.garantie_assistance}">
+            <i class="fas" [ngClass]="{'fa-check-circle': devis.garantie_assistance, 'fa-times-circle': !devis.garantie_assistance}"></i> Assistance
+          </li>
+        </ul>
+        <!-- Garanties Obsèques (implicites) -->
+        <ul *ngIf="devis.assures" class="list-disc list-inside space-y-2">
+          <li class="text-green-600"><i class="fas fa-check-circle"></i> Couverture des frais funéraires</li>
+          <li class="text-green-600"><i class="fas fa-check-circle"></i> Rapatriement du corps</li>
+          <li class="text-green-600"><i class="fas fa-check-circle"></i> Assistance administrative pour les proches</li>
+        </ul>
+      </div>
+
+      <!-- Informations sur le preneur et le conducteur -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div class="bg-white p-6 rounded-lg shadow-md">
+          <h2 class="text-xl font-semibold text-gray-800 border-b pb-2 mb-4">Preneur d'assurance</h2>
+          <div class="space-y-3">
+            <p><strong class="w-32 inline-block">Nom:</strong> {{ devis.preneur.prenom }} {{ devis.preneur.nom }}</p>
+            <p><strong class="w-32 inline-block">Email:</strong> {{ devis.preneur.email }}</p>
+            <p><strong class="w-32 inline-block">Téléphone:</strong> {{ devis.preneur.telephone }}</p>
+            <p><strong class="w-32 inline-block">Adresse:</strong> {{ devis.preneur.adresse }}, {{ devis.preneur.code_postal }} {{ devis.preneur.ville }}</p>
+            <p><strong class="w-32 inline-block">Né(e) le:</strong> {{ devis.preneur.date_naissance | date:'dd/MM/yyyy' }}</p>
+          </div>
+        </div>
+
+        <div *ngIf="devis.conducteur" class="bg-white p-6 rounded-lg shadow-md">
+          <h2 class="text-xl font-semibold text-gray-800 border-b pb-2 mb-4">Conducteur principal</h2>
+          <div *ngIf="devis.preneur_id === devis.conducteur_id; else conducteurDifferent">
+            <p class="text-gray-600">Identique au preneur d'assurance.</p>
+          </div>
+          <ng-template #conducteurDifferent>
+            <div class="space-y-3">
+              <p><strong class="w-32 inline-block">Nom:</strong> {{ devis.conducteur.prenom }} {{ devis.conducteur.nom }}</p>
+              <p><strong class="w-32 inline-block">Adresse:</strong> {{ devis.conducteur.adresse }}, {{ devis.conducteur.code_postal }} {{ devis.conducteur.ville }}</p>
+              <p><strong class="w-32 inline-block">Né(e) le:</strong> {{ devis.conducteur.date_naissance | date:'dd/MM/yyyy' }}</p>
+            </div>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #loadingOrError>
+  <div class="text-center py-16">
+    <div *ngIf="!loadingError; else errorState">
+      <p class="text-lg text-gray-600">Chargement des détails du contrat...</p>
+      <!-- Spinner SVG -->
+      <svg class="animate-spin h-8 w-8 text-indigo-600 mx-auto mt-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+    </div>
+    <ng-template #errorState>
+      <p class="text-lg text-red-600">Impossible de charger les détails de ce contrat.</p>
+      <p class="text-gray-500 mt-2">Veuillez vérifier que l'identifiant est correct ou réessayez plus tard.</p>
+      <a routerLink="/mydata" class="mt-4 inline-block bg-indigo-600 text-white font-bold py-2 px-4 rounded hover:bg-indigo-700">Retour à mes contrats</a>
+    </ng-template>
+  </div>
+</ng-template>

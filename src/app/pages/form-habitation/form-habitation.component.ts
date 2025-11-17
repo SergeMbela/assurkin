@@ -1,14 +1,16 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Component, Inject, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterLink } from '@angular/router';
+import { AbstractControl, AsyncValidatorFn, FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { DbConnectService, PostalCode } from '../../services/db-connect.service';
-import { debounceTime, distinctUntilChanged, switchMap, takeUntil, tap } from 'rxjs/operators';
-import { of, Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, switchMap, takeUntil, tap, map, catchError } from 'rxjs/operators';
+import { of, Subject, Observable } from 'rxjs';
+import { PhoneFormatDirective } from '../../directives/phone-format.directive';
 
 @Component({
   selector: 'app-form-habitation',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, PhoneFormatDirective],
   templateUrl: './form-habitation.component.html',
 })
 export class FormHabitationComponent implements OnInit, OnDestroy {
@@ -44,12 +46,16 @@ export class FormHabitationComponent implements OnInit, OnDestroy {
         codePostal: ['', Validators.required],
         ville: ['', Validators.required],
         typeMaison: ['Maison 2 façades', Validators.required],
-        superficie: ['', Validators.required],
-        loyer: [''],
       }),
       evaluation: this.fb.group({
         valeurBatiment: ['expertise', Validators.required],
+        superficie: ['', Validators.required],
+        nombrePieces: ['', [Validators.required, Validators.min(3)]],
+        loyer: [''],
         valeurContenu: ['courtier', Validators.required],
+        valeurExpertise: [null], // Valeur en euros
+        dateExpertise: [null],   // Date de l'expertise (mois/année)
+        valeurLibre: [null],     // Valeur librement exprimée
       }),
       garanties: this.fb.group({
         contenu: [false],
@@ -62,8 +68,42 @@ export class FormHabitationComponent implements OnInit, OnDestroy {
     });
   }
 
+  /**
+   * Getter pour vérifier de manière sécurisée si l'email existe, pour le template.
+   */
+  get emailExists(): boolean {
+    return (this.habitationForm.get('preneur.email') as any)?.emailExists === true;
+  }
+
+  /**
+   * Logique pour vérifier si un email existe déjà et mettre à jour le contrôle, sans le rendre invalide.
+   */
+  private checkEmailExistence(control: AbstractControl): Observable<null> {
+    // On attache une propriété personnalisée au lieu de retourner une erreur de validation.
+    // Cela permet d'afficher le message sans invalider le formulaire.
+    (control as any).emailExists = false;
+
+    if (!control.value) {
+      return of(null);
+    }
+
+    return this.dbConnectService.checkEmailExists(control.value).pipe(
+      tap(exists => {
+        if (exists) {
+          (control as any).emailExists = true;
+        }
+      }),
+      map(() => null), // On retourne toujours null pour que le contrôle reste valide.
+      catchError(() => {
+        (control as any).emailExists = false;
+        return of(null);
+      })
+    );
+  }
+
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
+      this.setupEvaluationValidators();
       this.habitationForm.get('batiment.codePostal')?.valueChanges.pipe(
         debounceTime(300), // Attend 300ms après la dernière frappe
         distinctUntilChanged(), // N'émet que si la valeur a changé
@@ -88,7 +128,50 @@ export class FormHabitationComponent implements OnInit, OnDestroy {
         this.isLoading = false;
         this.filteredPostalCodes = villes;
       });
+
+      // Ajout de la vérification asynchrone pour l'email
+      const emailControl = this.habitationForm.get('preneur.email');
+      if (emailControl) {
+        emailControl.valueChanges.pipe(
+          debounceTime(500),
+          distinctUntilChanged(),
+          switchMap(() => this.checkEmailExistence(emailControl)),
+          takeUntil(this.destroy$)
+        ).subscribe();
+      }
     }
+  }
+
+  private setupEvaluationValidators(): void {
+    const evaluationGroup = this.habitationForm.get('evaluation') as FormGroup;
+    const valeurBatimentControl = evaluationGroup.get('valeurBatiment');
+    const valeurExpertiseControl = evaluationGroup.get('valeurExpertise');
+    const dateExpertiseControl = evaluationGroup.get('dateExpertise');
+    const valeurLibreControl = evaluationGroup.get('valeurLibre');
+
+    valeurBatimentControl?.valueChanges.pipe(
+      takeUntil(this.destroy$) // Annule la souscription à la destruction du composant
+    ).subscribe(value => {
+        if (value === 'expertise') {
+          valeurExpertiseControl?.setValidators([Validators.required, Validators.min(1)]);
+          dateExpertiseControl?.setValidators(Validators.required);
+          valeurLibreControl?.clearValidators();
+          valeurLibreControl?.setValue(null);
+        } else if (value === 'libre') {
+          valeurLibreControl?.setValidators([Validators.required, Validators.min(1)]);
+          valeurExpertiseControl?.clearValidators();
+          dateExpertiseControl?.clearValidators();
+          valeurExpertiseControl?.setValue(null);
+          dateExpertiseControl?.setValue(null);
+        } else {
+          valeurExpertiseControl?.clearValidators();
+          dateExpertiseControl?.clearValidators();
+          valeurLibreControl?.clearValidators();
+        }
+        valeurExpertiseControl?.updateValueAndValidity();
+        dateExpertiseControl?.updateValueAndValidity();
+        valeurLibreControl?.updateValueAndValidity();
+    });
   }
 
   ngOnDestroy(): void {
@@ -113,12 +196,29 @@ export class FormHabitationComponent implements OnInit, OnDestroy {
 
   onSubmit(): void {
     if (this.habitationForm.valid) {
-      console.log(this.habitationForm.value);
-      // Logique de soumission du formulaire
-      this.submissionStatus = { success: true, message: 'Votre demande a bien été envoyée.' };
+      this.dbConnectService.createHabitationQuote(this.habitationForm.value).subscribe({
+        next: (response) => {
+          console.log('Devis habitation enregistré avec succès', response);
+          this.submissionStatus = { success: true, message: 'Votre demande de devis a bien été enregistrée !' };
+          // Optionnel : réinitialiser le formulaire après succès
+          // this.habitationForm.reset(); 
+        },
+        error: (err: any) => {
+          console.error("Erreur lors de l'enregistrement du devis habitation", err);
+          this.submissionStatus = { success: false, message: "Une erreur est survenue lors de l'enregistrement de votre devis." };
+        }
+      });
     } else {
       console.error('Formulaire invalide');
-      this.submissionStatus = { success: false, message: 'Veuillez corriger les erreurs dans le formulaire.' };
+      this.submissionStatus = { success: false, message: 'Veuillez remplir tous les champs obligatoires avant de soumettre.' };
+    }
+  }
+  scrollToSection(sectionId: string): void {
+    if (isPlatformBrowser(this.platformId)) {
+      const element = document.getElementById(sectionId);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     }
   }
 }

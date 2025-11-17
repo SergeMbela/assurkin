@@ -1,0 +1,12 @@
+<div *ngIf="isVisible" class="cookie-banner-container" [class.show]="showBanner">
+  <div class="cookie-banner-content">
+    <p class="text-sm text-slate-700 mb-0">
+      Notre site utilise des cookies pour garantir la meilleure expérience utilisateur. En poursuivant votre navigation, vous acceptez notre politique en matière de cookies.
+    </p>
+    <div class="flex-shrink-0">
+      <button (click)="acceptCookies()" class="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-semibold hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+        J'accepte
+      </button>
+    </div>
+  </div>
+</div>

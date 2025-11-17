@@ -18,6 +18,7 @@ export class NavbarComponent implements AfterViewInit {
   menuOpen = false;
   showParticulierSubMenu = false;
   showProfessionelSubMenu = false;
+  showMentionsLegalesSubMenu = false;
   particulierSubMenuOpen = false;
   professionelSubMenuOpen = false;
 

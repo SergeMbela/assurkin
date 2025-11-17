@@ -1,14 +1,15 @@
-import { Component } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { Component, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { DbConnectService } from '../../services/db-connect.service';
-import { CommonModule } from '@angular/common';
+import { PhoneFormatDirective } from '../../directives/phone-format.directive';
 
 @Component({
   selector: 'app-assurance-juridique',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, PhoneFormatDirective],
   templateUrl: './assurance-juridique.component.html',
-  styleUrl: './assurance-juridique.component.css'
 })
 export class AssuranceJuridiqueComponent {
   infoForm: FormGroup;
@@ -16,14 +17,15 @@ export class AssuranceJuridiqueComponent {
 
   constructor(
     private fb: FormBuilder,
-    private dbConnectService: DbConnectService
+    private dbConnectService: DbConnectService,
+    @Inject(PLATFORM_ID) private platformId: object
   ) {
     this.infoForm = this.fb.group({
       nom: ['', Validators.required],
       prenom: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      gsm: [''],
-      message: ['', Validators.required]
+      gsm: ['', Validators.required],
+      message: ['', Validators.required],
     });
   }
 
@@ -31,11 +33,20 @@ export class AssuranceJuridiqueComponent {
     if (this.infoForm.valid) {
       this.dbConnectService.saveInfoRequestForm(this.infoForm.value, 'juridique').subscribe({
         next: () => {
-          this.submissionStatus = { success: true, message: 'Votre demande a bien été envoyée !' };
+          this.submissionStatus = { success: true, message: 'Votre demande a bien été envoyée.' };
           this.infoForm.reset();
         },
-        error: () => this.submissionStatus = { success: false, message: 'Une erreur est survenue. Veuillez réessayer.' }
+        error: (err: any) => {
+          this.submissionStatus = { success: false, message: 'Une erreur est survenue lors de l\'envoi de votre demande.' };
+          console.error(err);
+        }
       });
+    }
+  }
+
+  scrollToSection(sectionId: string): void {
+    if (isPlatformBrowser(this.platformId)) {
+      document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' });
     }
   }
 }

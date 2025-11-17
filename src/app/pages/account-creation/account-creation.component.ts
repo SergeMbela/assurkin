@@ -1,24 +1,27 @@
-import { Component, Inject, OnInit, PLATFORM_ID } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ValidationErrors, ReactiveFormsModule } from '@angular/forms';
+import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { AuthService } from '../account-creation/auth.service';
+import { ReactiveFormsModule } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
+import { DbConnectService } from '../../services/db-connect.service';
+import { AuthService } from './auth.service';
 
-/**
- * Validateur personnalisé pour vérifier que deux champs correspondent.
- * @param controlName Le nom du contrôle principal.
- * @param matchingControlName Le nom du contrôle à comparer.
- */
-export function MustMatch(controlName: string, matchingControlName: string) {
-  return (formGroup: FormGroup): ValidationErrors | null => {
-    const control = formGroup.controls[controlName];
-    const matchingControl = formGroup.controls[matchingControlName];
+// Custom validator to check if two fields match
+function mustMatch(controlName: string, matchingControlName: string): (formGroup: AbstractControl) => ValidationErrors | null {
+  return (formGroup: AbstractControl): ValidationErrors | null => {
+    const control = formGroup.get(controlName);
+    const matchingControl = formGroup.get(matchingControlName);
 
-    if (matchingControl.errors && !matchingControl.errors['mustMatch']) {
-      // Retourne si un autre validateur a déjà trouvé une erreur sur le matchingControl
+    if (!control || !matchingControl) {
       return null;
     }
 
-    // Définit l'erreur sur matchingControl si la validation échoue
+    if (matchingControl.errors && !matchingControl.errors['mustMatch']) {
+      // return if another validator has already found an error on the matchingControl
+      return null;
+    }
+
+    // set error on matchingControl if validation fails
     if (control.value !== matchingControl.value) {
       matchingControl.setErrors({ mustMatch: true });
       return { mustMatch: true };
@@ -32,10 +35,9 @@ export function MustMatch(controlName: string, matchingControlName: string) {
 @Component({
   selector: 'app-account-creation',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
-  providers: [AuthService],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  providers: [AuthService], // Ajout du service d'authentification
   templateUrl: './account-creation.component.html',
-  styleUrls: ['./account-creation.component.css'],
 })
 export class AccountCreationComponent implements OnInit {
   accountForm!: FormGroup;
@@ -45,9 +47,11 @@ export class AccountCreationComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
+    private dbConnectService: DbConnectService,
     private authService: AuthService,
+    private router: Router,
     @Inject(PLATFORM_ID) private platformId: object
-  ) { }
+  ) {}
 
   ngOnInit(): void {
     this.accountForm = this.fb.group({
@@ -62,47 +66,78 @@ export class AccountCreationComponent implements OnInit {
       terms: [false, Validators.requiredTrue]
     }, {
       validators: [
-        MustMatch('email', 'confirmEmail'),
-        MustMatch('password', 'confirmPassword')
+        mustMatch('email', 'confirmEmail'),
+        mustMatch('password', 'confirmPassword')
       ]
     });
+
+    if (isPlatformBrowser(this.platformId)) {
+      const savedData = localStorage.getItem('autoFormData');
+      if (savedData) {
+        const autoFormData = JSON.parse(savedData);
+        const preneurData = autoFormData.preneur;
+
+        // Map 'Madame'/'Monsieur' to 'female'/'male'
+        let gender = '';
+        if (preneurData.genre === 'Madame') gender = 'female';
+        if (preneurData.genre === 'Monsieur') gender = 'male';
+        if (preneurData.genre === 'Autre') gender = 'other';
+
+        this.accountForm.patchValue({
+          gender: gender,
+          lastName: preneurData.nom,
+          firstName: preneurData.prenom,
+          email: preneurData.email,
+          confirmEmail: preneurData.email,
+          mobileNumber: preneurData.telephone
+        });
+      }
+    }
   }
 
-  // Accès facile aux contrôles du formulaire pour le template
   get f() { return this.accountForm.controls; }
 
   onSubmit(): void {
-    // Guard against running on the server
-    if (!isPlatformBrowser(this.platformId)) {
-      return;
-    }
-
     this.submitted = true;
-    this.successMessage = null;
     this.errorMessage = null;
+    this.successMessage = null;
 
+    // Arrêter si le formulaire est invalide
     if (this.accountForm.invalid) {
-      console.log('Formulaire invalide');
       return;
     }
 
     const { email, password, firstName, lastName, gender } = this.accountForm.value;
 
-    this.authService.signUp({ email, password }, { firstName, lastName, gender })
-      .subscribe({
-        next: (response) => {
-          if (response.error) {
-            this.errorMessage = `Erreur lors de la création du compte: ${response.error.message}`;
-            console.error(this.errorMessage);
+    this.authService.signUp({ email, password }, { firstName, lastName, gender }).subscribe({
+      next: (response) => {
+        if (response.error) {
+          // Gérer les erreurs retournées par Supabase (ex: email déjà utilisé)
+          if (response.error.message && response.error.message.includes('User already registered')) {
+            this.errorMessage = 'Un compte avec cette adresse email existe déjà. Veuillez vous connecter ou utiliser une autre adresse.';
           } else {
-            this.successMessage = 'Votre compte a été créé avec succès ! Veuillez vérifier votre e-mail pour activer votre compte.';
-            console.log('Compte créé avec succès !', response.data.user);
+            this.errorMessage = response.error.message;
           }
-        },
-        error: (err) => {
-          this.errorMessage = 'Une erreur inattendue est survenue. Veuillez réessayer.';
-          console.error(this.errorMessage, err);
+          console.error('Erreur lors de la création du compte:', response.error);
+        } else if (response.data.user) {
+          // Vérifier si l'utilisateur a bien été créé ou s'il existait déjà
+          if (response.data.user.identities && response.data.user.identities.length > 0) {
+            // Succès : le compte a été créé
+            this.successMessage = 'Votre compte a été créé avec succès ! Un email de confirmation vous a été envoyé.';
+            console.log('Utilisateur créé:', response.data.user);
+            this.accountForm.reset();
+            this.submitted = false;
+          } else {
+            // L'utilisateur existe déjà, car `identities` est vide
+            this.errorMessage = 'Un compte avec cette adresse email existe déjà. Veuillez vous connecter ou utiliser une autre adresse.';
+          }
         }
-      });
+      },
+      error: (err) => {
+        // Gérer les erreurs réseau ou autres erreurs inattendues
+        this.errorMessage = 'Une erreur inattendue est survenue. Veuillez réessayer plus tard.';
+        console.error('Erreur de soumission:', err);
+      }
+    });
   }
 }
