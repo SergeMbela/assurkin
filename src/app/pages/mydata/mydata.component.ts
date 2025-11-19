@@ -12,6 +12,7 @@ export interface DevisAuto {
   id: number;
   type: string; // Ajout du type de véhicule depuis le devis
   date_effet: string;
+  categorie: string;
   valeur: number | null; // Ajout de la valeur depuis le devis
   vehicules: {
     marque: string;
@@ -25,6 +26,7 @@ export interface DevisAuto {
 @Component({
   selector: 'app-mydata',
   standalone: true,
+  providers: [DbConnectService],
   imports: [CommonModule, RouterLink],
   templateUrl: './mydata.component.html',
 })

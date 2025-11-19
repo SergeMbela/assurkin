@@ -1,0 +1,148 @@
+<div class="container mx-auto p-4 sm:p-6 lg:p-8">
+  <h1 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-6">Gestion des Devis</h1>
+
+  <!-- Barre d'onglets -->
+  <div class="border-b border-gray-200 mb-6">
+    <nav class="-mb-px flex space-x-6 overflow-x-auto" aria-label="Tabs">
+      <button *ngFor="let tab of tabs"
+              (click)="setActiveTab(tab.id)"
+              [ngClass]="(activeTab$ | async) === tab.id
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+              class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+        {{ tab.label }}
+      </button>
+    </nav>
+  </div>
+
+  <!-- Champ de recherche -->
+  <div class="mb-6">
+    <input type="text"
+           [formControl]="searchControl"
+           placeholder="Rechercher par nom, ID, description..."
+           class="w-full max-w-md px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+  </div>
+
+  <ng-container *ngIf="vm$ | async as vm">
+    <!-- ===== ÉTAT DE CHARGEMENT ===== -->
+    <div *ngIf="vm.state.loading" class="flex justify-center items-center p-10">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      <p class="ml-4 text-gray-600">Chargement des devis...</p>
+    </div>
+
+    <!-- ===== ÉTAT D'ERREUR ===== -->
+    <div *ngIf="vm.state.error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md" role="alert">
+      <strong class="font-bold">Erreur !</strong>
+      <span class="block sm:inline"> Une erreur est survenue lors du chargement des devis.</span>
+      <small class="block mt-2">{{ vm.state.error?.message || vm.state.error }}</small>
+    </div>
+
+    <!-- ===== AUCUNE DONNÉE ===== -->
+    <div *ngIf="!vm.state.loading && !vm.state.error && (!vm.state.data || vm.state.data.length === 0)" class="text-center py-10 px-4 bg-gray-50 rounded-lg">
+      <p class="text-gray-500">Aucun devis trouvé pour cette catégorie.</p>
+    </div>
+
+    <!-- ===== TABLEAU DE DONNÉES ===== -->
+    <div *ngIf="vm.state.data && vm.state.data.length > 0" class="shadow-md rounded-lg overflow-x-auto" [ngSwitch]="activeTab$ | async">
+
+      <!-- ====== TABLEAU POUR L'ASSURANCE AUTOMOBILE ====== -->
+      <table *ngSwitchCase="'auto'" class="w-full text-sm text-left text-gray-600">
+        <thead class="text-xs text-gray-700 uppercase bg-gray-100">
+          <tr class="border-b">
+            <th scope="col" class="px-6 py-3">ID Devis</th>
+            <th scope="col" class="px-6 py-3">Preneur</th>
+            <th scope="col" class="px-6 py-3">Véhicule</th>
+            <th scope="col" class="px-6 py-3">Date de la demande</th>
+            <th scope="col" class="px-6 py-3">Statut</th>
+            <th scope="col" class="px-6 py-3">Docs</th>
+            <th scope="col" class="px-6 py-3">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let quote of vm.state.data" class="bg-white border-b hover:bg-gray-50 transition-colors duration-200">
+            <td class="px-6 py-4 font-semibold text-gray-900 whitespace-nowrap">#{{ quote.id }}</td>
+            <td class="px-6 py-4">{{ quote.prenom }} {{ quote.nom }}</td>
+            <td class="px-6 py-4">
+              <!-- Le ng-container crée un contexte où la garde de type est correctement appliquée -->
+              <ng-container *ngIf="isAutoQuote(quote)">
+                {{ quote.typeVehicule }} {{ quote.marqueVehicule }} {{ quote.modeleVehicule }}
+              </ng-container>
+            </td>
+            <td class="px-6 py-4">{{ quote.dateDemande | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td class="px-6 py-4">
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-medium" [ngClass]="{ 'bg-blue-100 text-blue-800': quote.statut === 'Nouveau', 'bg-yellow-100 text-yellow-800': quote.statut === 'En cours', 'bg-green-100 text-green-800': quote.statut === 'Terminé' }">
+                {{ quote.statut }}
+              </span>
+            </td>
+            <td class="px-6 py-4">
+              <button class="text-blue-600 hover:text-blue-800 font-medium">Gérer</button>
+            </td>
+            <td class="px-6 py-4">
+              <button (click)="viewDetails(quote.id)" class="text-indigo-600 hover:text-indigo-800 font-medium">Voir détails</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- ====== TABLEAU GÉNÉRIQUE POUR LES AUTRES ASSURANCES (Habitation, Obsèques, etc.) ====== -->
+      <table *ngSwitchDefault class="w-full text-sm text-left text-gray-600">
+        <thead class="text-xs text-gray-700 uppercase bg-gray-100">
+          <tr class="border-b">
+            <th scope="col" class="px-6 py-3">ID Devis</th>
+            <th scope="col" class="px-6 py-3">Preneur</th>
+            <th scope="col" class="px-6 py-3">Description</th>
+            <th scope="col" class="px-6 py-3">Date de la demande</th>
+            <th scope="col" class="px-6 py-3">Statut</th>
+            <th scope="col" class="px-6 py-3">Docs</th>
+            <th scope="col" class="px-6 py-3">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let quote of vm.state.data" class="bg-white border-b hover:bg-gray-50 transition-colors duration-200">
+            <td class="px-6 py-4 font-semibold text-gray-900 whitespace-nowrap">#{{ quote.id }}</td>
+            <td class="px-6 py-4">{{ quote.prenom }} {{ quote.nom }}</td>
+            <td class="px-6 py-4">
+              <ng-container *ngIf="isDescriptionQuote(quote)">
+                {{ quote.description }}
+              </ng-container>
+            </td>
+            <td class="px-6 py-4">{{ quote.dateDemande | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td class="px-6 py-4">
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-medium" [ngClass]="{ 'bg-blue-100 text-blue-800': quote.statut === 'Nouveau', 'bg-yellow-100 text-yellow-800': quote.statut === 'En cours', 'bg-green-100 text-green-800': quote.statut === 'Terminé' }">
+                {{ quote.statut }}
+              </span>
+            </td>
+            <td class="px-6 py-4">
+              <button class="text-blue-600 hover:text-blue-800 font-medium">Gérer</button>
+            </td>
+            <td class="px-6 py-4">
+              <button (click)="viewDetails(quote.id)" class="text-indigo-600 hover:text-indigo-800 font-medium">Voir détails</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+    </div>
+
+    <!-- ===== CONTRÔLES DE PAGINATION ===== -->
+    <div *ngIf="vm.pagination && vm.pagination.totalPages > 1" class="flex items-center justify-between mt-6">
+      <span class="text-sm text-gray-700">
+        Page <span class="font-semibold">{{ vm.pagination.currentPage }}</span> sur <span class="font-semibold">{{ vm.pagination.totalPages }}</span> ({{ vm.pagination.totalItems }} résultats)
+      </span>
+
+      <div class="inline-flex -space-x-px">
+        <button (click)="goToPage(vm.pagination.currentPage - 1)"
+                [disabled]="vm.pagination.currentPage === 1"
+                class="px-3 py-2 ml-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-100 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
+          Précédent
+        </button>
+        <button (click)="goToPage(vm.pagination.currentPage + 1)"
+                [disabled]="vm.pagination.currentPage === vm.pagination.totalPages"
+                class="px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-100 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
+          Suivant
+        </button>
+      </div>
+    </div>
+
+  </ng-container>
+</div>

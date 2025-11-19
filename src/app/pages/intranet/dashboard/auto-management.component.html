@@ -1,0 +1,62 @@
+<div class="p-4 sm:p-8 bg-gray-50 min-h-screen">
+  <div class="flex justify-between items-center mb-8">
+    <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Gestion des Assurances Auto</h1>
+    <a routerLink="/intranet/dashboard" class="text-sm font-semibold text-indigo-600 hover:text-indigo-800">&larr; Retour au tableau de bord</a>
+  </div>
+
+  <div class="bg-white shadow-sm rounded-lg overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nom Complet</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date de la demande</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
+            <th scope="col" class="relative px-6 py-3">
+              <span class="sr-only">Actions</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <tr *ngFor="let request of paginatedRequests" class="hover:bg-gray-50">
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ request.id }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ request.prenom }} {{ request.nom }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ request.dateDemande | date: 'dd/MM/yyyy' }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm">
+              <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
+                    [ngClass]="{
+                      'bg-blue-100 text-blue-800': request.statut === 'Nouveau',
+                      'bg-yellow-100 text-yellow-800': request.statut === 'En cours',
+                      'bg-green-100 text-green-800': request.statut === 'Traité'
+                    }">
+                {{ request.statut }}
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+              <button (click)="viewDetails(request.id)" class="text-indigo-600 hover:text-indigo-900">Voir / Modifier</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <nav class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6" aria-label="Pagination">
+      <div class="hidden sm:block">
+        <p class="text-sm text-gray-700">
+          Affichage de <span class="font-medium">{{ (currentPage - 1) * itemsPerPage + 1 }}</span> à <span class="font-medium">{{ currentPage * itemsPerPage > allRequests.length ? allRequests.length : currentPage * itemsPerPage }}</span> sur
+          <span class="font-medium">{{ allRequests.length }}</span> résultats
+        </p>
+      </div>
+      <div class="flex-1 flex justify-between sm:justify-end">
+        <button (click)="setPage(currentPage - 1)" [disabled]="currentPage === 1" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+          Précédent
+        </button>
+        <button (click)="setPage(currentPage + 1)" [disabled]="currentPage === totalPages" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+          Suivant
+        </button>
+      </div>
+    </nav>
+  </div>
+</div>

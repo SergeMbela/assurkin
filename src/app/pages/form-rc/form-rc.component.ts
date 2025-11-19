@@ -1,15 +1,17 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Component, Inject, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
+import { Component, Inject, OnDestroy, OnInit, PLATFORM_ID, Injector } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { Subject, of } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, takeUntil, tap } from 'rxjs/operators';
-import { DbConnectService, PostalCode } from '../../services/db-connect.service';
+import { DbConnectService, PostalCode, RcFormData } from '../../services/db-connect.service';
+import { PhoneNumberFormatDirective } from '../../directives/phone-number-format.directive';
 
 @Component({
   selector: 'app-form-rc',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  providers: [DbConnectService],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, PhoneNumberFormatDirective],
   templateUrl: './form-rc.component.html',
 })
 export class FormRcComponent implements OnInit, OnDestroy {
@@ -18,13 +20,14 @@ export class FormRcComponent implements OnInit, OnDestroy {
   submissionStatus: { success: boolean; message: string } | null = null;
 
   private destroy$ = new Subject<void>();
+  private postalCode$ = new Subject<string>();
   filteredPostalCodes: PostalCode[] = [];
   cities: string[] = [];
   isLoading = false;
 
   constructor(
     private fb: FormBuilder,
-    private dbConnectService: DbConnectService,
+    private injector: Injector,
     @Inject(PLATFORM_ID) private platformId: object
   ) {
     const today = new Date();
@@ -33,68 +36,107 @@ export class FormRcComponent implements OnInit, OnDestroy {
     this.minDate = tomorrow.toISOString().split('T')[0];
 
     this.rcForm = this.fb.group({
-      preneur: this.fb.group({
-        nom: ['', Validators.required],
-        prenom: ['', Validators.required],
-        genre: ['Madame', Validators.required],
-        telephone: ['', Validators.required],
-        email: ['', [Validators.required, Validators.email]],
-        adresse: ['', Validators.required],
-        codePostal: ['', Validators.required],
-        ville: [{ value: '', disabled: true }, Validators.required],
-      }),
+      preneur_nom: ['', Validators.required],
+      preneur_prenom: ['', Validators.required],
+      preneur_genre: ['Madame', Validators.required], // Validateur personnalisé pour le numéro de téléphone belge
+      preneur_telephone: ['', [Validators.required, belgianPhoneNumberValidator()]],
+      preneur_email: ['', [Validators.required, Validators.email]],
+      preneur_adresse: ['', Validators.required],
+      preneur_code_postal: ['', Validators.required],
+      preneur_ville: [{ value: '', disabled: true }, Validators.required],
       risque: ['famille', Validators.required],
-      dateEffet: [this.minDate, Validators.required],
+      date_effet: [this.minDate, Validators.required],
     });
   }
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
-      this.rcForm.get('preneur.codePostal')?.valueChanges.pipe(
+      const dbConnectService = this.injector.get(DbConnectService); // Injection via l'injecteur
+      this.postalCode$.pipe(
         debounceTime(300),
         distinctUntilChanged(),
-        tap(() => this.isLoading = true),
+        tap(() => {
+          this.isLoading = true;
+          // On vide les suggestions à chaque nouvelle frappe pour éviter d'afficher d'anciennes données
+          this.filteredPostalCodes = [];
+        }),
         switchMap(value => {
           if (value && value.length >= 2) {
-            return this.dbConnectService.getPostalCodes(value);
+            return dbConnectService.getPostalCodes(value);
           } else {
-            this.filteredPostalCodes = [];
+            // Si la saisie est trop courte, on vide tout et on désactive le champ ville
             this.cities = [];
-            this.rcForm.get('preneur.ville')?.setValue('');
+            this.rcForm.get('preneur_ville')?.setValue('');
+            this.rcForm.get('preneur_ville')?.disable();
             return of([]);
           }
         }),
         takeUntil(this.destroy$)
       ).subscribe(postalCodes => {
         this.isLoading = false;
+        // On met à jour la liste des suggestions à afficher dans le template
         this.filteredPostalCodes = postalCodes;
       });
     }
   }
 
   ngOnDestroy(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      this.destroy$.next();
-      this.destroy$.complete();
-    }
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  onPostalCodeInput(event: Event): void {
+    const input = (event.target as HTMLInputElement).value;
+    this.postalCode$.next(input);
   }
 
   selectPostalCode(selectedCity: PostalCode): void {
-    if (selectedCity) {
-      this.rcForm.get('preneur.codePostal')?.setValue(selectedCity.postalCode, { emitEvent: false });
-      this.rcForm.get('preneur.ville')?.setValue(selectedCity.city);
-      this.cities = [selectedCity.city];
-      this.rcForm.get('preneur.ville')?.enable();
-      this.rcForm.get('preneur.ville')?.updateValueAndValidity();
+    if (selectedCity && selectedCity.postalCode) {
+      // Définit le code postal. N'émet pas d'événement pour éviter de déclencher valueChanges deux fois.
+      this.rcForm.get('preneur_code_postal')?.setValue(selectedCity.postalCode, { emitEvent: false });
+      // On vide la liste des suggestions pour la cacher
+      this.filteredPostalCodes = [];
+
+      const dbConnectService = this.injector.get(DbConnectService);
+      dbConnectService.getCitiesByPostalCode(selectedCity.postalCode).pipe(
+        takeUntil(this.destroy$)
+      ).subscribe(cities => {
+        this.cities = cities;
+        if (cities.length > 0) {
+          this.rcForm.get('preneur_ville')?.enable();
+          // Définit la ville spécifique qui a été cliquée, si elle est dans la liste
+          if (cities.includes(selectedCity.city)) {
+            this.rcForm.get('preneur_ville')?.setValue(selectedCity.city);
+          } else if (cities.length === 1) {
+            this.rcForm.get('preneur_ville')?.setValue(cities[0]);
+          } else {
+            this.rcForm.get('preneur_ville')?.setValue(''); // Efface si plusieurs villes et la ville cliquée n'est pas trouvée
+          }
+        } else {
+          this.rcForm.get('preneur_ville')?.setValue('');
+          this.rcForm.get('preneur_ville')?.disable();
+        }
+      });
     }
-    this.filteredPostalCodes = [];
   }
 
   onSubmit(): void {
     if (this.rcForm.valid) {
-      console.log(this.rcForm.value);
-      // Logique de soumission du formulaire
-      this.submissionStatus = { success: true, message: 'Votre demande a bien été envoyée.' };
+      // La structure du formulaire correspond maintenant directement à l'interface RcFormData.
+      const formData: RcFormData = this.rcForm.getRawValue();
+
+      this.injector.get(DbConnectService).saveRcForm(formData) // Injection via l'injecteur
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (response) => {
+            this.submissionStatus = { success: true, message: 'Votre demande a bien été envoyée.' };
+            this.rcForm.reset();
+          },
+          error: (error) => {
+            this.submissionStatus = { success: false, message: 'Une erreur est survenue. Veuillez réessayer.' };
+            console.error('Erreur lors de la soumission du formulaire RC:', error);
+          }
+        });
     } else {
       this.markAllAsTouched(this.rcForm);
       this.submissionStatus = { success: false, message: 'Veuillez corriger les erreurs dans le formulaire.' };
@@ -119,4 +161,21 @@ export class FormRcComponent implements OnInit, OnDestroy {
       }
     }
   }
+}
+
+/**
+ * Validateur personnalisé pour les numéros de téléphone belges.
+ * Vérifie si le numéro contient 9 ou 10 chiffres.
+ * @returns Une fonction de validation pour les formulaires réactifs.
+ */
+export function belgianPhoneNumberValidator(): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const value = control.value;
+    if (!value) {
+      return null; // Ne pas valider si le champ est vide (laissé à Validators.required)
+    }
+    const digits = value.replace(/\D/g, ''); // Supprime tous les caractères non numériques
+    const isValid = digits.length === 9 || digits.length === 10;
+    return isValid ? null : { invalidPhoneNumber: true };
+  };
 }

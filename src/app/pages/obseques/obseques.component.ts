@@ -10,6 +10,7 @@ import { PhoneFormatDirective } from '../../directives/phone-format.directive';
 @Component({
   selector: 'app-obseques',
   standalone: true,
+  providers: [DbConnectService],
   imports: [CommonModule, ReactiveFormsModule, RouterLink, PhoneFormatDirective],
   templateUrl: './obseques.component.html',
 })

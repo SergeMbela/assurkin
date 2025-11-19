@@ -3,6 +3,8 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterLink, RouterLinkActive, NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { PreloadOnHoverDirective } from './preload-on-hover.directive';
+import { AuthService } from './auth.service';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-navbar',
@@ -21,12 +23,16 @@ export class NavbarComponent implements AfterViewInit {
   showMentionsLegalesSubMenu = false;
   particulierSubMenuOpen = false;
   professionelSubMenuOpen = false;
+  isLoggedIn$: Observable<boolean>;
 
   constructor(
     private router: Router,
     private cdr: ChangeDetectorRef,
-    @Inject(PLATFORM_ID) private platformId: object
-  ) {}
+    @Inject(PLATFORM_ID) private platformId: object,
+    private authService: AuthService
+  ) {
+    this.isLoggedIn$ = this.authService.isLoggedIn$;
+  }
 
   ngAfterViewInit(): void {
     // Positionne le trait sur l'élément actif au chargement et après chaque navigation

@@ -1,0 +1,192 @@
+<div class="bg-gray-50 min-h-screen">
+  <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+    <ng-container *ngIf="devisDetails$ | async as devis; else loadingOrError">
+      <div *ngIf="devis" class="bg-white p-6 sm:p-8 rounded-lg shadow-md">
+
+        <!-- ====== EN-TÊTE ====== -->
+        <div class="border-b pb-4 mb-6 flex justify-between items-start">
+          <div>
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">
+              Détails du devis
+              <!-- Titre dynamique basé sur les données -->
+              <span *ngIf="devis.vehicule" class="text-indigo-600">Automobile</span>
+              <span *ngIf="devis.batiment_type_maison" class="text-indigo-600">Habitation</span>
+              <span *ngIf="devis.nombre_assures" class="text-indigo-600">Obsèques</span>
+              <span *ngIf="devis.message" class="text-indigo-600">Voyage</span>
+            </h1>
+            <p class="text-sm text-gray-500 mt-1">Devis n° #{{ devis.id }} - Créé le {{ (devis.created_at || devis.date_created) | date:'dd/MM/yyyy' }}</p>
+          </div>
+          <span class="px-3 py-1 rounded-full text-sm font-semibold"
+                [ngClass]="{
+                  'bg-blue-100 text-blue-800': devis.statut === 'Nouveau',
+                  'bg-yellow-100 text-yellow-800': devis.statut === 'En cours',
+                  'bg-green-100 text-green-800': devis.statut === 'Terminé'
+                }">
+            {{ devis.statut || 'Nouveau' }}
+          </span>
+        </div>
+
+        <!-- ====== DÉTAILS SPÉCIFIQUES PAR TYPE D'ASSURANCE ====== -->
+
+        <!-- ===== DÉTAILS ASSURANCE AUTO ===== -->
+        <div *ngIf="devis.vehicule" class="space-y-8">
+          <!-- Section Preneur -->
+          <section>
+            <h2 class="text-xl font-semibold text-gray-700 border-b pb-2 mb-4">Preneur d'assurance</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+              <div><strong>Nom:</strong> {{ devis.preneur.prenom }} {{ devis.preneur.nom }}</div>
+              <div><strong>Email:</strong> {{ devis.preneur.email }}</div>
+              <div><strong>Téléphone:</strong> {{ devis.preneur.telephone }}</div>
+              <div><strong>Adresse:</strong> {{ devis.preneur.adresse }}, {{ devis.preneur.code_postal }} {{ devis.preneur.ville }}</div>
+              <div><strong>Date de naissance:</strong> {{ devis.preneur.date_naissance | date:'dd/MM/yyyy' }}</div>
+              <div><strong>Date du permis:</strong> {{ devis.preneur.permis_date | date:'dd/MM/yyyy' }}</div>
+              <div><strong>Numéro de permis:</strong> {{ devis.preneur.permis_numero }}</div>
+            </div>
+          </section>
+          <!-- Section Conducteur (si différent du preneur) -->
+          <section *ngIf="devis.conducteur_id !== devis.preneur_id && devis.conducteur">
+            <h2 class="text-xl font-semibold text-gray-700 border-b pb-2 mb-4">Conducteur Principal</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+              <div><strong>Nom:</strong> {{ devis.conducteur.prenom }} {{ devis.conducteur.nom }}</div>
+              <div><strong>Date de naissance:</strong> {{ devis.conducteur.date_naissance | date:'dd/MM/yyyy' }}</div>
+              <div><strong>Date du permis:</strong> {{ devis.conducteur.permis_date | date:'dd/MM/yyyy' }}</div>
+              <div><strong>Adresse:</strong> {{ devis.conducteur.adresse }}, {{ devis.conducteur.code_postal }} {{ devis.conducteur.ville }}</div>
+              <div><strong>Numéro de permis:</strong> {{ devis.conducteur.permis_numero }}</div>
+            </div>
+          </section>
+
+          <!-- Section Véhicule -->
+          <section>
+            <h2 class="text-xl font-semibold text-gray-700 border-b pb-2 mb-4">Véhicule</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+              <div><strong>Type:</strong> {{ devis.vehicule.type }}</div>
+              <div><strong>Marque:</strong> {{ devis.vehicule.marque }}</div>
+              <div><strong>Modèle:</strong> {{ devis.vehicule.modele }}</div>
+              <div><strong>Puissance:</strong> {{ devis.vehicule.puissance_kw }} kW</div>
+              <div><strong>Nombre de places:</strong> {{ devis.vehicule.places }}</div>
+              <div><strong>1ère circulation:</strong> {{ devis.vehicule.date_circulation | date:'dd/MM/yyyy' }}</div>
+              <div><strong>Valeur:</strong> {{ devis.vehicule.valeur | currency:'EUR' }}</div>
+            </div>
+          </section>
+          <!-- Section Garanties -->
+          <section>
+            <h2 class="text-xl font-semibold text-gray-700 border-b pb-2 mb-4">Garanties</h2>
+            <ul class="list-disc list-inside space-y-2">
+              <li [class.text-green-600]="devis.garantie_base_rc">Responsabilité Civile</li>
+              <li [class.text-green-600]="devis.garantie_conducteur">Assurance Conducteur</li>
+              <li [class.text-green-600]="devis.garantie_assistance">Assistance</li>
+              <li><strong>Omnium:</strong> <span class="capitalize">{{ devis.garantie_omnium_niveau }}</span></li>
+              <li class="mt-2"><strong>Date d'effet souhaitée:</strong> {{ devis.date_effet | date:'dd/MM/yyyy' }}</li>
+            </ul>
+          </section>
+        </div>
+
+        <!-- ===== DÉTAILS ASSURANCE HABITATION ===== -->
+        <div *ngIf="devis.batiment_type_maison" class="space-y-8"> <!-- Utilisation d'une propriété unique -->
+          <!-- Section Preneur -->
+          <section>
+            <h2 class="text-xl font-semibold text-gray-700 border-b pb-2 mb-4">Preneur d'assurance</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+              <div><strong>Nom:</strong> {{ devis.preneur.prenom }} {{ devis.preneur.nom }}</div>
+              <div><strong>Email:</strong> {{ devis.preneur.email }}</div>
+              <div><strong>Téléphone:</strong> {{ devis.preneur.telephone }}</div>
+            </div>
+          </section>
+          <!-- Section Bâtiment -->
+          <section>
+            <h2 class="text-xl font-semibold text-gray-700 border-b pb-2 mb-4">Bâtiment à assurer</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+              <div><strong>Type:</strong> {{ devis.batiment_type_maison }}</div>
+              <div><strong>Adresse:</strong> {{ devis.batiment_adresse }}, {{ devis.batiment_code_postal }} {{ devis.batiment_ville }}</div>
+              <div><strong>Superficie:</strong> {{ devis.evaluation_superficie }} m²</div>
+              <div><strong>Nombre de pièces:</strong> {{ devis.evaluation_nombre_pieces }}</div>
+            </div>
+          </section>
+          <!-- Section Évaluation & Garanties -->
+          <section>
+            <h2 class="text-xl font-semibold text-gray-700 border-b pb-2 mb-4">Évaluation et Garanties</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+              <div><strong>Valeur du bâtiment:</strong> <span class="capitalize">{{ devis.evaluation_type_valeur_batiment }}</span></div>
+              <div><strong>Valeur du contenu:</strong> <span class="capitalize">{{ devis.evaluation_type_valeur_contenu }}</span></div>
+              <div *ngIf="devis.evaluation_loyer_mensuel"><strong>Loyer mensuel:</strong> {{ devis.evaluation_loyer_mensuel | currency:'EUR' }}</div>
+              <div *ngIf="devis.evaluation_valeur_expertise"><strong>Valeur d'expertise:</strong> {{ devis.evaluation_valeur_expertise | currency:'EUR' }}</div>
+              <div *ngIf="devis.evaluation_date_expertise"><strong>Date d'expertise:</strong> {{ devis.evaluation_date_expertise | date:'dd/MM/yyyy' }}</div>
+              <div *ngIf="devis.evaluation_valeur_libre_contenu"><strong>Valeur libre du contenu:</strong> {{ devis.evaluation_valeur_libre_contenu | currency:'EUR' }}</div>
+              <li [class.text-green-600]="devis.garantie_contenu">Garantie Contenu</li>
+              <li [class.text-green-600]="devis.garantie_vol">Garantie Vol</li>
+              <li [class.text-green-600]="devis.garantie_pertes_indirectes">Garantie Pertes Indirectes</li>
+              <li [class.text-green-600]="devis.garantie_protection_juridique">Protection Juridique</li>
+              <li [class.text-green-600]="devis.garantie_assistance">Assistance</li>
+              <div><strong>Date d'effet souhaitée:</strong> {{ devis.date_effet | date:'dd/MM/yyyy' }}</div>
+            </div>
+          </section>
+        </div>
+
+        <!-- ===== DÉTAILS ASSURANCE OBSÈQUES ===== -->
+        <div *ngIf="devis.nombre_assures" class="space-y-8">
+          <!-- Section Preneur -->
+          <section>
+            <h2 class="text-xl font-semibold text-gray-700 border-b pb-2 mb-4">Preneur d'assurance</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+              <div><strong>Nom:</strong> {{ devis.preneur.prenom }} {{ devis.preneur.nom }}</div>
+              <div><strong>Email:</strong> {{ devis.preneur.email }}</div>
+              <div><strong>Téléphone:</strong> {{ devis.preneur.telephone }}</div>
+              <div><strong>Date de naissance:</strong> {{ devis.preneur.date_naissance | date:'dd/MM/yyyy' }}</div>
+              <div class="md:col-span-2"><strong>Adresse:</strong> {{ devis.preneur.adresse }}, {{ devis.preneur.code_postal }} {{ devis.preneur.ville }}</div>
+            </div>
+          </section>
+          <!-- Section Assurés -->
+          <section> 
+            <div class="mb-4">
+              <strong>Le preneur est-il également assuré ?</strong> <span class="font-medium" [ngClass]="devis.preneur_est_assure ? 'text-green-600' : 'text-red-600'">{{ devis.preneur_est_assure ? 'Oui' : 'Non' }}</span>
+            </div>
+            <h2 class="text-xl font-semibold text-gray-700 border-b pb-2 mb-4">Personnes assurées ({{ devis.nombre_assures }})</h2>
+            <ul class="space-y-4">
+              <li *ngFor="let assure of devis.assures" class="p-4 bg-gray-50 rounded-md">
+                <p><strong>Nom:</strong> {{ assure.prenom }} {{ assure.nom }}</p>
+                <p><strong>Date de naissance:</strong> {{ assure.dateNaissance | date:'dd/MM/yyyy' }}</p>
+                <p><strong>Capital assuré:</strong> {{ assure.capital | currency:'EUR' }}</p>
+              </li>
+            </ul>
+          </section>
+        </div>
+
+        <!-- ===== DÉTAILS DEMANDE VOYAGE ===== -->
+        <div *ngIf="devis.message" class="space-y-6">
+          <section>
+            <h2 class="text-xl font-semibold text-gray-700 border-b pb-2 mb-4">Informations du demandeur</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+              <div><strong>Nom:</strong> {{ devis.prenom }} {{ devis.nom }}</div>
+              <div><strong>Email:</strong> {{ devis.email }}</div>
+              <div><strong>GSM:</strong> {{ devis.gsm || 'Non fourni' }}</div>
+            </div>
+          </section>
+          <section>
+            <h2 class="text-xl font-semibold text-gray-700 border-b pb-2 mb-4">Message</h2>
+            <p class="text-gray-600 whitespace-pre-wrap">{{ devis.message }}</p>
+          </section>
+          <section *ngIf="devis.document">
+            <h2 class="text-xl font-semibold text-gray-700 border-b pb-2 mb-4">Document</h2>
+            <a [href]="devis.document" target="_blank" class="text-blue-600 hover:underline">Voir le document joint</a>
+          </section>
+        </div>
+
+      </div>
+    </ng-container>
+
+    <!-- ====== ÉTAT DE CHARGEMENT OU D'ERREUR ====== -->
+    <ng-template #loadingOrError>
+      <div *ngIf="!loadingError; else errorState" class="flex justify-center items-center p-10">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+        <p class="ml-4 text-gray-600">Chargement des détails...</p>
+      </div>
+      <ng-template #errorState>
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md text-center" role="alert">
+          <strong class="font-bold">Erreur !</strong>
+          <p>Impossible de charger les détails de ce devis. Il est possible que le lien soit incorrect ou que le devis n'existe plus.</p>
+          <a routerLink="/management" class="mt-4 inline-block bg-red-600 text-white font-bold py-2 px-4 rounded hover:bg-red-700">Retour à la gestion</a>
+        </div>
+      </ng-template>
+    </ng-template>
+  </div>
+</div>

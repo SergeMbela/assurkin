@@ -1,5 +1,5 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Component, Inject, OnInit, PLATFORM_ID } from '@angular/core';
+import { Component, Inject, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AbstractControl, AsyncValidatorFn, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators, FormControl } from '@angular/forms';
 import { Subject, of, EMPTY, forkJoin, Observable } from 'rxjs';
@@ -10,10 +10,11 @@ import { PhoneFormatDirective } from '../../directives/phone-format.directive';
 @Component({
   selector: 'app-form-auto',
   standalone: true,
+  providers: [DbConnectService],
   imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink, PhoneFormatDirective],
   templateUrl: './form-auto.component.html'
 })
-export class FormAutoComponent implements OnInit {
+export class FormAutoComponent implements OnInit, OnDestroy {
   /**
    * Validateur personnalisé pour vérifier l'âge minimum.
    * @param minAge L'âge minimum requis.
@@ -124,7 +125,7 @@ export class FormAutoComponent implements OnInit {
   private preneurPostalCode$!: Subject<string>;
   private conducteurPostalCode$!: Subject<string>;
   private destroy$!: Subject<void>;
-  // --- Date minimum ---
+
   submissionStatus: { success: boolean; message: string } | null = null;
 
   minDate: string;
@@ -334,8 +335,10 @@ export class FormAutoComponent implements OnInit {
   }
 
   ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
+    if (isPlatformBrowser(this.platformId)) {
+      this.destroy$.next();
+      this.destroy$.complete();
+    }
   }
 
 

@@ -1,0 +1,92 @@
+.dashboard-container {
+  padding: 20px;
+  max-width: 900px;
+  margin: auto;
+  font-family: Arial, sans-serif;
+}
+
+.section-title {
+  margin-bottom: 20px;
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.contracts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Card design */
+.contract-card {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 15px;
+  background: #fafafa;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.card-header h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.status {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  margin-left: 10px;
+  color: white;
+}
+
+.status.actif { background: #2ecc71; }
+.status.expire { background: #e67e22; }
+.status.annule { background: #e74c3c; }
+
+.card-body p { margin: 4px 0; }
+
+.card-footer { margin-top: 10px; }
+
+button {
+  background: #3498db;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+}
+button:hover {
+  background: #2980b9;
+}
+
+/* ERROR */
+.error-box {
+  border: 1px solid #e74c3c;
+  background: #fdecea;
+  padding: 15px;
+  border-radius: 8px;
+  color: #c0392b;
+  margin-bottom: 20px;
+}
+
+/* EMPTY */
+.empty-state {
+  text-align: center;
+  padding: 30px;
+  color: #666;
+}
+
+/* Skeleton loader */
+.skeleton-card {
+  height: 90px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #e0e0e0, #f5f5f5, #e0e0e0);
+  background-size: 200%;
+  animation: loading 1.2s infinite;
+  margin-bottom: 10px;
+}
+
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

@@ -36,7 +36,7 @@ function mustMatch(controlName: string, matchingControlName: string): (formGroup
   selector: 'app-account-creation',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterLink],
-  providers: [AuthService], // Ajout du service d'authentification
+  providers: [AuthService, DbConnectService], // Ajout des services
   templateUrl: './account-creation.component.html',
 })
 export class AccountCreationComponent implements OnInit {

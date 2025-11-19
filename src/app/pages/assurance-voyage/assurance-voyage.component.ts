@@ -30,7 +30,7 @@ export class AssuranceVoyageComponent {
 
   onSubmit(): void {
     if (this.infoForm.valid) {
-      this.dbConnectService.saveInfoRequestForm(this.infoForm.value, 'voyage').subscribe({
+      this.dbConnectService.saveVoyageForm(this.infoForm.value).subscribe({
         next: () => {
           this.submissionStatus = { success: true, message: 'Votre demande a bien été envoyée !' };
           this.infoForm.reset();

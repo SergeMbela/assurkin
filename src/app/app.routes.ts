@@ -13,15 +13,19 @@ import { AccountLoginComponent } from './pages/account-login/account-login.compo
 import { AccountComponent } from './pages/account/account.component';
 import { AccountCreationComponent } from './pages/account-creation/account-creation.component';
 import { MydataComponent } from './pages/mydata/mydata.component';
-import {AccountPasswordLostComponent} from "./pages/account-password-lost/account-password-lost.component";
-import {AccountPasswordResetComponent} from "./pages/account-password-reset/account-password-reset.component";
+import { AccountPasswordLostComponent } from "./pages/account-password-lost/account-password-lost.component";
+import { AccountPasswordResetComponent } from "./pages/account-password-reset/account-password-reset.component";
 import { authGuard } from './auth.guard';
 import { CreateuseraccountComponent } from './pages/createuseraccount/createuseraccount.component';
 //Page details assurance
 import { DetailsAssuranceComponent } from './pages/details-assurance/details-assurance.component';
+import { DashboardComponent } from './pages/intranet/dashboard/dashboard.component';
+import { AutoManagementComponent } from './pages/intranet/dashboard/auto-management.component';
+import { ManagementComponent } from './pages/management/management.component';
+import { AssurancesDetailsComponent } from './pages/assurances-details/assurances-details.component';
 
 export const routes: Routes = [
-    
+
     // Routes existantes
     { path: 'accueil', component: AccueilComponent },
     { path: 'contact', component: FormContactComponent },
@@ -41,11 +45,18 @@ export const routes: Routes = [
     { path: 'reset-password', component: AccountPasswordResetComponent },
     { path: 'mydata', component: MydataComponent, canActivate: [authGuard] },
     { path: 'createuseraccount', component: CreateuseraccountComponent },
-   // Détails assurance (le :id est un paramètre dynamique)
-   { path: 'assurance_auto/:id', component: DetailsAssuranceComponent },
-   { path: 'assurance_habitation/:id', component: DetailsAssuranceComponent }, // Route pour les détails habitation
-   { path: 'assurance_obseques/:id', component: DetailsAssuranceComponent },
+    // Détails assurance (le :id est un paramètre dynamique)
+    // Les anciennes routes sont conservées pour la compatibilité mais redirigent vers la nouvelle route centralisée.
+    { path: 'assurance_auto/:id', redirectTo: 'assurance-details/:id' },
+    { path: 'assurance_habitation/:id', redirectTo: 'assurance-details/:id' },
+    { path: 'assurance_obseques/:id', redirectTo: 'assurance-details/:id' },
+    // Dashboard intranet
+    { path: 'intranet/dashboard', component: DashboardComponent },
+    { path: 'intranet/gestion-auto', component: AutoManagementComponent },
+    { path: 'management', component: ManagementComponent },
+    { path: 'assurance-details/:id', component: AssurancesDetailsComponent }, // Nouvelle route pour les détails depuis la gestion
+
     // Redirections
     { path: '', redirectTo: 'accueil', pathMatch: 'full' }, // Redirige la racine vers l'accueil
-    { path: '**', redirectTo: 'accueil' } ,// Redirige les routes inconnues vers l'accueil
+    { path: '**', redirectTo: 'accueil' },// Redirige les routes inconnues vers l'accueil
 ];

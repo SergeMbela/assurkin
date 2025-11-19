@@ -8,6 +8,7 @@ import { PhoneFormatDirective } from '../../directives/phone-format.directive';
 @Component({
   selector: 'app-assurance-juridique',
   standalone: true,
+  providers: [DbConnectService],
   imports: [CommonModule, ReactiveFormsModule, RouterLink, PhoneFormatDirective],
   templateUrl: './assurance-juridique.component.html',
 })

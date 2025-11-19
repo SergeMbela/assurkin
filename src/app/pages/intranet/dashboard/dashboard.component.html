@@ -1,0 +1,49 @@
+<div class="dashboard-container">
+
+  <!-- ===== LOADING STATE ===== -->
+  <ng-container *ngIf="quotes$ | async as state">
+    
+    <div *ngIf="state.loading" class="loading-section">
+      <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5]"></div>
+    </div>
+
+    <!-- ===== ERROR STATE ===== -->
+    <div *ngIf="state.error" class="error-box">
+      <p>❌ Une erreur est survenue lors du chargement des devis.</p>
+      <small>{{ state.error?.message || state.error }}</small>
+    </div>
+
+    <!-- ===== NO DATA ===== -->
+    <div *ngIf="!state.loading && !state.error && (!state.data || state.data.length === 0)" class="empty-state">
+      <p>Aucun devis disponible pour le moment.</p>
+    </div>
+
+    <!-- ===== DATA LIST ===== -->
+    <div *ngIf="state.data && state.data.length > 0" class="quotes-list">
+      
+      <h2 class="section-title">📁 Derniers devis automobile</h2>
+
+      <div *ngFor="let quote of state.data" class="quote-card">
+
+        <div class="card-header">
+          <div>
+            <h3>Devis Auto #{{ quote.id }}</h3>
+            <span class="status status-{{ quote.statut | lowercase }}">
+              {{ quote.statut }}
+            </span>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <p><strong>Preneur :</strong> {{ quote.prenom }} {{ quote.nom }}</p>
+          <p><strong>Date demande :</strong> {{ quote.dateDemande | date:'dd/MM/yyyy à HH:mm' }}</p>
+        </div>
+
+        <div class="card-footer">
+          <button (click)="viewDetails(quote.type, quote.id)">Voir détails</button>
+        </div>
+      </div>
+    </div>
+
+  </ng-container>
+</div>

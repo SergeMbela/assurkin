@@ -116,18 +116,25 @@ export interface HabitationFormData {
 }
 
 export interface RcFormData {
-  preneur: {
-    nom: string;
-    prenom: string;
-    genre: string;
-    telephone: string;
-    email: string;
-    adresse: string;
-    codePostal: string;
-    ville: string;
-  };
-  risque: 'famille' | 'isole';
-  dateEffet: string;
+  preneur_nom: string;
+  preneur_prenom: string;
+  preneur_genre: string;
+  preneur_telephone: string;
+  preneur_email: string;
+  preneur_adresse: string;
+  preneur_code_postal: string;
+  preneur_ville: string;
+  risque: 'famille' | 'isole' | null;
+  date_effet: string | null;
+}
+
+export interface VoyageFormData {
+  nom: string;
+  prenom: string;
+  email: string;
+  gsm?: string | null;
+  message?: string | null;
+  // Les champs statut, document, et date_created sont gérés par la base de données.
 }
 
 export interface UserData {
@@ -397,6 +404,15 @@ export class DbConnectService {
   }
 
   /**
+   * Enregistre les données du formulaire d'assurance voyage.
+   * @param formData Les données du formulaire.
+   * @returns Un Observable du résultat de l'insertion.
+   */
+  saveVoyageForm(formData: VoyageFormData): Observable<SupabaseResponse<VoyageFormData>> {
+    return from(this.supabase.insertData('assu_voyage', formData)) as Observable<SupabaseResponse<VoyageFormData>>;
+  }
+
+  /**
    * Enregistre les données du formulaire d'assurance obsèques.
    * @param formData Les données du formulaire.
    * @returns Un Observable du résultat de l'insertion.
@@ -496,6 +512,28 @@ export class DbConnectService {
           postalCode: item.postal,
           city: item.name
         }));
+      })
+    );
+  }
+
+  /**
+   * Récupère la liste des villes pour un code postal exact.
+   * @param postalCode Le code postal exact à rechercher.
+   * @returns Un Observable avec la liste des noms de villes.
+   */
+  getCitiesByPostalCode(postalCode: string): Observable<string[]> {
+    return from(
+      this.supabase
+        .fetchData('code_postal_belge', 'name') // Sélectionne uniquement le nom de la ville
+        .eq('postal', postalCode) // Correspondance exacte du code postal
+    ).pipe(
+      map(response => {
+        const data = response.data as { name: string; }[] | null;
+        return (data || []).map(item => item.name);
+      }),
+      catchError(error => {
+        console.error('Erreur lors de la récupération des villes par code postal:', error);
+        return of([]);
       })
     );
   }
@@ -930,6 +968,62 @@ export class DbConnectService {
   }
 
   /**
+   * Récupère les détails complets d'une demande d'assurance voyage par son ID.
+   * @param devisId L'ID de la demande à récupérer.
+   * @returns Un Observable avec les détails de la demande.
+   */
+  getVoyageQuoteDetails(devisId: number): Observable<any> {
+    return from(
+      this.supabase.supabase
+        .from('assu_voyage')
+        .select('*')
+        .eq('id', devisId)
+        .single()
+    ).pipe(
+      map(response => {
+        if (response.error) throw response.error;
+        return response.data;
+      })
+    );
+  }
+
+  /**
+   * Détermine la catégorie d'un devis en cherchant son ID dans les tables pertinentes.
+   * @param devisId L'ID du devis.
+   * @returns Un Observable avec le nom de la catégorie ('auto', 'habitation', etc.) ou null.
+   */
+  getQuoteCategoryById(devisId: number): Observable<string | null> {
+    return defer(async () => {
+      // On vérifie chaque table de devis l'une après l'autre.
+      let { data, error } = await this.supabase.supabase.from('devis_assurance').select('id').eq('id', devisId).single();
+      if (data) return 'auto';
+
+      ({ data, error } = await this.supabase.supabase.from('habitation_quotes').select('id').eq('id', devisId).single());
+      if (data) return 'habitation';
+
+      ({ data, error } = await this.supabase.supabase.from('obseques_quotes').select('id').eq('id', devisId).single());
+      if (data) return 'obseques';
+
+      ({ data, error } = await this.supabase.supabase.from('assu_voyage').select('id').eq('id', devisId).single());
+      if (data) return 'voyage';
+
+      ({ data, error } = await this.supabase.supabase.from('rc_familiale_quotes').select('id').eq('id', devisId).single());
+      if (data) return 'rc';
+
+      // Si non trouvé dans aucune table
+      return null;
+    }).pipe(
+      catchError(err => {
+        // On ignore les erreurs de type "row not found" qui sont attendues.
+        if (err.code !== 'PGRST116') {
+          console.error("Erreur lors de la recherche de la catégorie du devis:", err);
+        }
+        return of(null);
+      })
+    );
+  }
+
+  /**
    * Crée un dossier de stockage pour un utilisateur.
    * Le nom du dossier correspond aux 8 premiers caractères de l'ID utilisateur.
    * @param userId L'ID de l'utilisateur (UUID).
@@ -956,6 +1050,186 @@ export class DbConnectService {
           console.error(`Erreur lors de la création du dossier de stockage pour ${userId}:`, response.error);
         }
         return response;
+      })
+    );
+  }
+
+  /**
+   * Récupère tous les devis d'assurance auto pour le tableau de bord de gestion.
+   * @returns Un Observable avec la liste des devis.
+   */
+  getAllAutoQuotes(): Observable<any[]> {
+    return from(
+      this.supabase.supabase
+        .from('devis_assurance')
+        .select(`
+          id,
+          created_at,
+          statut,
+          preneur:personnes!devis_assurance_preneur_id_fkey ( nom, prenom ),
+          vehicules ( type, marque, modele )
+        `)
+        .order('created_at', { ascending: false })
+    ).pipe(
+      map(response => {
+        if (response.error) {
+          console.error('Erreur lors de la récupération de tous les devis auto:', response.error);
+          throw response.error;
+        }
+        console.log('[DbConnectService] getAllAutoQuotes response:', response.data);
+        return response.data || [];
+      })
+    );
+  }
+
+  /**
+   * Récupère tous les devis d'assurance habitation pour le tableau de bord de gestion.
+   * @returns Un Observable avec la liste des devis.
+   */
+  getAllHabitationQuotes(): Observable<any[]> {
+    return from(
+      this.supabase.supabase
+        .from('habitation_quotes')
+        .select(`
+          id,
+          created_at,
+          statut,
+          batiment_adresse,
+          batiment_type_maison,
+          preneur:personnes!habitation_quotes_preneur_id_fkey ( nom, prenom )
+        `)
+        .order('created_at', { ascending: false })
+    ).pipe(
+      map(response => {
+        if (response.error) {
+          console.error('Erreur lors de la récupération de tous les devis habitation:', response.error);
+          throw response.error;
+        }
+        return response.data || [];
+      })
+    );
+  }
+
+  /**
+   * Récupère tous les devis d'assurance obsèques pour le tableau de bord de gestion.
+   * @returns Un Observable avec la liste des devis.
+   */
+  getAllObsequesQuotes(): Observable<any[]> {
+    return from(
+      this.supabase.supabase
+        .from('obseques_quotes')
+        .select(`id, created_at, statut, nombre_assures, preneur:personnes!obseques_quotes_preneur_id_fkey ( nom, prenom )`)
+        .order('created_at', { ascending: false })
+    ).pipe(
+      map(response => {
+        if (response.error) throw response.error;
+        return response.data || [];
+      })
+    );
+  }
+
+  /**
+   * Récupère toutes les demandes d'assurance voyage pour le tableau de bord de gestion.
+   * @returns Un Observable avec la liste des demandes.
+   */
+  getAllVoyageQuotes(): Observable<any[]> {
+    return from(
+      this.supabase.supabase
+        .from('assu_voyage')
+        .select(`
+          id,
+          date_created,
+          statut,
+          nom,
+          prenom,
+          message
+        `)
+        .order('date_created', { ascending: false })
+    ).pipe(
+      map(response => {
+        if (response.error) throw response.error;
+        return response.data || [];
+      })
+    );
+  }
+
+  /**
+   * Récupère les devis d'assurance auto les plus récents pour le tableau de bord.
+   * @param limit Le nombre de devis à récupérer.
+   * @returns Un Observable avec la liste des devis récents.
+   */
+  getRecentAutoQuotes(limit: number): Observable<any[]> {
+    return from(
+      this.supabase.supabase
+        .from('devis_assurance')
+        .select(`
+          id,
+          created_at,
+          statut,
+          preneur:personnes!devis_assurance_preneur_id_fkey ( nom, prenom )
+        `)
+        .order('created_at', { ascending: false })
+        .limit(limit) // Limite le nombre de résultats
+    ).pipe(
+      map(response => {
+        if (response.error) throw response.error;
+        console.log('[DbConnectService] Recent auto quotes fetched:', response.data);
+        return response.data || [];
+      })
+    );
+  }
+
+  /**
+   * Récupère les devis d'assurance habitation les plus récents pour le tableau de bord.
+   * @param limit Le nombre de devis à récupérer.
+   * @returns Un Observable avec la liste des devis récents.
+   */
+  getRecentHabitationQuotes(limit: number): Observable<any[]> {
+    return from(
+      this.supabase.supabase
+        .from('habitation_quotes')
+        .select(`
+          id,
+          created_at,
+          statut,
+          preneur:personnes!habitation_quotes_preneur_id_fkey ( nom, prenom )
+        `)
+        .order('created_at', { ascending: false })
+        .limit(limit)
+    ).pipe(
+      map(response => {
+        if (response.error) {
+          console.error('Erreur lors de la récupération des devis habitation récents:', response.error);
+          throw response.error;
+        }
+        return response.data || [];
+      })
+    );
+  }
+
+  /**
+   * Récupère les contrats d'assurance auto pour le tableau de bord de gestion.
+   * @param limit Le nombre de contrats à récupérer.
+   * @returns Un Observable avec la liste des contrats.
+   */
+  getAutoPolicies(limit: number): Observable<any[]> {
+    return from(
+      this.supabase.supabase
+        .from('polices_auto') // Assurez-vous que le nom de la table est correct
+        .select(`
+          id,
+          numero_police,
+          date_debut,
+          date_fin,
+          statut,
+          preneur:personnes ( nom, prenom )
+        `)
+        .order('created_at', { ascending: false })
+        .limit(limit)
+    ).pipe(
+      map(response => {
+        if (response.error) throw response.error;
+        return response.data || [];
       })
     );
   }

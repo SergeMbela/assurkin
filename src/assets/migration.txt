@@ -1,0 +1,404 @@
+-- ============================================================================
+-- DATABASE MIGRATIONS FOR IMPROVED DATA INTEGRITY
+-- ============================================================================
+-- Execute these migrations in order to support the refactored service
+
+-- ============================================================================
+-- MIGRATION 1: Add unique constraints to prevent duplicates
+-- ============================================================================
+
+-- Add unique constraint on email in personnes table
+-- This prevents race conditions when creating preneurs
+ALTER TABLE personnes 
+ADD CONSTRAINT personnes_email_unique UNIQUE (email);
+
+-- Optionally add unique constraint on permis_numero if it should be unique
+-- Uncomment if driver's license numbers must be unique
+-- ALTER TABLE personnes 
+-- ADD CONSTRAINT personnes_permis_unique UNIQUE (permis_numero);
+
+-- ============================================================================
+-- MIGRATION 2: Add indexes for performance
+-- ============================================================================
+
+-- Index on email for faster lookups
+CREATE INDEX IF NOT EXISTS idx_personnes_email ON personnes(email);
+
+-- Index on user_id for faster user-related queries
+CREATE INDEX IF NOT EXISTS idx_personnes_user_id ON personnes(user_id);
+
+-- Index on devis_assurance for faster contract queries
+CREATE INDEX IF NOT EXISTS idx_devis_preneur ON devis_assurance(preneur_id);
+CREATE INDEX IF NOT EXISTS idx_devis_conducteur ON devis_assurance(conducteur_id);
+CREATE INDEX IF NOT EXISTS idx_devis_vehicule ON devis_assurance(vehicule_id);
+CREATE INDEX IF NOT EXISTS idx_devis_created_at ON devis_assurance(created_at);
+
+-- Index on habitation_quotes
+CREATE INDEX IF NOT EXISTS idx_habitation_preneur ON habitation_quotes(preneur_id);
+CREATE INDEX IF NOT EXISTS idx_habitation_created_at ON habitation_quotes(created_at);
+
+-- Index on obseques_quotes
+CREATE INDEX IF NOT EXISTS idx_obseques_preneur ON obseques_quotes(preneur_id);
+CREATE INDEX IF NOT EXISTS idx_obseques_created_at ON obseques_quotes(created_at);
+
+-- Index on postal codes for autocomplete
+CREATE INDEX IF NOT EXISTS idx_postal_code ON code_postal_belge(postal);
+CREATE INDEX IF NOT EXISTS idx_postal_name ON code_postal_belge(name);
+
+-- Index on marques and modeles for autocomplete
+CREATE INDEX IF NOT EXISTS idx_marques_nom ON marques(nom);
+CREATE INDEX IF NOT EXISTS idx_modeles_marque_id ON modeles(marque_id);
+CREATE INDEX IF NOT EXISTS idx_modeles_nom ON modeles(nom);
+
+-- ============================================================================
+-- MIGRATION 3: Add missing columns if they don't exist
+-- ============================================================================
+
+-- Add statut column to devis_assurance if missing
+DO $$ 
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                   WHERE table_name='devis_assurance' AND column_name='statut') THEN
+        ALTER TABLE devis_assurance 
+        ADD COLUMN statut VARCHAR(50) DEFAULT 'Devis en attente';
+    END IF;
+END $$;
+
+-- Add statut column to habitation_quotes if missing
+DO $$ 
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                   WHERE table_name='habitation_quotes' AND column_name='statut') THEN
+        ALTER TABLE habitation_quotes 
+        ADD COLUMN statut VARCHAR(50) DEFAULT 'Devis en attente';
+    END IF;
+END $$;
+
+-- Add folder_id column to personnes if missing (for storage folder tracking)
+DO $$ 
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                   WHERE table_name='personnes' AND column_name='folder_id') THEN
+        ALTER TABLE personnes 
+        ADD COLUMN folder_id BOOLEAN DEFAULT FALSE;
+    END IF;
+END $$;
+
+-- ============================================================================
+-- MIGRATION 4: Add updated_at triggers for audit trail
+-- ============================================================================
+
+-- Create updated_at trigger function if it doesn't exist
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Add updated_at column to tables if missing and create triggers
+DO $$ 
+BEGIN
+    -- For personnes table
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                   WHERE table_name='personnes' AND column_name='updated_at') THEN
+        ALTER TABLE personnes ADD COLUMN updated_at TIMESTAMPTZ DEFAULT NOW();
+    END IF;
+    
+    DROP TRIGGER IF EXISTS update_personnes_updated_at ON personnes;
+    CREATE TRIGGER update_personnes_updated_at
+        BEFORE UPDATE ON personnes
+        FOR EACH ROW
+        EXECUTE FUNCTION update_updated_at_column();
+
+    -- For devis_assurance table
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                   WHERE table_name='devis_assurance' AND column_name='updated_at') THEN
+        ALTER TABLE devis_assurance ADD COLUMN updated_at TIMESTAMPTZ DEFAULT NOW();
+    END IF;
+    
+    DROP TRIGGER IF EXISTS update_devis_assurance_updated_at ON devis_assurance;
+    CREATE TRIGGER update_devis_assurance_updated_at
+        BEFORE UPDATE ON devis_assurance
+        FOR EACH ROW
+        EXECUTE FUNCTION update_updated_at_column();
+
+    -- For habitation_quotes table
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                   WHERE table_name='habitation_quotes' AND column_name='updated_at') THEN
+        ALTER TABLE habitation_quotes ADD COLUMN updated_at TIMESTAMPTZ DEFAULT NOW();
+    END IF;
+    
+    DROP TRIGGER IF EXISTS update_habitation_quotes_updated_at ON habitation_quotes;
+    CREATE TRIGGER update_habitation_quotes_updated_at
+        BEFORE UPDATE ON habitation_quotes
+        FOR EACH ROW
+        EXECUTE FUNCTION update_updated_at_column();
+END $$;
+
+-- ============================================================================
+-- MIGRATION 5: Add check constraints for data validation
+-- ============================================================================
+
+-- Email format validation (basic check)
+ALTER TABLE personnes 
+DROP CONSTRAINT IF EXISTS personnes_email_format;
+
+ALTER TABLE personnes 
+ADD CONSTRAINT personnes_email_format 
+CHECK (email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}$');
+
+-- Date validation: date_naissance should not be in the future
+ALTER TABLE personnes 
+DROP CONSTRAINT IF EXISTS personnes_date_naissance_check;
+
+ALTER TABLE personnes 
+ADD CONSTRAINT personnes_date_naissance_check 
+CHECK (date_naissance <= CURRENT_DATE);
+
+-- Permis date should not be before birth date
+ALTER TABLE personnes 
+DROP CONSTRAINT IF EXISTS personnes_permis_date_check;
+
+ALTER TABLE personnes 
+ADD CONSTRAINT personnes_permis_date_check 
+CHECK (permis_date IS NULL OR permis_date >= date_naissance);
+
+-- Vehicle places should be positive
+ALTER TABLE vehicules 
+DROP CONSTRAINT IF EXISTS vehicules_places_check;
+
+ALTER TABLE vehicules 
+ADD CONSTRAINT vehicules_places_check 
+CHECK (places > 0 AND places <= 50);
+
+-- Vehicle power should be positive
+ALTER TABLE vehicules 
+DROP CONSTRAINT IF EXISTS vehicules_puissance_check;
+
+ALTER TABLE vehicules 
+ADD CONSTRAINT vehicules_puissance_check 
+CHECK (puissance_kw > 0 AND puissance_kw <= 1000);
+
+-- Habitation superficie should be positive
+ALTER TABLE habitation_quotes 
+DROP CONSTRAINT IF EXISTS habitation_superficie_check;
+
+ALTER TABLE habitation_quotes 
+ADD CONSTRAINT habitation_superficie_check 
+CHECK (evaluation_superficie > 0);
+
+-- Habitation nombre de pièces should be positive
+ALTER TABLE habitation_quotes 
+DROP CONSTRAINT IF EXISTS habitation_pieces_check;
+
+ALTER TABLE habitation_quotes 
+ADD CONSTRAINT habitation_pieces_check 
+CHECK (evaluation_nombre_pieces > 0);
+
+-- ============================================================================
+-- MIGRATION 6: Create database function for atomic devis creation (OPTIONAL)
+-- ============================================================================
+-- This function ensures atomic multi-table inserts
+-- Call this from your application as an alternative to the service method
+
+CREATE OR REPLACE FUNCTION create_auto_devis(
+    p_preneur_email VARCHAR,
+    p_preneur_data JSONB,
+    p_conducteur_data JSONB,
+    p_vehicule_data JSONB,
+    p_garanties_data JSONB,
+    p_date_effet DATE,
+    p_conducteur_different BOOLEAN
+) RETURNS JSONB AS $$
+DECLARE
+    v_preneur_id INTEGER;
+    v_conducteur_id INTEGER;
+    v_vehicule_id INTEGER;
+    v_devis_id INTEGER;
+    v_result JSONB;
+BEGIN
+    -- Find or create preneur
+    SELECT id INTO v_preneur_id
+    FROM personnes
+    WHERE email = p_preneur_email;
+    
+    IF v_preneur_id IS NULL THEN
+        INSERT INTO personnes (
+            genre, nom, prenom, date_naissance, telephone, email,
+            adresse, code_postal, ville, permis_numero, permis_date
+        ) VALUES (
+            p_preneur_data->>'genre',
+            p_preneur_data->>'nom',
+            p_preneur_data->>'prenom',
+            (p_preneur_data->>'dateNaissance')::DATE,
+            p_preneur_data->>'telephone',
+            p_preneur_data->>'email',
+            p_preneur_data->>'adresse',
+            p_preneur_data->>'codePostal',
+            p_preneur_data->>'ville',
+            p_preneur_data->>'permis',
+            (p_preneur_data->>'datePermis')::DATE
+        ) RETURNING id INTO v_preneur_id;
+    END IF;
+    
+    -- Handle conducteur
+    IF p_conducteur_different THEN
+        INSERT INTO personnes (
+            genre, nom, prenom, date_naissance,
+            adresse, code_postal, ville, permis_numero, permis_date
+        ) VALUES (
+            p_conducteur_data->>'genre',
+            p_conducteur_data->>'nom',
+            p_conducteur_data->>'prenom',
+            (p_conducteur_data->>'dateNaissance')::DATE,
+            p_conducteur_data->>'adresse',
+            p_conducteur_data->>'codePostal',
+            p_conducteur_data->>'ville',
+            p_conducteur_data->>'permis',
+            (p_conducteur_data->>'datePermis')::DATE
+        ) RETURNING id INTO v_conducteur_id;
+    ELSE
+        v_conducteur_id := v_preneur_id;
+    END IF;
+    
+    -- Insert vehicule
+    INSERT INTO vehicules (
+        type, marque, modele, puissance_kw, places, date_circulation, valeur
+    ) VALUES (
+        p_vehicule_data->>'type',
+        p_vehicule_data->>'marque',
+        p_vehicule_data->>'modele',
+        (p_vehicule_data->>'puissance')::INTEGER,
+        (p_vehicule_data->>'places')::INTEGER,
+        (p_vehicule_data->>'dateCirculation')::DATE,
+        (p_vehicule_data->>'valeur')::NUMERIC
+    ) RETURNING id INTO v_vehicule_id;
+    
+    -- Create devis
+    INSERT INTO devis_assurance (
+        preneur_id, conducteur_id, vehicule_id,
+        garantie_base_rc, garantie_omnium_niveau,
+        garantie_conducteur, garantie_assistance,
+        date_effet, statut
+    ) VALUES (
+        v_preneur_id, v_conducteur_id, v_vehicule_id,
+        (p_garanties_data->>'base')::BOOLEAN,
+        p_garanties_data->>'omnium',
+        (p_garanties_data->>'conducteur')::BOOLEAN,
+        (p_garanties_data->>'assistance')::BOOLEAN,
+        p_date_effet,
+        'Devis en attente'
+    ) RETURNING id INTO v_devis_id;
+    
+    -- Return result as JSON
+    SELECT jsonb_build_object(
+        'devis_id', v_devis_id,
+        'preneur_id', v_preneur_id,
+        'conducteur_id', v_conducteur_id,
+        'vehicule_id', v_vehicule_id,
+        'success', true
+    ) INTO v_result;
+    
+    RETURN v_result;
+    
+EXCEPTION
+    WHEN OTHERS THEN
+        RETURN jsonb_build_object(
+            'success', false,
+            'error', SQLERRM
+        );
+END;
+$$ LANGUAGE plpgsql;
+
+-- ============================================================================
+-- MIGRATION 7: Add Row Level Security (RLS) policies
+-- ============================================================================
+-- Uncomment and customize these if you want to enable RLS
+
+-- Enable RLS on tables
+-- ALTER TABLE personnes ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE devis_assurance ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE habitation_quotes ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE obseques_quotes ENABLE ROW LEVEL SECURITY;
+
+-- Policy: Users can only see their own data
+-- CREATE POLICY "Users can view own data" ON personnes
+--     FOR SELECT
+--     USING (auth.uid() = user_id);
+
+-- CREATE POLICY "Users can insert own data" ON personnes
+--     FOR INSERT
+--     WITH CHECK (auth.uid() = user_id);
+
+-- CREATE POLICY "Users can update own data" ON personnes
+--     FOR UPDATE
+--     USING (auth.uid() = user_id);
+
+-- Similar policies for other tables...
+
+-- ============================================================================
+-- MIGRATION 8: Create view for easier querying (OPTIONAL)
+-- ============================================================================
+
+CREATE OR REPLACE VIEW v_devis_auto_complete AS
+SELECT 
+    d.id,
+    d.created_at,
+    d.date_effet,
+    d.statut,
+    d.garantie_base_rc,
+    d.garantie_omnium_niveau,
+    d.garantie_conducteur,
+    d.garantie_assistance,
+    p.id AS preneur_id,
+    p.nom AS preneur_nom,
+    p.prenom AS preneur_prenom,
+    p.email AS preneur_email,
+    p.user_id,
+    c.id AS conducteur_id,
+    c.nom AS conducteur_nom,
+    c.prenom AS conducteur_prenom,
+    v.id AS vehicule_id,
+    v.marque,
+    v.modele,
+    v.type AS vehicule_type,
+    v.puissance_kw,
+    v.places
+FROM devis_assurance d
+INNER JOIN personnes p ON d.preneur_id = p.id
+INNER JOIN personnes c ON d.conducteur_id = c.id
+INNER JOIN vehicules v ON d.vehicule_id = v.id;
+
+-- Grant access to the view
+-- GRANT SELECT ON v_devis_auto_complete TO authenticated;
+
+-- ============================================================================
+-- VERIFICATION QUERIES
+-- ============================================================================
+-- Run these to verify the migrations worked correctly
+
+-- Check unique constraints
+SELECT constraint_name, constraint_type 
+FROM information_schema.table_constraints 
+WHERE table_name = 'personnes' AND constraint_type = 'UNIQUE';
+
+-- Check indexes
+SELECT indexname, indexdef 
+FROM pg_indexes 
+WHERE tablename IN ('personnes', 'devis_assurance', 'habitation_quotes', 'obseques_quotes')
+ORDER BY tablename, indexname;
+
+-- Check triggers
+SELECT trigger_name, event_manipulation, event_object_table 
+FROM information_schema.triggers 
+WHERE event_object_table IN ('personnes', 'devis_assurance', 'habitation_quotes')
+ORDER BY event_object_table;
+
+-- Check columns exist
+SELECT table_name, column_name, data_type, is_nullable
+FROM information_schema.columns
+WHERE table_name IN ('personnes', 'devis_assurance', 'habitation_quotes')
+  AND column_name IN ('statut', 'updated_at', 'folder_id')
+ORDER BY table_name, column_name;

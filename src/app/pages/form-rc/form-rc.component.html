@@ -54,20 +54,20 @@ Vivez chaque jour l’esprit tranquille, en sachant que vous êtes couvert en ca
     </div>
 
     <!-- Section Preneur d'Assurance -->
-    <fieldset class="border-t pt-6" formGroupName="preneur">
+    <fieldset class="border-t pt-6">
       <legend class="text-xl font-semibold px-2 text-gray-700 mb-4">1. Informations sur le preneur</legend>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div>
           <label for="preneur-nom" class="block text-sm font-medium text-gray-700">Nom</label>
-          <input type="text" id="preneur-nom" formControlName="nom" required class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'ring-red-500': rcForm.get('preneur.nom')?.invalid && rcForm.get('preneur.nom')?.touched}">
+          <input type="text" id="preneur-nom" formControlName="preneur_nom" required class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'ring-red-500': rcForm.get('preneur_nom')?.invalid && rcForm.get('preneur_nom')?.touched}">
         </div>
         <div>
           <label for="preneur-prenom" class="block text-sm font-medium text-gray-700">Prénom</label>
-          <input type="text" id="preneur-prenom" formControlName="prenom" required class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'ring-red-500': rcForm.get('preneur.prenom')?.invalid && rcForm.get('preneur.prenom')?.touched}">
+          <input type="text" id="preneur-prenom" formControlName="preneur_prenom" required class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'ring-red-500': rcForm.get('preneur_prenom')?.invalid && rcForm.get('preneur_prenom')?.touched}">
         </div>
         <div>
           <label for="preneur-genre" class="block text-sm font-medium text-gray-700">Genre</label>
-          <select id="preneur-genre" formControlName="genre" required class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          <select id="preneur-genre" formControlName="preneur_genre" required class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
             <option>Madame</option>
             <option>Monsieur</option>
             <option>Autre</option>
@@ -75,27 +75,27 @@ Vivez chaque jour l’esprit tranquille, en sachant que vous êtes couvert en ca
         </div>
         <div>
           <label for="preneur-tel" class="block text-sm font-medium text-gray-700">Numéro de téléphone</label>
-          <input type="tel" id="preneur-tel" formControlName="telephone" required class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'ring-red-500': rcForm.get('preneur.telephone')?.invalid && rcForm.get('preneur.telephone')?.touched}">
+          <input type="tel" id="preneur-tel" formControlName="preneur_telephone" required appPhoneNumberFormat class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'ring-red-500': rcForm.get('preneur_telephone')?.invalid && rcForm.get('preneur_telephone')?.touched}">
         </div>
         <div>
           <label for="preneur-email" class="block text-sm font-medium text-gray-700">Email</label>
-          <input type="email" id="preneur-email" formControlName="email" required class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'ring-red-500': rcForm.get('preneur.email')?.invalid && rcForm.get('preneur.email')?.touched}">
+          <input type="email" id="preneur-email" formControlName="preneur_email" required class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'ring-red-500': rcForm.get('preneur_email')?.invalid && rcForm.get('preneur_email')?.touched}">
         </div>
         <div class="lg:col-span-2">
           <label for="preneur-adresse" class="block text-sm font-medium text-gray-700">Rue et numéro</label>
-          <input type="text" id="preneur-adresse" formControlName="adresse" required class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'ring-red-500': rcForm.get('preneur.adresse')?.invalid && rcForm.get('preneur.adresse')?.touched}">
+          <input type="text" id="preneur-adresse" formControlName="preneur_adresse" required class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'ring-red-500': rcForm.get('preneur_adresse')?.invalid && rcForm.get('preneur_adresse')?.touched}">
         </div>
         <div>
           <div class="relative">
             <label for="preneur-cp" class="block text-sm font-medium text-gray-700">Code Postal</label>
-            <input type="text" id="preneur-cp" formControlName="codePostal" required autocomplete="off" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'ring-red-500': rcForm.get('preneur.codePostal')?.invalid && rcForm.get('preneur.codePostal')?.touched}">
+            <input type="text" id="preneur-cp" formControlName="preneur_code_postal" required autocomplete="off" (input)="onPostalCodeInput($event)" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'ring-red-500': rcForm.get('preneur_code_postal')?.invalid && rcForm.get('preneur_code_postal')?.touched}">
             <div *ngIf="isLoading" class="absolute inset-y-0 right-0 flex items-center pr-3 top-6">
               <svg class="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
             </div>
-            <ul *ngIf="filteredPostalCodes.length > 0" class="absolute z-10 w-full bg-white border border-gray-300 rounded-md mt-1 max-h-40 overflow-y-auto">
+            <ul *ngIf="filteredPostalCodes && filteredPostalCodes.length > 0" class="absolute z-10 w-full bg-white border border-gray-300 rounded-md mt-1 max-h-40 overflow-y-auto">
               <li *ngFor="let pc of filteredPostalCodes" (click)="selectPostalCode(pc)" class="px-3 py-2 cursor-pointer hover:bg-gray-100">
                 {{ pc.postalCode }} - {{ pc.city }}
               </li>
@@ -104,7 +104,7 @@ Vivez chaque jour l’esprit tranquille, en sachant que vous êtes couvert en ca
         </div>
         <div>
           <label for="ville" class="block text-sm font-medium text-gray-700">Ville</label>
-          <select id="ville" formControlName="ville" required [disabled]="cities.length === 0" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm disabled:bg-gray-100">
+          <select id="ville" formControlName="preneur_ville" required [disabled]="cities.length === 0" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm disabled:bg-gray-100">
             <option *ngIf="cities.length === 0" value="">Sélectionner une ville</option>
             <option *ngFor="let city of cities" [value]="city">{{ city }}</option>
           </select>
@@ -132,7 +132,7 @@ Vivez chaque jour l’esprit tranquille, en sachant que vous êtes couvert en ca
       <legend class="text-xl font-semibold px-2 text-gray-700 mb-4">3. Date d'effet</legend>
       <div>
         <label for="date-effet" class="block text-sm font-medium text-gray-700">Date d'effet souhaitée</label>
-        <input type="date" id="date-effet" formControlName="dateEffet" [min]="minDate" required class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm md:w-1/2 lg:w-1/3">
+        <input type="date" id="date-effet" formControlName="date_effet" [min]="minDate" required class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm md:w-1/2 lg:w-1/3">
       </div>
     </fieldset>
 

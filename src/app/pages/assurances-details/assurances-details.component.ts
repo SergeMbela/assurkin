@@ -2,17 +2,17 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Observable, of } from 'rxjs';
-import { switchMap, catchError, tap } from 'rxjs/operators';
+import { catchError, switchMap } from 'rxjs/operators';
 import { DbConnectService } from '../../services/db-connect.service';
 
 @Component({
-  selector: 'app-details-assurance',
+  selector: 'app-assurances-details',
   standalone: true,
   imports: [CommonModule, RouterLink],
-  templateUrl: './details-assurance.component.html',
-  styleUrls: ['./details-assurance.component.css']
+  templateUrl: './assurances-details.component.html',
+  styleUrl: './assurances-details.component.css'
 })
-export class DetailsAssuranceComponent implements OnInit {
+export class AssurancesDetailsComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private dbConnectService = inject(DbConnectService);
@@ -23,29 +23,30 @@ export class DetailsAssuranceComponent implements OnInit {
   ngOnInit(): void {
     const devisId = Number(this.route.snapshot.paramMap.get('id'));
     const navigationState = this.router.getCurrentNavigation()?.extras.state;
-    let devisType = navigationState ? navigationState['type'] : null;
-
-    // Si le type n'est pas dans le state (ex: navigation depuis /mydata),
-    // on essaie de le déduire de l'URL.
-    if (!devisType) {
-      const url = this.router.url;
-      if (url.includes('/assurance_auto/')) devisType = 'auto';
-      else if (url.includes('/assurance_habitation/')) devisType = 'habitation';
-      else if (url.includes('/assurance_obseques/')) devisType = 'obseques'; 
-      // La logique pour /management/ est retirée car le type est TOUJOURS
-      // fourni par le 'state' de la navigation depuis cette page.
-      // Cette section est une solution de secours pour les autres pages comme /mydata.
-    }
-
-    if (isNaN(devisId) || !devisType) {
+    const devisType = navigationState ? navigationState['type'] : null;
+    
+    if (isNaN(devisId)) {
+      console.error("ID de devis invalide.");
       this.loadingError = true;
       this.devisDetails$ = of(null);
       return;
     }
 
-    this.devisDetails$ = this.getDetailsObservable(devisType, devisId).pipe(
+    // On crée un observable pour le type de devis.
+    const type$ = devisType 
+      ? of(devisType) // Si le type est dans le state, on l'utilise directement.
+      : this.dbConnectService.getQuoteCategoryById(devisId); // Sinon, on le cherche en base de données.
+
+    this.devisDetails$ = type$.pipe(
+      switchMap(type => {
+        if (!type) {
+          // Si aucun type n'est trouvé, on déclenche une erreur.
+          throw new Error("Type de devis introuvable pour l'ID " + devisId);
+        }
+        return this.getDetailsObservable(type, devisId);
+      }),
       catchError(error => {
-        console.error('Erreur lors du chargement des détails du devis:', error);
+        console.error("ID de devis invalide ou type de devis manquant dans la navigation.", error);
         this.loadingError = true;
         return of(null);
       })
@@ -58,7 +59,6 @@ export class DetailsAssuranceComponent implements OnInit {
       case 'habitation': return this.dbConnectService.getHabitationQuoteDetails(id);
       case 'obseques': return this.dbConnectService.getObsequesQuoteDetails(id);
       case 'voyage': return this.dbConnectService.getVoyageQuoteDetails(id);
-      // Ajoutez d'autres cas ici pour les futurs types de devis
       default: return of(null);
     }
   }

@@ -11,6 +11,7 @@ import { PhoneFormatDirective } from '../../directives/phone-format.directive';
   selector: 'app-form-habitation',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterLink, PhoneFormatDirective],
+  providers: [DbConnectService],
   templateUrl: './form-habitation.component.html',
 })
 export class FormHabitationComponent implements OnInit, OnDestroy {
