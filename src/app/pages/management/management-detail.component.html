@@ -6,10 +6,10 @@
   <div *ngIf="quoteDetails$ | async as details; else loading">
     <h1 class="text-2xl font-bold mb-4">Détails de l'offre #{{ quoteId }} - {{ quoteType | titlecase }}</h1>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 gap-6">
       <!-- Informations du devis -->
       <div class="bg-white shadow-md rounded-lg p-6">
-        <form [formGroup]="quoteUpdateForm" (ngSubmit)="updateQuoteDetails()" class="space-y-6">
+        <form [formGroup]="quoteUpdateForm" (ngSubmit)="updateQuoteDetails()" class="space-y-6 max-w-4xl mx-auto">
           <h2 class="text-xl font-semibold border-b pb-2">Mettre à jour le devis</h2>
           
           <!-- Section Preneur d'assurance -->
@@ -18,50 +18,50 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
               <div>
                 <label for="firstName" class="block text-sm font-medium text-gray-700">Prénom</label>
-                <input type="text" id="firstName" formControlName="firstName" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <input type="text" id="firstName" formControlName="firstName" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
               </div>
               <div>
                 <label for="lastName" class="block text-sm font-medium text-gray-700">Nom</label>
-                <input type="text" id="lastName" formControlName="lastName" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <input type="text" id="lastName" formControlName="lastName" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
               </div>
               <div>
                 <label for="dateNaissance" class="block text-sm font-medium text-gray-700">Date de naissance</label>
-                <input type="date" id="dateNaissance" formControlName="dateNaissance" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <input type="date" id="dateNaissance" formControlName="dateNaissance" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
               </div>
               <div class="sm:col-span-2">
                 <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-                <input type="email" id="email" formControlName="email" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <input type="email" id="email" formControlName="email" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
               </div>
               <div class="sm:col-span-2">
                 <label for="phone" class="block text-sm font-medium text-gray-700">Téléphone</label>
-                <input type="tel" id="phone" formControlName="phone" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <input type="tel" id="phone" formControlName="phone" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
               </div>
               <div class="sm:col-span-2">
                 <label for="address" class="block text-sm font-medium text-gray-700">Adresse</label>
-                <input type="text" id="address" formControlName="address" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <input type="text" id="address" formControlName="address" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
               </div>
               <div>
                 <label for="postalCode" class="block text-sm font-medium text-gray-700">Code Postal</label>
-                <input type="text" id="postalCode" formControlName="postalCode" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <input type="text" id="postalCode" formControlName="postalCode" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
               </div>
               <div>
                 <label for="city" class="block text-sm font-medium text-gray-700">Ville</label>
-                <input type="text" id="city" formControlName="city" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <input type="text" id="city" formControlName="city" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
               </div>
               <!-- Champs spécifiques à l'assurance auto -->
               <ng-container *ngIf="quoteType === 'auto'">
                 <div>
                   <label for="driverLicenseNumber" class="block text-sm font-medium text-gray-700">N° de permis</label>
-                  <input type="text" id="driverLicenseNumber" formControlName="driverLicenseNumber" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                  <input type="text" id="driverLicenseNumber" formControlName="driverLicenseNumber" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                 </div>
                 <div>
                   <label for="driverLicenseDate" class="block text-sm font-medium text-gray-700">Date d'obtention permis</label>
-                  <input type="date" id="driverLicenseDate" formControlName="driverLicenseDate" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                  <input type="date" id="driverLicenseDate" formControlName="driverLicenseDate" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                 </div>
               </ng-container>
               <div class="sm:col-span-2">
                 <label for="nationalRegistryNumber" class="block text-sm font-medium text-gray-700">Numéro national belge</label>
-                <input type="text" id="nationalRegistryNumber" formControlName="nationalRegistryNumber" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" appNationalNumberFormat placeholder="XX.XX.XX-XXX.XX" maxlength="15">
+                <input type="text" id="nationalRegistryNumber" formControlName="nationalRegistryNumber" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" appNationalNumberFormat placeholder="XX.XX.XX-XXX.XX" maxlength="15">
                 <div *ngIf="quoteUpdateForm.get('Preneur d\'assurance.nationalRegistryNumber')?.invalid && quoteUpdateForm.get('Preneur d\'assurance.nationalRegistryNumber')?.touched" class="text-red-600 text-sm mt-1">
                   <div *ngIf="quoteUpdateForm.get('Preneur d\'assurance.nationalRegistryNumber')?.hasError('invalidFormat')">
                     Le format doit être XX.XX.XX-XXX.XX.
@@ -73,15 +73,15 @@
               </div>
               <div>
                 <label for="idCardNumber" class="block text-sm font-medium text-gray-700">N° carte d'identité</label>
-                <input type="text" id="idCardNumber" formControlName="idCardNumber" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" appIdCardFormat placeholder="XXX-XXXXXXX-XX" maxlength="15">
+                <input type="text" id="idCardNumber" formControlName="idCardNumber" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" appIdCardFormat placeholder="XXX-XXXXXXX-XX" maxlength="15">
               </div>
               <div>
                 <label for="idCardValidityDate" class="block text-sm font-medium text-gray-700">Date de validité CI</label>
-                <input type="date" id="idCardValidityDate" formControlName="idCardValidityDate" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <input type="date" id="idCardValidityDate" formControlName="idCardValidityDate" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
               </div>
               <div>
                 <label for="nationality" class="block text-sm font-medium text-gray-700">Nationalité</label>
-                <select id="nationality" formControlName="nationality" class="form-select mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <select id="nationality" formControlName="nationality" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                   <option [ngValue]="null" disabled>Sélectionnez une nationalité</option>
                   <option *ngFor="let nat of (nationalities$ | async)" [value]="nat.nationality">
                     {{ nat.nationality }}
@@ -90,7 +90,7 @@
               </div>
               <div>
                 <label for="maritalStatus" class="block text-sm font-medium text-gray-700">Statut marital</label>
-                <select id="maritalStatus" formControlName="maritalStatus" class="form-select mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <select id="maritalStatus" formControlName="maritalStatus" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                   <option [ngValue]="null" disabled>Sélectionnez un statut</option>
                   <option value="Célibataire">Célibataire</option>
                   <option value="Marié(e)">Marié(e)</option>
@@ -108,35 +108,35 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
               <div>
                 <label for="firstName" class="block text-sm font-medium text-gray-700">Prénom</label>
-                <input type="text" id="firstName" formControlName="firstName" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <input type="text" id="firstName" formControlName="firstName" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
               </div>
               <div>
                 <label for="lastName" class="block text-sm font-medium text-gray-700">Nom</label>
-                <input type="text" id="lastName" formControlName="lastName" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <input type="text" id="lastName" formControlName="lastName" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
               </div>
               <div>
                 <label for="dateNaissance" class="block text-sm font-medium text-gray-700">Date de naissance</label>
-                <input type="date" id="dateNaissance" formControlName="dateNaissance" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <input type="date" id="dateNaissance" formControlName="dateNaissance" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
               </div>
               <div class="sm:col-span-2">
                 <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-                <input type="email" id="email" formControlName="email" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <input type="email" id="email" formControlName="email" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
               </div>
               <div class="sm:col-span-2">
                 <label for="phone" class="block text-sm font-medium text-gray-700">Téléphone</label>
-                <input type="tel" id="phone" formControlName="phone" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <input type="tel" id="phone" formControlName="phone" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
               </div>
               <div class="sm:col-span-2">
                 <label for="address" class="block text-sm font-medium text-gray-700">Adresse</label>
-                <input type="text" id="address" formControlName="address" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <input type="text" id="address" formControlName="address" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
               </div>
               <div>
                 <label for="postalCode" class="block text-sm font-medium text-gray-700">Code Postal</label>
-                <input type="text" id="postalCode" formControlName="postalCode" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <input type="text" id="postalCode" formControlName="postalCode" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
               </div>
               <div>
                 <label for="city" class="block text-sm font-medium text-gray-700">Ville</label>
-                <input type="text" id="city" formControlName="city" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <input type="text" id="city" formControlName="city" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
               </div>
             </div>
           </div>
@@ -147,47 +147,47 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
               <div>
                 <label for="main-driver-firstName" class="block text-sm font-medium text-gray-700">Prénom</label>
-                <input type="text" id="main-driver-firstName" formControlName="firstName" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <input type="text" id="main-driver-firstName" formControlName="firstName" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
               </div>
               <div>
                 <label for="main-driver-lastName" class="block text-sm font-medium text-gray-700">Nom</label>
-                <input type="text" id="main-driver-lastName" formControlName="lastName" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <input type="text" id="main-driver-lastName" formControlName="lastName" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
               </div>
               <div>
                 <label for="main-driver-dateNaissance" class="block text-sm font-medium text-gray-700">Date de naissance</label>
-                <input type="date" id="main-driver-dateNaissance" formControlName="dateNaissance" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <input type="date" id="main-driver-dateNaissance" formControlName="dateNaissance" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
               </div>
               <div class="sm:col-span-2">
                 <label for="main-driver-email" class="block text-sm font-medium text-gray-700">Email</label>
-                <input type="email" id="main-driver-email" formControlName="email" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <input type="email" id="main-driver-email" formControlName="email" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
               </div>
               <div class="sm:col-span-2">
                 <label for="main-driver-phone" class="block text-sm font-medium text-gray-700">Téléphone</label>
-                <input type="tel" id="main-driver-phone" formControlName="phone" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <input type="tel" id="main-driver-phone" formControlName="phone" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
               </div>
               <div class="sm:col-span-2">
                 <label for="main-driver-address" class="block text-sm font-medium text-gray-700">Adresse</label>
-                <input type="text" id="main-driver-address" formControlName="address" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <input type="text" id="main-driver-address" formControlName="address" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
               </div>
               <div>
                 <label for="main-driver-postalCode" class="block text-sm font-medium text-gray-700">Code Postal</label>
-                <input type="text" id="main-driver-postalCode" formControlName="postalCode" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <input type="text" id="main-driver-postalCode" formControlName="postalCode" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
               </div>
               <div>
                 <label for="main-driver-city" class="block text-sm font-medium text-gray-700">Ville</label>
-                <input type="text" id="main-driver-city" formControlName="city" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <input type="text" id="main-driver-city" formControlName="city" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
               </div>
               <div>
                 <label for="main-driver-driverLicenseNumber" class="block text-sm font-medium text-gray-700">N° de permis</label>
-                <input type="text" id="main-driver-driverLicenseNumber" formControlName="driverLicenseNumber" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <input type="text" id="main-driver-driverLicenseNumber" formControlName="driverLicenseNumber" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
               </div>
               <div>
                 <label for="main-driver-driverLicenseDate" class="block text-sm font-medium text-gray-700">Date d'obtention permis</label>
-                <input type="date" id="main-driver-driverLicenseDate" formControlName="driverLicenseDate" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <input type="date" id="main-driver-driverLicenseDate" formControlName="driverLicenseDate" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
               </div>
               <div class="sm:col-span-2">
                 <label for="main-driver-nationalRegistryNumber" class="block text-sm font-medium text-gray-700">Numéro national belge</label>
-                <input type="text" id="main-driver-nationalRegistryNumber" formControlName="nationalRegistryNumber" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" appNationalNumberFormat placeholder="XX.XX.XX-XXX.XX" maxlength="15">
+                <input type="text" id="main-driver-nationalRegistryNumber" formControlName="nationalRegistryNumber" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" appNationalNumberFormat placeholder="XX.XX.XX-XXX.XX" maxlength="15">
                 <div *ngIf="quoteUpdateForm.get('Conducteur principal.nationalRegistryNumber')?.invalid && quoteUpdateForm.get('Conducteur principal.nationalRegistryNumber')?.touched" class="text-red-600 text-sm mt-1">
                   <div *ngIf="quoteUpdateForm.get('Conducteur principal.nationalRegistryNumber')?.hasError('invalidFormat')">
                     Le format doit être XX.XX.XX-XXX.XX.
@@ -199,7 +199,7 @@
               </div>
               <div>
                 <label for="main-driver-nationality" class="block text-sm font-medium text-gray-700">Nationalité</label>
-                <select id="main-driver-nationality" formControlName="nationality" class="form-select mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <select id="main-driver-nationality" formControlName="nationality" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                   <option [ngValue]="null" disabled>Sélectionnez une nationalité</option>
                   <option *ngFor="let nat of (nationalities$ | async)" [value]="nat.nationality">
                     {{ nat.nationality }}
@@ -208,15 +208,15 @@
               </div>
               <div>
                 <label for="main-driver-idCardNumber" class="block text-sm font-medium text-gray-700">N° carte d'identité</label>
-                <input type="text" id="main-driver-idCardNumber" formControlName="idCardNumber" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" appIdCardFormat placeholder="XXX-XXXXXXX-XX" maxlength="15">
+                <input type="text" id="main-driver-idCardNumber" formControlName="idCardNumber" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" appIdCardFormat placeholder="XXX-XXXXXXX-XX" maxlength="15">
               </div>
               <div>
                 <label for="main-driver-idCardValidityDate" class="block text-sm font-medium text-gray-700">Date de validité CI</label>
-                <input type="date" id="main-driver-idCardValidityDate" formControlName="idCardValidityDate" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <input type="date" id="main-driver-idCardValidityDate" formControlName="idCardValidityDate" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
               </div>
               <div>
                 <label for="main-driver-maritalStatus" class="block text-sm font-medium text-gray-700">Statut marital</label>
-                <select id="main-driver-maritalStatus" formControlName="maritalStatus" class="form-select mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <select id="main-driver-maritalStatus" formControlName="maritalStatus" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                   <option [ngValue]="null" disabled>Sélectionnez un statut</option>
                   <option value="Célibataire">Célibataire</option>
                   <option value="Marié(e)">Marié(e)</option>
@@ -234,7 +234,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
               <div class="relative">
                 <label for="make" class="block text-sm font-medium text-gray-700">Marque</label>
-                <input type="text" id="make" [formControl]="marqueCtrl" placeholder="Rechercher une marque..." class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <input type="text" id="make" [formControl]="marqueCtrl" placeholder="Rechercher une marque..." class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                 <div *ngIf="isMarqueLoading" class="absolute inset-y-0 right-0 flex items-center pr-3 top-6">
                   <svg class="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                 </div>
@@ -247,7 +247,7 @@
               <div>
                 <div class="relative">
                   <label for="model" class="block text-sm font-medium text-gray-700">Modèle</label>
-                  <select id="model" formControlName="model" class="form-select mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm disabled:bg-gray-100" [disabled]="!selectedMarqueId || isModeleLoading">
+                  <select id="model" formControlName="model" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm disabled:bg-gray-100" [disabled]="!selectedMarqueId || isModeleLoading">
                     <option value="" disabled>Sélectionnez un modèle</option>
                     <option *ngIf="!isModeleLoading && modelesForSelectedMarque.length === 0 && selectedMarqueId" [disabled]="true">
                       Aucun modèle trouvé
@@ -261,7 +261,7 @@
               </div>
               <div>
                 <label for="year" class="block text-sm font-medium text-gray-700">Année</label>
-                <select id="year" formControlName="year" class="form-select mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <select id="year" formControlName="year" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                   <option [ngValue]="null" disabled>Sélectionnez une année</option>
                   <option *ngFor="let year of vehicleYears" [value]="year">
                     {{ year }}
@@ -270,7 +270,7 @@
               </div>
               <div>
                 <label for="licensePlate" class="block text-sm font-medium text-gray-700">Plaque</label>
-                <input type="text" id="licensePlate" formControlName="licensePlate" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" appLicensePlateFormat placeholder="1 ABC 123" maxlength="9">
+                <input type="text" id="licensePlate" formControlName="licensePlate" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" appLicensePlateFormat placeholder="1 ABC 123" maxlength="9">
               </div>
             </div>
           </div>
@@ -281,11 +281,11 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
               <div class="sm:col-span-2">
                 <label for="effectiveDate" class="block text-sm font-medium text-gray-700">Date d'effet</label>
-                <input type="date" id="effectiveDate" formControlName="effectiveDate" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <input type="date" id="effectiveDate" formControlName="effectiveDate" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
               </div>
               <div class="sm:col-span-2">
                 <label for="omniumLevel" class="block text-sm font-medium text-gray-700">Niveau d'omnium</label>
-                <select id="omniumLevel" formControlName="omniumLevel" class="form-select mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <select id="omniumLevel" formControlName="omniumLevel" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                   <option value="">Aucune</option>
                   <option value="mini">Mini Omnium</option>
                   <option value="complete">Omnium Complète</option>
@@ -312,19 +312,19 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
               <div class="sm:col-span-2">
                 <label for="batiment_adresse" class="block text-sm font-medium text-gray-700">Adresse du bâtiment</label>
-                <input type="text" id="batiment_adresse" formControlName="adresse" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <input type="text" id="batiment_adresse" formControlName="adresse" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
               </div>
               <div>
                 <label for="batiment_code_postal" class="block text-sm font-medium text-gray-700">Code Postal</label>
-                <input type="text" id="batiment_code_postal" formControlName="codePostal" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <input type="text" id="batiment_code_postal" formControlName="codePostal" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
               </div>
               <div>
                 <label for="batiment_ville" class="block text-sm font-medium text-gray-700">Ville</label>
-                <input type="text" id="batiment_ville" formControlName="ville" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <input type="text" id="batiment_ville" formControlName="ville" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
               </div>
               <div class="sm:col-span-2">
                 <label for="batiment_type_maison" class="block text-sm font-medium text-gray-700">Type de maison</label>
-                <input type="text" id="batiment_type_maison" formControlName="typeMaison" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <input type="text" id="batiment_type_maison" formControlName="typeMaison" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
               </div>
             </div>
           </div>
@@ -335,15 +335,15 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
               <div>
                 <label for="evaluation_superficie" class="block text-sm font-medium text-gray-700">Superficie (m²)</label>
-                <input type="number" id="evaluation_superficie" formControlName="superficie" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <input type="number" id="evaluation_superficie" formControlName="superficie" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
               </div>
               <div>
                 <label for="evaluation_nombre_pieces" class="block text-sm font-medium text-gray-700">Nombre de pièces</label>
-                <input type="number" id="evaluation_nombre_pieces" formControlName="nombrePieces" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <input type="number" id="evaluation_nombre_pieces" formControlName="nombrePieces" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
               </div>
               <div>
                 <label for="evaluation_loyer_mensuel" class="block text-sm font-medium text-gray-700">Loyer mensuel (€)</label>
-                <input type="number" id="evaluation_loyer_mensuel" formControlName="loyerMensuel" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <input type="number" id="evaluation_loyer_mensuel" formControlName="loyerMensuel" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
               </div>
             </div>
           </div>
@@ -386,19 +386,19 @@
                   <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                     <div>
                       <label [for]="'assure-prenom-' + i" class="block text-sm font-medium text-gray-700">Prénom</label>
-                      <input type="text" [id]="'assure-prenom-' + i" formControlName="prenom" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                      <input type="text" [id]="'assure-prenom-' + i" formControlName="prenom" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                     </div>
                     <div>
                       <label [for]="'assure-nom-' + i" class="block text-sm font-medium text-gray-700">Nom</label>
-                      <input type="text" [id]="'assure-nom-' + i" formControlName="nom" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                      <input type="text" [id]="'assure-nom-' + i" formControlName="nom" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                     </div>
                     <div>
                       <label [for]="'assure-dateNaissance-' + i" class="block text-sm font-medium text-gray-700">Date de naissance</label>
-                      <input type="date" [id]="'assure-dateNaissance-' + i" formControlName="dateNaissance" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                      <input type="date" [id]="'assure-dateNaissance-' + i" formControlName="dateNaissance" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                     </div>
                     <div>
                       <label [for]="'assure-capital-' + i" class="block text-sm font-medium text-gray-700">Capital assuré (€)</label>
-                      <input type="number" [id]="'assure-capital-' + i" formControlName="capital" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                      <input type="number" [id]="'assure-capital-' + i" formControlName="capital" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                     </div>
                   </div>
                 </div>
@@ -414,7 +414,7 @@
             <h3 class="text-lg font-semibold text-gray-800 bg-gray-100 -mx-6 px-6 py-2 mb-4 border-y">Détails de la demande de voyage</h3>
             <div class="space-y-4">
               <label for="voyage-description" class="block text-sm font-medium text-gray-700">Message / Description</label>
-              <textarea id="voyage-description" formControlName="description" rows="4" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
+              <textarea id="voyage-description" formControlName="description" rows="4" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm"></textarea>
             </div>
           </div>
 
@@ -427,55 +427,6 @@
         </form>
       </div>
 
-      <!-- Création du contrat -->
-      <div class="bg-white shadow-md rounded-lg p-6">
-        <form [formGroup]="contractForm" (ngSubmit)="saveContract()" class="space-y-6">
-          <h2 class="text-xl font-semibold border-b pb-2">Créer un contrat</h2>
-          <div class="space-y-4">
-            <label for="date_contrat" class="block text-sm font-medium text-gray-700">Date du contrat</label>
-            <input type="date" id="date_contrat" formControlName="date_contrat" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-          </div>
-
-          <div class="space-y-4">
-            <label for="periodicite" class="block text-sm font-medium text-gray-700">Périodicité</label>
-            <select id="periodicite" formControlName="periodicite" class="form-select mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-              <option value="mensuel">Mensuel</option>
-              <option value="trimestriel">Trimestriel</option>
-              <option value="annuel">Annuel</option>
-            </select>
-          </div>
-
-          <div class="space-y-4">
-            <label for="compagnie" class="block text-sm font-medium text-gray-700">Compagnie</label>
-            <select id="compagnie" formControlName="compagnie_id" class="form-select mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-              <option [ngValue]="null" disabled>Sélectionnez une compagnie</option>
-              <option *ngFor="let compagnie of (allCompagnies$ | async)" [value]="compagnie.id">
-                {{ compagnie.nom }}
-              </option>
-            </select>
-          </div>
-
-          <!-- Champ pour téléverser des fichiers (uniquement pour l'assurance auto) -->
-          <div *ngIf="quoteType === 'auto'" class="space-y-4">
-            <label for="fichiers_contrat" class="block text-sm font-medium text-gray-700">Téléverser des fichiers (contrat, etc.)</label>
-            <input type="file" id="fichiers_contrat"
-                   (change)="onFileSelected($event)"
-                   multiple
-                   class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"/>
-          </div>
-
-          <div class="flex items-center pt-2">
-            <input id="rappel" type="checkbox" formControlName="rappel" class="form-checkbox h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-            <label for="rappel" class="ml-2 block text-sm text-gray-900">Rappel</label>
-          </div>
-
-          <div>
-            <button type="submit" [disabled]="contractForm.invalid" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-gray-400">
-              Enregistrer le contrat
-            </button>
-          </div>
-        </form>
-      </div>
     </div>
   </div>
 

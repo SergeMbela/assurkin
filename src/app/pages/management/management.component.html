@@ -19,8 +19,7 @@
   <div class="mb-6">
     <input type="text"
            [formControl]="searchControl"
-           placeholder="Rechercher par nom, ID, description..."
-           class="w-full max-w-md px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+           placeholder="Rechercher par nom, ID, description..."           class="w-full max-w-md mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
   </div>
 
   <ng-container *ngIf="vm$ | async as vm">
@@ -47,7 +46,6 @@
               <th scope="col" class="px-6 py-3">Statut</th>
               <th scope="col" class="px-6 py-3">Gérer</th>
               <th scope="col" class="px-6 py-3">Détails</th>
-              <th scope="col" class="px-6 py-3">Créer Contrat</th>
             </tr>
           </thead>
           <tbody>
@@ -73,9 +71,6 @@
               </td>
               <td class="px-6 py-4">
                 <button (click)="viewDetails(quote.id)" class="text-indigo-600 hover:text-indigo-800 font-medium">Voir détails</button>
-              </td>
-              <td class="px-6 py-4">
-                <a [routerLink]="['/management', (activeTab$ | async), quote.id]" class="text-green-600 hover:text-green-800 font-medium">Créer</a>
               </td>
             </tr>
           </tbody>
