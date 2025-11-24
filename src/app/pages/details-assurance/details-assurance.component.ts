@@ -56,7 +56,7 @@ export class DetailsAssuranceComponent implements OnInit {
     switch (type) {
       case 'auto': return this.dbConnectService.getDevisDetails(id);
       case 'habitation': return this.dbConnectService.getHabitationQuoteDetails(id);
-      case 'obseques': return this.dbConnectService.getObsequesQuoteDetails(id);
+      case 'obseques': return this.dbConnectService.getObsequesQuoteDetails(id); // This was missing
       case 'voyage': return this.dbConnectService.getVoyageQuoteDetails(id);
       // Ajoutez d'autres cas ici pour les futurs types de devis
       default: return of(null);

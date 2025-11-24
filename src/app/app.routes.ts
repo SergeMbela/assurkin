@@ -23,6 +23,7 @@ import { DashboardComponent } from './pages/intranet/dashboard/dashboard.compone
 import { AutoManagementComponent } from './pages/intranet/dashboard/auto-management.component';
 import { ManagementComponent } from './pages/management/management.component';
 import { AssurancesDetailsComponent } from './pages/assurances-details/assurances-details.component';
+import { ManagementDetailComponent } from './pages/management/management-detail.component';
 
 export const routes: Routes = [
 
@@ -54,7 +55,9 @@ export const routes: Routes = [
     { path: 'intranet/dashboard', component: DashboardComponent },
     { path: 'intranet/gestion-auto', component: AutoManagementComponent },
     { path: 'management', component: ManagementComponent },
-    { path: 'assurance-details/:id', component: AssurancesDetailsComponent }, // Nouvelle route pour les détails depuis la gestion
+    { path: 'management/:type/:id', component: ManagementDetailComponent }, // Route pour l'édition détaillée
+    // La navigation vers les détails se fait par programmation depuis management.component.ts
+    { path: 'assurance-details/:type/:id', component: AssurancesDetailsComponent }, // Nouvelle route pour les détails depuis la gestion
 
     // Redirections
     { path: '', redirectTo: 'accueil', pathMatch: 'full' }, // Redirige la racine vers l'accueil

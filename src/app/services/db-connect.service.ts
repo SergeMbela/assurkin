@@ -1,9 +1,31 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Type } from '@angular/core';
 import { from, Observable, defer, of } from 'rxjs';
 import { map, switchMap, catchError } from 'rxjs/operators';
 import { PostgrestError, User } from '@supabase/supabase-js';
 import { SupabaseService } from './supabase.service';
 import { DevisAuto } from '../pages/mydata/mydata.component';
+
+export interface AutoQuoteUpdatePayload {
+  preneur: { [key: string]: any };
+  conducteur?: { [key: string]: any };
+  vehicule: { [key: string]: any };
+  devis: {
+    garantie_base_rc: boolean;
+    garantie_omnium_niveau: string;
+    garantie_conducteur: boolean;
+    garantie_assistance: boolean;
+    date_effet: string;
+  };
+}
+
+export interface ObsequesQuoteUpdatePayload {
+  preneur: { [key: string]: any };
+  devis: {
+    preneur_est_assure: boolean;
+    assures: any[];
+    nombre_assures: number;
+  };
+}
 
 export interface AutoFormData {
   preneur: {
@@ -61,6 +83,11 @@ export interface Marque {
 
 export interface Modele {
   marque_id: number;
+  nom: string;
+}
+
+export interface Assureur {
+  id: number;
   nom: string;
 }
 
@@ -133,8 +160,13 @@ export interface VoyageFormData {
   prenom: string;
   email: string;
   gsm?: string | null;
-  message?: string | null;
+  description?: string | null;
   // Les champs statut, document, et date_created sont gérés par la base de données.
+}
+
+export interface Nationality {
+  id: number;
+  nationality: string;
 }
 
 export interface UserData {
@@ -208,112 +240,86 @@ export class DbConnectService {
     // Use defer to wrap the async logic in an Observable
     return defer(async () => {
       // -----------------------------------------------------------------
-      // ÉTAPE 1: Chercher ou créer le Preneur
+      // ÉTAPE 1: Chercher ou créer le Preneur.
       // -----------------------------------------------------------------
-      let preneur;
+      const preneur = await this.findOrCreatePerson({
+        ...formData.preneur,
+        code_postal: formData.preneur.codePostal,
+        permis_numero: formData.preneur.permis,
+        permis_date: formData.preneur.datePermis
+      });
 
-      // On cherche d'abord si un utilisateur avec cet email existe
-      const { data: existingPreneur, error: selectError } = await this.supabase.supabase
-        .from('personnes')
-        .select('*')
-        .eq('email', formData.preneur.email)
-        .single();
+      // -----------------------------------------------------------------
+      // ÉTAPE 2: Insérer le Conducteur
+      // -----------------------------------------------------------------
+      let conducteur = null;
+      if (formData.conducteurDifferent) {
+        const { data: conducteurData, error: conducteurError } = await this.supabase.supabase
+          .from('personnes')
+          .insert({
+            genre: formData.conducteur.genre,
+            nom: formData.conducteur.nom,
+            prenom: formData.conducteur.prenom,
+            date_naissance: formData.conducteur.dateNaissance,
+            adresse: formData.conducteur.adresse,
+            code_postal: formData.conducteur.codePostal,
+            ville: formData.conducteur.ville,
+            permis_numero: formData.conducteur.permis,
+            permis_date: formData.conducteur.datePermis
+          })
+          .select()
+          .single();
 
-      if (existingPreneur) {
-        // L'utilisateur existe, on utilise ses données
-        preneur = existingPreneur;
-        console.log('Preneur existant trouvé:', preneur);
+        if (conducteurError) throw conducteurError;
+        conducteur = conducteurData;
       } else {
-        // L'utilisateur n'existe pas, on le crée
-        console.log('Aucun preneur existant, création en cours...');
-        const { data: newPreneur, error: insertError } = await this.supabase.supabase
-            .from('personnes')
-            .insert({
-              genre: formData.preneur.genre,
-              nom: formData.preneur.nom,
-              prenom: formData.preneur.prenom,
-              date_naissance: formData.preneur.dateNaissance,
-              telephone: formData.preneur.telephone,
-              email: formData.preneur.email,
-              adresse: formData.preneur.adresse,
-              code_postal: formData.preneur.codePostal,
-              ville: formData.preneur.ville,
-              permis_numero: formData.preneur.permis,
-              permis_date: formData.preneur.datePermis
-            }).select().single();
-        if (insertError) throw insertError;
-        preneur = newPreneur;
+        // If the driver is the same as the policyholder, use the policyholder's data
+        conducteur = preneur;
       }
 
-        // -----------------------------------------------------------------
-        // ÉTAPE 2: Insérer le Conducteur
-        // -----------------------------------------------------------------
-        let conducteur = null;
-        if (formData.conducteurDifferent) {
-            const { data: conducteurData, error: conducteurError } = await this.supabase.supabase
-            .from('personnes')
-            .insert({
-              genre: formData.conducteur.genre,
-              nom: formData.conducteur.nom,
-              prenom: formData.conducteur.prenom,
-              date_naissance: formData.conducteur.dateNaissance,
-              adresse: formData.conducteur.adresse,
-              code_postal: formData.conducteur.codePostal,
-              ville: formData.conducteur.ville,
-              permis_numero: formData.conducteur.permis,
-              permis_date: formData.conducteur.datePermis
-            })
-            .select()
-            .single();
+      // -----------------------------------------------------------------
+      // ÉTAPE 3: Insérer le Véhicule
+      // -----------------------------------------------------------------
+      const { data: vehicule, error: vehiculeError } = await this.supabase.supabase
+        .from('vehicules')
+        .insert({
+          type: formData.vehicule.type,
+          marque: formData.vehicule.marque,
+          modele: formData.vehicule.modele,
+          puissance_kw: formData.vehicule.puissance,
+          places: formData.vehicule.places,
+          date_circulation: formData.vehicule.dateCirculation,
+          valeur: formData.vehicule.valeur
+        })
+        .select()
+        .single();
 
-            if (conducteurError) throw conducteurError;
-            conducteur = conducteurData;
-        } else {
-            // If the driver is the same as the policyholder, use the policyholder's data
-            conducteur = preneur;
-        }
+      if (vehiculeError) throw vehiculeError;
 
-        // -----------------------------------------------------------------
-        // ÉTAPE 3: Insérer le Véhicule
-        // -----------------------------------------------------------------
-        const { data: vehicule, error: vehiculeError } = await this.supabase.supabase
-          .from('vehicules')
-          .insert({
-            type: formData.vehicule.type,
-            marque: formData.vehicule.marque,
-            modele: formData.vehicule.modele,
-            puissance_kw: formData.vehicule.puissance,
-            places: formData.vehicule.places,
-            date_circulation: formData.vehicule.dateCirculation,
-            valeur: formData.vehicule.valeur
-          })
-          .select()
-          .single();
+      if (!conducteur || !vehicule) throw new Error('Could not create driver or vehicle.');
 
-        if (vehiculeError) throw vehiculeError;
+      // -----------------------------------------------------------------
+      // ÉTAPE 4: Lier le tout dans le Devis
+      // -----------------------------------------------------------------
+      const { data: devis, error: devisError } = await this.supabase.supabase
+        .from('devis_assurance')
+        .insert({
+          preneur_id: preneur.id,
+          conducteur_id: conducteur.id,
+          vehicule_id: vehicule.id,
+          garantie_base_rc: formData.garanties.base,
+          garantie_omnium_niveau: formData.garanties.omnium,
+          garantie_conducteur: formData.garanties.conducteur,
+          garantie_assistance: formData.garanties.assistance,
+          date_effet: formData.dateEffet
+        })
+        .select()
+        .single();
 
-        // -----------------------------------------------------------------
-        // ÉTAPE 4: Lier le tout dans le Devis
-        // -----------------------------------------------------------------
-        const { data: devis, error: devisError } = await this.supabase.supabase
-          .from('devis_assurance')
-          .insert({
-            preneur_id: preneur.id,
-            conducteur_id: conducteur.id,
-            vehicule_id: vehicule.id,
-            garantie_base_rc: formData.garanties.base,
-            garantie_omnium_niveau: formData.garanties.omnium,
-            garantie_conducteur: formData.garanties.conducteur,
-            garantie_assistance: formData.garanties.assistance,
-            date_effet: formData.dateEffet
-          })
-          .select()
-          .single();
+      if (devisError) throw devisError;
 
-        if (devisError) throw devisError;
-
-        console.log('Devis créé avec succès:', devis);
-        return devis; // Return the final created quote
+      console.log('Devis créé avec succès:', devis);
+      return devis; // Return the final created quote
     });
   }
 
@@ -333,32 +339,13 @@ export class DbConnectService {
    */
   createHabitationQuote(formData: HabitationFormData): Observable<any> {
     return defer(async () => {
-      // ÉTAPE 1: Chercher ou créer le preneur
-      let preneur;
-      const { data: existingPreneur, error: selectError } = await this.supabase.supabase
-        .from('personnes')
-        .select('*')
-        .eq('email', formData.preneur.email)
-        .single();
-
-      if (existingPreneur) {
-        // La personne existe, on utilise son ID.
-        preneur = existingPreneur;
-      } else {
-        // La personne n'existe pas, on la crée.
-        const { data: newPreneur, error: insertError } = await this.supabase.supabase
-          .from('personnes')
-          .insert({
-            genre: formData.preneur.genre,
-            nom: formData.preneur.nom,
-            prenom: formData.preneur.prenom,
-            date_naissance: formData.preneur.dateNaissance,
-            telephone: formData.preneur.telephone,
-            email: formData.preneur.email,
-          }).select().single();
-        if (insertError) throw insertError;
-        preneur = newPreneur;
-      }
+      // ÉTAPE 1: Chercher ou créer le preneur.
+      const preneur = await this.findOrCreatePerson({
+        ...formData.preneur,
+        adresse: formData.batiment.adresse,
+        code_postal: formData.batiment.codePostal,
+        ville: formData.batiment.ville
+      });
 
       // ÉTAPE 2: Insérer le devis habitation
       const quoteData = {
@@ -390,7 +377,11 @@ export class DbConnectService {
         date_effet: formData.dateEffet,
       };
 
-      return this.supabase.insertData('habitation_quotes', quoteData);
+      const { data, error } = await this.supabase.insertData('habitation_quotes', quoteData);
+      if (error) {
+        throw error;
+      }
+      return data;
     });
   }
 
@@ -428,24 +419,12 @@ export class DbConnectService {
    */
   createObsequesQuote(formData: ObsequesFormData): Observable<any> {
     return defer(async () => {
-      // ÉTAPE 1: Chercher ou créer le preneur
-      let preneur;
-      const { data: existingPreneur } = await this.supabase.supabase
-        .from('personnes')
-        .select('*')
-        .eq('email', formData.preneur.email)
-        .single();
-
-      if (existingPreneur) {
-        preneur = existingPreneur;
-      } else {
-        const { data: newPreneur, error: insertError } = await this.supabase.supabase
-          .from('personnes')
-          .insert({ ...formData.preneur, date_naissance: formData.preneur.dateNaissance, code_postal: formData.preneur.codePostal })
-          .select().single();
-        if (insertError) throw insertError;
-        preneur = newPreneur;
-      }
+      // ÉTAPE 1: Chercher ou créer le preneur.
+      const preneur = await this.findOrCreatePerson({
+        ...formData.preneur,
+        date_naissance: formData.preneur.dateNaissance,
+        code_postal: formData.preneur.codePostal
+      });
 
       // ÉTAPE 2: Insérer le devis obsèques
       const quoteData = {
@@ -455,7 +434,11 @@ export class DbConnectService {
         assures: formData.assures, // Sera stocké en JSONB
       };
 
-      return this.supabase.insertData('obseques_quotes', quoteData);
+      const { data, error } = await this.supabase.insertData('obseques_quotes', quoteData);
+      if (error) {
+        throw error;
+      }
+      return data;
     });
   }
 
@@ -588,6 +571,51 @@ export class DbConnectService {
   }
 
   /**
+   * Recherche les compagnies d'assurance correspondant à un préfixe.
+   * @param prefix Le préfixe du nom de la compagnie à rechercher.
+   * @returns Un Observable avec la liste des compagnies correspondantes.
+   */
+  searchAssureurs(prefix: string): Observable<Assureur[]> {
+    return from(
+      this.supabase
+        .fetchData('assureurs_belges', 'id, nom_assureur')
+        .ilike('nom_assureur', `${prefix}%`)
+        .order('nom_assureur', { ascending: true })
+        .limit(10)
+    ).pipe(
+      map(response => {
+        console.log('Compagnies d\'assurance reçues:', response.data);
+        // La colonne dans la base de données est 'nom_assureur', pas 'nom'.
+        const data = response.data as { id: number; nom_assureur: string }[] | null;
+        return (data || []).map((item) => ({
+          id: item.id,
+          nom: item.nom_assureur
+        }));
+      })
+    );
+  }
+
+  /**
+   * Récupère la liste complète des compagnies d'assurance.
+   * @returns Un Observable avec la liste de toutes les compagnies.
+   */
+  getAllAssureurs(): Observable<Assureur[]> {
+    return from(
+      this.supabase
+        .fetchData('assureurs_belges', 'id, nom_assureur')
+        .order('nom_assureur', { ascending: true })
+    ).pipe(
+      map(response => {
+        const data = response.data as { id: number; nom_assureur: string }[] | null;
+        return (data || []).map((item) => ({
+          id: item.id,
+          nom: item.nom_assureur
+        }));
+      })
+    );
+  }
+
+  /**
    * Récupère l'utilisateur actuellement authentifié.
    * @returns Un Observable avec les informations de l'utilisateur ou null.
    */
@@ -631,7 +659,7 @@ export class DbConnectService {
         })
       );
     } else if (category === 'habitation') {
-      console.log('Récupération des devis habitation pour l\'utilisateur ID:', userId); 
+      console.log('Récupération des devis habitation pour l\'utilisateur ID:', userId);
       // Pour la catégorie 'habitation', on va chercher dans les devis habitation
       return from(
         this.supabase.supabase
@@ -902,6 +930,7 @@ export class DbConnectService {
    * @returns Un Observable avec les détails du devis.
    */
   getDevisDetails(devisId: number): Observable<any> {
+    console.log(`[DbConnectService] Récupération des détails du devis auto pour l'ID: ${devisId}`);
     return from(
       this.supabase.supabase
         .from('devis_assurance')
@@ -927,11 +956,12 @@ export class DbConnectService {
    * @returns Un Observable avec les détails du devis.
    */
   getHabitationQuoteDetails(devisId: number): Observable<any> {
+    console.log(`[DbConnectService] Récupération des détails du devis habitation pour l'ID: ${devisId}`);
     return from(
       this.supabase.supabase
         .from('habitation_quotes')
         .select(`
-          *,
+          *, 
           preneur:personnes!habitation_quotes_preneur_id_fkey(*)
         `)
         .eq('id', devisId)
@@ -950,6 +980,7 @@ export class DbConnectService {
    * @returns Un Observable avec les détails du devis.
    */
   getObsequesQuoteDetails(devisId: number): Observable<any> {
+    console.log(`[DbConnectService] Récupération des détails du devis obsèques pour l'ID: ${devisId}`);
     return from(
       this.supabase.supabase
         .from('obseques_quotes')
@@ -962,6 +993,7 @@ export class DbConnectService {
     ).pipe(
       map(response => {
         if (response.error) throw response.error;
+        console.log(`[DbConnectService] Détails du devis obsèques reçus pour l'ID ${devisId}:`, response.data);
         return response.data;
       })
     );
@@ -988,37 +1020,21 @@ export class DbConnectService {
   }
 
   /**
-   * Détermine la catégorie d'un devis en cherchant son ID dans les tables pertinentes.
-   * @param devisId L'ID du devis.
-   * @returns Un Observable avec le nom de la catégorie ('auto', 'habitation', etc.) ou null.
+   * Récupère les détails complets d'un devis d'assurance RC familiale par son ID.
+   * @param devisId L'ID du devis à récupérer.
+   * @returns Un Observable avec les détails du devis.
    */
-  getQuoteCategoryById(devisId: number): Observable<string | null> {
-    return defer(async () => {
-      // On vérifie chaque table de devis l'une après l'autre.
-      let { data, error } = await this.supabase.supabase.from('devis_assurance').select('id').eq('id', devisId).single();
-      if (data) return 'auto';
-
-      ({ data, error } = await this.supabase.supabase.from('habitation_quotes').select('id').eq('id', devisId).single());
-      if (data) return 'habitation';
-
-      ({ data, error } = await this.supabase.supabase.from('obseques_quotes').select('id').eq('id', devisId).single());
-      if (data) return 'obseques';
-
-      ({ data, error } = await this.supabase.supabase.from('assu_voyage').select('id').eq('id', devisId).single());
-      if (data) return 'voyage';
-
-      ({ data, error } = await this.supabase.supabase.from('rc_familiale_quotes').select('id').eq('id', devisId).single());
-      if (data) return 'rc';
-
-      // Si non trouvé dans aucune table
-      return null;
-    }).pipe(
-      catchError(err => {
-        // On ignore les erreurs de type "row not found" qui sont attendues.
-        if (err.code !== 'PGRST116') {
-          console.error("Erreur lors de la recherche de la catégorie du devis:", err);
-        }
-        return of(null);
+  getRcQuoteDetails(devisId: number): Observable<any> {
+    return from(
+      this.supabase.supabase
+        .from('rc_familiale_quotes')
+        .select('*')
+        .eq('id', devisId)
+        .single()
+    ).pipe(
+      map(response => {
+        if (response.error) throw response.error;
+        return response.data;
       })
     );
   }
@@ -1142,12 +1158,37 @@ export class DbConnectService {
           statut,
           nom,
           prenom,
-          message
+          description
         `)
         .order('date_created', { ascending: false })
     ).pipe(
       map(response => {
         if (response.error) throw response.error;
+        return response.data || [];
+      })
+    );
+  }
+
+  /**
+   * Récupère tous les devis d'assurance RC familiale pour le tableau de bord de gestion.
+   * @returns Un Observable avec la liste des devis.
+   */
+  getAllRcQuotes(): Observable<any[]> {
+    return from(
+      this.supabase.supabase
+        .from('rc_familiale_quotes')
+        .select(`
+          id,
+          created_at,
+          preneur_nom,
+          preneur_prenom,
+          risque
+        `)
+        .order('created_at', { ascending: false })
+    ).pipe(
+      map(response => {
+        if (response.error) throw response.error;
+        // Note: La table rc_familiale_quotes n'a pas de colonne 'statut' pour le moment.
         return response.data || [];
       })
     );
@@ -1232,5 +1273,216 @@ export class DbConnectService {
         return response.data || [];
       })
     );
+  }
+
+  /**
+   * Récupère la liste de toutes les nationalités.
+   * @returns Un Observable avec la liste des nationalités.
+   */
+  getNationalities(): Observable<Nationality[]> {
+    return from(
+      this.supabase.supabase
+        .from('nationalities')
+        .select('*')
+        .order('nationality', { ascending: true }) // Ordonne les nationalités par ordre alphabétique
+    ).pipe(
+      map(response => {
+        if (response.error) {
+          console.error('Erreur lors de la récupération des nationalités:', response.error);
+          throw response.error;
+        }
+        return (response.data as Nationality[]) || [];
+      })
+    );
+  }
+
+  /**
+   * @param type Le type de devis ('auto', 'habitation', 'obseques', 'voyage').
+   * @param id L'ID du devis.
+   * @returns Un Observable avec les Détails de l'offre.
+   */
+  getQuoteDetails(type: string, id: number): Observable<any> {
+    switch (type) {
+      case 'auto':
+        return this.getDevisDetails(id);
+      case 'habitation':
+        return this.getHabitationQuoteDetails(id);
+      case 'obseques':
+        return this.getObsequesQuoteDetails(id); // Correction: retour direct de l'observable
+      case 'voyage':
+        return this.getVoyageQuoteDetails(id);
+      case 'rc': // Ajout d'un cas distinct pour 'rc'
+        return this.getRcQuoteDetails(id);
+      default:
+        console.error(`Type de devis inconnu dans getQuoteDetails: ${type}`);
+        return of(null); // Retourne un observable de null pour les types inconnus.
+    }
+  }
+
+  /**
+   * Récupère la catégorie d'un devis en fonction de son ID en interrogeant une fonction SQL.
+   * @param id L'ID du devis.
+   * @returns Un Observable avec la catégorie du devis ('auto', 'habitation', etc.) ou null.
+   */
+  getQuoteCategoryById(id: number): Observable<string | null> {
+    return from(
+      this.supabase.supabase.rpc('get_quote_category_by_id', { p_quote_id: id })
+    ).pipe(
+      map(response => {
+        if (response.error) {
+          console.error('Erreur lors de la récupération de la catégorie du devis:', response.error);
+          throw response.error;
+        }
+        // La fonction RPC retourne un objet { category: '...' } ou null
+        return response.data ? response.data : null;
+      }),
+      catchError(error => {
+        console.error('Erreur dans le pipe de getQuoteCategoryById:', error);
+        return of(null);
+      })
+    );
+  }
+
+  /**
+   * Met à jour un devis d'assurance auto complet (preneur, conducteur, véhicule, garanties).
+   * Cette méthode appelle une fonction RPC (Remote Procedure Call) dans Supabase
+   * pour garantir que toutes les mises à jour sont effectuées de manière atomique.
+   *
+   * @param quoteId L'ID du devis à mettre à jour.
+   * @param payload Les données du formulaire contenant les informations à jour.
+   * @returns Un Observable qui émet la réponse de la fonction RPC.
+   */
+  updateAutoQuote(quoteId: number, payload: AutoQuoteUpdatePayload): Observable<{ success: boolean, error?: any, data?: any }> {
+    // 1. Mapper les noms de champs du formulaire vers les noms de colonnes de la BDD
+    const mapPersonData = (personForm: any) => ({
+      prenom: personForm.firstName,
+      nom: personForm.lastName,
+      date_naissance: personForm.dateNaissance,
+      email: personForm.email,
+      telephone: personForm.phone,
+      adresse: personForm.address,
+      code_postal: personForm.postalCode,
+      ville: personForm.city,
+      permis_numero: personForm.driverLicenseNumber,
+      permis_date: personForm.driverLicenseDate,
+      numero_national: personForm.nationalRegistryNumber,
+      idcard_number: personForm.idCardNumber,
+      idcard_validity: personForm.idCardValidityDate,
+      nationality: personForm.nationality,
+      marital_status: personForm.maritalStatus
+    });
+
+    const rpcPayload = {
+      p_quote_id: quoteId,
+      p_preneur_data: mapPersonData(payload.preneur),
+      p_conducteur_data: payload.conducteur ? mapPersonData(payload.conducteur) : null,
+      p_vehicule_data: {
+        marque: payload.vehicule['make'],
+        modele: payload.vehicule['model'],
+        annee: payload.vehicule['year'],
+        plaque: payload.vehicule['licensePlate']
+      },
+      p_devis_data: payload.devis
+    };
+
+    // 2. Appeler la fonction RPC de Supabase
+    const promise = this.supabase.supabase
+      .rpc('update_auto_quote_details', rpcPayload)
+      .then(({ data, error }) => {
+        if (error) {
+          console.error('Erreur RPC update_auto_quote_details:', error);
+          return { success: false, error };
+        }
+        return { success: true, data };
+      });
+
+    return from(promise);
+  }
+
+  /**
+   * Met à jour un devis d'assurance obsèques complet (preneur, assurés).
+   * @param quoteId L'ID du devis à mettre à jour.
+   * @param payload Les données du formulaire contenant les informations à jour.
+   * @returns Un Observable qui émet la réponse de la fonction RPC.
+   */
+  updateObsequesQuote(quoteId: number, payload: ObsequesQuoteUpdatePayload): Observable<{ success: boolean, error?: any, data?: any }> {
+    const mapPersonData = (personForm: any) => ({
+      prenom: personForm.firstName,
+      nom: personForm.lastName,
+      date_naissance: personForm.dateNaissance,
+      email: personForm.email,
+      telephone: personForm.phone,
+      adresse: personForm.address,
+      code_postal: personForm.postalCode,
+      ville: personForm.city,
+      // Les autres champs ne sont pas pertinents pour le preneur obsèques
+      permis_numero: null,
+      permis_date: null,
+      numero_national: null,
+      idcard_number: null,
+      idcard_validity: null,
+      nationality: null,
+      marital_status: null
+    });
+
+    const rpcPayload = {
+      p_quote_id: quoteId,
+      p_preneur_data: mapPersonData(payload.preneur),
+      p_devis_data: payload.devis
+    };
+
+    const promise = this.supabase.supabase
+      .rpc('update_obseques_quote_details', rpcPayload)
+      .then(({ data, error }) => {
+        if (error) {
+          console.error('Erreur RPC update_obseques_quote_details:', error);
+          return { success: false, error };
+        }
+        return { success: true, data };
+      });
+
+    return from(promise);
+  }
+
+  /**
+   * Cherche une personne par email. Si elle n'existe pas, la crée.
+   * @param personData Les données de la personne.
+   * @returns Une promesse qui se résout avec les données de la personne trouvée ou créée.
+   */
+  private async findOrCreatePerson(personData: {
+    email: string;
+    genre?: string;
+    nom?: string;
+    prenom?: string;
+    date_naissance?: string;
+    telephone?: string;
+    adresse?: string;
+    code_postal?: string;
+    ville?: string;
+    permis_numero?: string;
+    permis_date?: string;
+  }): Promise<any> {
+    // 1. Chercher la personne par email
+    const { data: existingPerson } = await this.supabase.supabase
+      .from('personnes')
+      .select('*')
+      .eq('email', personData.email)
+      .single();
+
+    if (existingPerson) {
+      console.log('Personne existante trouvée:', existingPerson);
+      return existingPerson;
+    }
+
+    // 2. Si elle n'existe pas, la créer
+    console.log('Aucune personne existante, création en cours...');
+    const { data: newPerson, error: insertError } = await this.supabase.supabase
+      .from('personnes')
+      .insert(personData)
+      .select()
+      .single();
+
+    if (insertError) throw insertError;
+    return newPerson;
   }
 }

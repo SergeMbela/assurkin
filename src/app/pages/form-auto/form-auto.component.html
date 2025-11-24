@@ -13,7 +13,7 @@
       </div>
       <!-- Colonne de droite : Image -->
       <div class="flex justify-center lg:justify-end">
-        <img src="https://fqopliwvpuiprdegxytz.supabase.co/storage/v1/object/sign/img_website/voiture.webp?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV81MmJmNDFiNC0yNGQ0LTQ3ZTktYmEzNi04YWZmY2NjMzEzNzIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJpbWdfd2Vic2l0ZS92b2l0dXJlLndlYnAiLCJpYXQiOjE3NjMwMjQ4MjIsImV4cCI6MjA3ODM4NDgyMn0.FImtkSpgJA8sH1jNbWWavhvpy0AvdxxDHeQtg9G40Cg" alt="Assurance" class="w-full max-w-xs rounded-xl shadow-xl ring-1 ring-gray-400/10 lg:max-w-md">
+        <img src="https://fqopliwvpuiprdegxytz.supabase.co/storage/v1/object/sign/img_website/voiture.webp?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV81MmJmNDFiNC0yNGQ0LTQ3ZTktYmEzNi04YWZmY2NjMzEzNzIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJpbWdfd2Vic2l0ZS92b2l0dXJlLndlYnAiLCJpYXQiOjE3NjMwMjQ4MjIsImV4cCI6MjA3ODM4NDgyMn0.FImtkSpgJA8sH1jNbWWavhvpy0AvdxxDHeQtg9G40Cg" alt="Voiture rouge pour l'assurance auto" class="w-full max-w-xs rounded-xl shadow-xl ring-1 ring-gray-400/10 lg:max-w-md">
       </div>
     </div>
   </div>
@@ -103,7 +103,7 @@
         <div>
           <div class="relative">
             <label for="preneur-cp" class="block text-sm font-medium text-gray-700">Code Postal</label>
-            <input type="text" id="preneur-cp" formControlName="codePostal" (input)="onPostalCodeInput($event, 'preneur')" autocomplete="off" maxlength="4" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 pl-3 pr-10 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'ring-red-500': autoForm.get('preneur.codePostal')?.invalid && autoForm.get('preneur.codePostal')?.touched}">
+            <input type="text" id="preneur-cp" formControlName="codePostal" autocomplete="off" maxlength="4" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 pl-3 pr-10 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'ring-red-500': autoForm.get('preneur.codePostal')?.invalid && autoForm.get('preneur.codePostal')?.touched}">
             <div *ngIf="isLoading" class="absolute inset-y-0 right-0 flex items-center pr-3">
               <svg class="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -129,12 +129,6 @@
         <div>
           <label for="preneur-permis" class="block text-sm font-medium text-gray-700">Numéro de permis de conduire</label>
           <input type="text" id="preneur-permis" formControlName="permis" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'ring-red-500': autoForm.get('preneur.permis')?.invalid && autoForm.get('preneur.permis')?.touched}">
-          <div *ngIf="autoForm.get('preneur.permis')?.hasError('permisExists')" class="text-green-800 bg-green-100 p-2 rounded-md text-sm mt-2">
-            Bonne nouvelle ! Ce permis est déjà connu chez nous.
-            <a routerLink="/account" class="font-bold underline hover:text-green-700">Connectez-vous</a>
-            ou
-            <a routerLink="/createuseraccount" class="font-bold underline hover:text-green-700">créez un compte</a> pour récupérer vos données.
-          </div>
         </div>
         <div>
           <label for="preneur-permis-date" class="block text-sm font-medium text-gray-700">Date d'obtention du permis</label>
@@ -189,7 +183,7 @@
         <div>
           <div class="relative">
             <label for="conducteur-cp" class="block text-sm font-medium text-gray-700">Code Postal</label>
-            <input type="text" id="conducteur-cp" formControlName="codePostal" (input)="onPostalCodeInput($event, 'conducteur')" autocomplete="off" maxlength="4" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 pl-3 pr-10 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'ring-red-500': autoForm.get('conducteur.codePostal')?.invalid && autoForm.get('conducteur.codePostal')?.touched}">
+            <input type="text" id="conducteur-cp" formControlName="codePostal" autocomplete="off" maxlength="4" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 pl-3 pr-10 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'ring-red-500': autoForm.get('conducteur.codePostal')?.invalid && autoForm.get('conducteur.codePostal')?.touched}">
             <div *ngIf="isLoading" class="absolute inset-y-0 right-0 flex items-center pr-3">
               <svg class="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -236,15 +230,15 @@
           <label for="vehicule-type" class="block text-sm font-medium text-gray-700">Type de véhicule</label>
           <select id="vehicule-type" formControlName="type" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'ring-red-500': autoForm.get('vehicule.type')?.invalid && autoForm.get('vehicule.type')?.touched}">
             <option value="" disabled>Sélectionnez un type</option>
-            <option>Voiture</option>
-            <option>Camionnette</option>
-            <option>Camion</option>
-            <option>Bus</option>
-            <option>Mini Bus</option>
-            <option>Voiture sans permis</option>
-            <option>Moto</option>
-            <option>Cyclomoteur</option>
-            <option>Trottinette</option>
+            <option value="Voiture">Voiture</option>
+            <option value="Camionnette">Camionnette</option>
+            <option value="Camion">Camion</option>
+            <option value="Bus">Bus</option>
+            <option value="Mini Bus">Mini Bus</option>
+            <option value="Voiture sans permis">Voiture sans permis</option>
+            <option value="Moto">Moto</option>
+            <option value="Cyclomoteur">Cyclomoteur</option>
+            <option value="Trottinette">Trottinette</option>
           </select>
         </div>
         <div>
@@ -265,16 +259,16 @@
           <div class="relative">
             <label for="vehicule-modele" class="block text-sm font-medium text-gray-700">Modèle</label>
             <!-- Champ d'input qui affiche le modèle sélectionné et gère la validation visuelle -->
-            <input type="text" id="vehicule-modele" formControlName="modele" readonly
+            <input type="text" id="vehicule-modele" formControlName="modele" readonly (click)="toggleModeleList()"
                    [placeholder]="!selectedMarque ? 'Sélectionnez une marque' : (isModeleLoading ? 'Chargement...' : 'Cliquez pour choisir un modèle')"
-                   class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm bg-gray-50 cursor-pointer"
+                   class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm cursor-pointer"
                    [ngClass]="{'ring-red-500': autoForm.get('vehicule.modele')?.invalid && autoForm.get('vehicule.modele')?.touched, 'cursor-not-allowed': !selectedMarque}">
 
             <div *ngIf="isModeleLoading" class="absolute inset-y-0 right-0 flex items-center pr-3 top-6">
               <svg class="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
             </div>
             <!-- Liste déroulante pour la sélection -->
-            <ul *ngIf="selectedMarque && !isModeleLoading && filteredModeles.length > 0" class="absolute z-10 w-full bg-white border border-gray-300 rounded-md mt-1 max-h-40 overflow-y-auto">
+            <ul *ngIf="showModeleList && filteredModeles.length > 0" class="absolute z-10 w-full bg-white border border-gray-300 rounded-md mt-1 max-h-40 overflow-y-auto">
               <li *ngFor="let mdl of filteredModeles" (click)="selectModele(mdl)" class="px-3 py-2 cursor-pointer hover:bg-gray-100">
                 {{ mdl.nom }}
               </li>
@@ -362,12 +356,6 @@
 
     <!-- Bouton de soumission -->
     <div class="pt-6">
-      <!-- Message de statut de soumission (en bas) -->
-      <div *ngIf="submissionStatus" class="p-4 mb-4 text-sm rounded-lg"
-           [ngClass]="{'bg-green-100 text-green-800': submissionStatus.success, 'bg-red-100 text-red-800': !submissionStatus.success}"
-           role="alert">
-        <span [innerHTML]="submissionStatus.message"></span>
-      </div>
       <div class="flex justify-end">
         <button type="submit" [disabled]="autoForm.invalid" class="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed">
         Recevoir mon offre

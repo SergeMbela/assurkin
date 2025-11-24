@@ -2,7 +2,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Component, Inject, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AbstractControl, AsyncValidatorFn, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators, FormControl } from '@angular/forms';
-import { Subject, of, EMPTY, forkJoin, Observable } from 'rxjs';
+import { Subject, of, Observable } from 'rxjs';
 import { DbConnectService, PostalCode, Marque, Modele } from '../../services/db-connect.service';
 import { debounceTime, distinctUntilChanged, switchMap, takeUntil, tap, map, catchError, first } from 'rxjs/operators'
 import { PhoneFormatDirective } from '../../directives/phone-format.directive';
@@ -118,13 +118,12 @@ export class FormAutoComponent implements OnInit, OnDestroy {
   isLoading = false;
   isMarqueLoading = false;
   isModeleLoading = false;
+  showModeleList = false;
 
   // --- Sujets pour la recherche avec debounce ---
   private marque$!: Subject<string>;
   private modele$!: Subject<string>;
-  private preneurPostalCode$!: Subject<string>;
-  private conducteurPostalCode$!: Subject<string>;
-  private destroy$!: Subject<void>;
+  private destroy$ = new Subject<void>();
 
   submissionStatus: { success: boolean; message: string } | null = null;
 
@@ -148,7 +147,7 @@ export class FormAutoComponent implements OnInit, OnDestroy {
     // La structure du formulaire est nécessaire pour le rendu côté serveur et client.
     this.autoForm = this.fb.group({
       preneur: this.fb.group({
-        genre: ['Madame', Validators.required],
+        genre: [null, Validators.required],
         nom: ['', Validators.required],
         prenom: ['', Validators.required],
         dateNaissance: ['', [Validators.required, this.ageValidator(14)]],
@@ -162,7 +161,7 @@ export class FormAutoComponent implements OnInit, OnDestroy {
       }),
       conducteurDifferent: [false],
       conducteur: this.fb.group({
-        genre: ['Madame'],
+        genre: [null],
         nom: [''],
         prenom: [''],
         dateNaissance: ['', this.ageValidator(14)],
@@ -182,21 +181,18 @@ export class FormAutoComponent implements OnInit, OnDestroy {
         valeur: [''],
       }),
       garanties: this.fb.group({
-        base: [true], // RC + PJ est la base
-        omnium: ['non'], // 'non', 'partiel', 'total'
+        base: [false],
+        omnium: [null], // 'non', 'partiel', 'total'
         conducteur: [false],
         assistance: [false]
       }),
-      dateEffet: [this.minDate, Validators.required],
+      dateEffet: ['', Validators.required],
     });
 
     // Étape 2: Conserver toute la logique spécifique au navigateur (observables, événements)
     // à l'intérieur de la condition.
     if (isPlatformBrowser(this.platformId)) {
-      this.destroy$ = new Subject<void>();
-      this.preneurPostalCode$ = new Subject<string>();
-
-      // Ajouter le validateur asynchrone uniquement côté client
+       // Ajouter le validateur asynchrone uniquement côté client
       const permisControl = this.autoForm.get('preneur.permis');
       if (permisControl) {
         permisControl.setAsyncValidators(this.permisExistsValidator());
@@ -207,72 +203,14 @@ export class FormAutoComponent implements OnInit, OnDestroy {
         // Ajoute le validateur asynchrone aux validateurs existants
         emailControl.setAsyncValidators(this.emailExistsValidator());
       }
-      // Charger les données depuis le localStorage
-      const savedData = localStorage.getItem('autoFormData');
-      if (savedData) {
-        this.autoForm.patchValue(JSON.parse(savedData));
-        const isDifferent = this.autoForm.get('conducteurDifferent')?.value;
-        this.toggleConducteurValidators(isDifferent);
-      }
 
-      // Sauvegarder les données dans le localStorage à chaque changement
-      this.autoForm.valueChanges.pipe(
-        debounceTime(500), // On attend 500ms après la dernière modification
-        takeUntil(this.destroy$)
-      ).subscribe(value => {
-        console.log('Sauvegarde des données du formulaire dans le localStorage:', value);
-        localStorage.setItem('autoFormData', JSON.stringify(value));
-      });
-
-      this.conducteurPostalCode$ = new Subject<string>();
       this.modele$ = new Subject<string>();
       this.marque$ = new Subject<string>();
 
-      this.preneurPostalCode$.pipe(
-        debounceTime(300),
-        distinctUntilChanged(),
-        tap((prefix) => {
-          console.log(`[Preneur] Recherche pour le préfixe: "${prefix}"`);
-          this.isLoading = true;
-        }),
-        switchMap(prefix => {
-          if (prefix.length < 2) {
-            this.filteredPreneurPostalCodes = [];
-            this.preneurCities = [];
-            this.preneurCity = '';
-            return of([]);
-          }
-          return this.dbConnectService.getPostalCodes(prefix);
-        }),
-        takeUntil(this.destroy$)
-      ).subscribe(postalCodes => {
-        console.log('[Preneur] Résultats reçus:', postalCodes);
-        this.filteredPreneurPostalCodes = postalCodes;
-        this.isLoading = false;
-      });
+      // Gestion des codes postaux
+      this.setupPostalCodeListener('preneur');
+      this.setupPostalCodeListener('conducteur');
 
-      this.conducteurPostalCode$.pipe(
-        debounceTime(300),
-        distinctUntilChanged(),
-        tap((prefix) => {
-          console.log(`[Conducteur] Recherche pour le préfixe: "${prefix}"`);
-          this.isLoading = true;
-        }),
-        switchMap(prefix => {
-          if (prefix.length < 2) {
-            this.filteredConducteurPostalCodes = [];
-            this.conducteurCities = [];
-            this.autoForm.get('conducteur.ville')?.setValue(''); // Correction: Mettre à jour le FormControl
-            return of([]);
-          }
-          return this.dbConnectService.getPostalCodes(prefix);
-        }),
-        takeUntil(this.destroy$)
-      ).subscribe(postalCodes => {
-        console.log('[Conducteur] Résultats reçus:', postalCodes);
-        this.filteredConducteurPostalCodes = postalCodes;
-        this.isLoading = false;
-      });
 
       this.marque$.pipe(
         debounceTime(300),
@@ -341,41 +279,65 @@ export class FormAutoComponent implements OnInit, OnDestroy {
     }
   }
 
-
-  /**
-   * Gère la recherche et le filtrage des codes postaux lors de la saisie.
-   * @param event L'événement d'input.
-   * @param type 'preneur' ou 'conducteur'.
-   */
-  onPostalCodeInput(event: Event, type: 'preneur' | 'conducteur'): void {
-    const input = (event.target as HTMLInputElement).value;
-    // Exécuter uniquement dans le navigateur
-    if (isPlatformBrowser(this.platformId)) {
-      if (type === 'preneur') {
-        this.preneurPostalCode$.next(input);
-      } else if (type === 'conducteur') {
-        this.conducteurPostalCode$.next(input); // Utilise le Subject pour le conducteur
-      }
-    }
-  }
-
   /**
    * Gère la sélection d'un code postal dans la liste d'autocomplétion.
-   * @param postalCode Le code postal sélectionné.
+   * @param selectedCity L'objet ville/code postal sélectionné.
    * @param type 'preneur' ou 'conducteur'.
    */
   selectPostalCode(selectedCity: PostalCode, type: 'preneur' | 'conducteur'): void {
-    if (type === 'preneur') {
-      this.autoForm.get('preneur.codePostal')?.setValue(selectedCity.postalCode, { emitEvent: false });
-      this.autoForm.get('preneur.ville')?.setValue(selectedCity.city);
-      this.preneurCities = [selectedCity.city];
-      this.filteredPreneurPostalCodes = [];
-    } else {
-      this.autoForm.get('conducteur.codePostal')?.setValue(selectedCity.postalCode, { emitEvent: false });
-      this.autoForm.get('conducteur.ville')?.setValue(selectedCity.city);
-      this.conducteurCities = [selectedCity.city];
-      this.filteredConducteurPostalCodes = [];
-    }
+    const formGroup = this.autoForm.get(type) as FormGroup;
+    formGroup.get('codePostal')?.setValue(selectedCity.postalCode, { emitEvent: false });
+    this.dbConnectService.getCitiesByPostalCode(selectedCity.postalCode).pipe(first()).subscribe(cities => {
+      if (type === 'preneur') {
+        this.preneurCities = cities;
+        this.filteredPreneurPostalCodes = []; // Vide la liste d'autocomplétion
+      } else { // 'conducteur'
+        this.conducteurCities = cities;
+        this.filteredConducteurPostalCodes = []; // Vide la liste d'autocomplétion
+      }
+
+      if (cities.length === 1) {
+        formGroup.get('ville')?.setValue(cities[0]);
+      } else {
+        formGroup.get('ville')?.setValue(''); // Laisse l'utilisateur choisir
+      }
+    });
+  }
+
+  private setupPostalCodeListener(type: 'preneur' | 'conducteur'): void {
+    const codePostalControl = this.autoForm.get(`${type}.codePostal`);
+    const villeControl = this.autoForm.get(`${type}.ville`);
+
+    if (!codePostalControl || !villeControl) return;
+
+    codePostalControl.valueChanges.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      tap(() => this.isLoading = true),
+      switchMap(value => {
+        if (value && value.length >= 2) {
+          return this.dbConnectService.getPostalCodes(value);
+        } else {
+          if (type === 'preneur') this.filteredPreneurPostalCodes = [];
+          else this.filteredConducteurPostalCodes = [];
+          return of([]);
+        }
+      }),
+      tap(() => {
+        // Réinitialise la ville si le code postal change
+        if (type === 'preneur') this.preneurCities = [];
+        else this.conducteurCities = [];
+        villeControl.setValue('', { emitEvent: false });
+      }),
+      takeUntil(this.destroy$)
+    ).subscribe(codes => {
+      this.isLoading = false;
+      if (type === 'preneur') {
+        this.filteredPreneurPostalCodes = codes;
+      } else {
+        this.filteredConducteurPostalCodes = codes;
+      }
+    });
   }
 
   selectMarque(marque: Marque): void {
@@ -386,10 +348,21 @@ export class FormAutoComponent implements OnInit, OnDestroy {
     this.modele$.next(marque.nom); // Déclenche la recherche des modèles pour la marque sélectionnée
   }
 
-  onModeleInput(event: Event): void {}
+  toggleModeleList(): void {
+    // On ne montre la liste que si une marque est sélectionnée
+    if (this.selectedMarque) {
+      this.showModeleList = !this.showModeleList;
+    }
+  }
+
+  onModeleInput(event: Event): void {
+    // Cette méthode peut être utilisée si vous voulez ajouter une recherche par texte dans la liste des modèles
+  }
+
   selectModele(modele: Modele): void {
     this.autoForm.get('vehicule.modele')?.setValue(modele.nom);
-    this.filteredModeles = []; // Hide the autocomplete list
+    this.filteredModeles = []; // Vide la liste pour la cacher
+    this.showModeleList = false; // Cache la liste après la sélection
   }
 
   scrollToSection(sectionId: string): void {

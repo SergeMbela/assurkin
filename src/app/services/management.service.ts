@@ -43,9 +43,19 @@ export interface VoyageQuoteSummary {
   description: string;
 }
 
+export interface RcQuoteSummary {
+  id: number;
+  nom: string;
+  prenom: string;
+  dateDemande: string;
+  statut: string;
+  description: string; // Mappé depuis 'risque'
+}
+
 export interface DataState<T> {
   data: T | null;
   loading: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   error: any | null;
 }
 
@@ -53,9 +63,10 @@ export interface DataState<T> {
   providedIn: 'root'
 })
 export class ManagementService {
-  private platformId = inject(PLATFORM_ID);
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly db = inject(DbConnectService);
 
-  constructor(private injector: Injector) { }
+  constructor() { }
 
   /**
    * Récupère l'état des devis auto, en gérant le rendu côté client et serveur (SSR).
@@ -63,10 +74,7 @@ export class ManagementService {
    */
   getAutoQuotesState(): Observable<DataState<AutoQuoteSummary[]>> {
     if (isPlatformBrowser(this.platformId)) {
-      // Côté client : on récupère les données avec un état de chargement initial.
-      // On utilise l'injecteur pour récupérer le service manuellement et uniquement
-      // côté client, ce qui est sûr pour le SSR et respecte le contexte d'injection.
-      return this.fetchAndMapAutoData(this.injector.get(DbConnectService).getAllAutoQuotes());
+      return this.fetchAndMapAutoData(this.db.getAllAutoQuotes());
     } else {
       // Côté serveur : on retourne un état stable et vide pour ne pas bloquer le rendu.
       return of({ data: [], loading: false, error: null });
@@ -75,7 +83,7 @@ export class ManagementService {
 
   getHabitationQuotesState(): Observable<DataState<HabitationQuoteSummary[]>> {
     if (isPlatformBrowser(this.platformId)) {
-      const apiCall$ = this.injector.get(DbConnectService).getAllHabitationQuotes();
+      const apiCall$ = this.db.getAllHabitationQuotes();
       return this.fetchAndMapHabitationData(apiCall$);
     } else {
       return of({ data: [], loading: false, error: null });
@@ -84,7 +92,7 @@ export class ManagementService {
 
   getObsequesQuotesState(): Observable<DataState<ObsequesQuoteSummary[]>> {
     if (isPlatformBrowser(this.platformId)) {
-      const apiCall$ = this.injector.get(DbConnectService).getAllObsequesQuotes();
+      const apiCall$ = this.db.getAllObsequesQuotes();
       return this.fetchAndMapObsequesData(apiCall$);
     } else {
       return of({ data: [], loading: false, error: null });
@@ -93,8 +101,31 @@ export class ManagementService {
 
   getVoyageQuotesState(): Observable<DataState<VoyageQuoteSummary[]>> {
     if (isPlatformBrowser(this.platformId)) {
-      const apiCall$ = this.injector.get(DbConnectService).getAllVoyageQuotes();
+      const apiCall$ = this.db.getAllVoyageQuotes();
       return this.fetchAndMapVoyageData(apiCall$);
+    } else {
+      return of({ data: [], loading: false, error: null });
+    }
+  }
+
+  getRcQuotesState(): Observable<DataState<RcQuoteSummary[]>> {
+    if (isPlatformBrowser(this.platformId)) {
+      return this.db.getAllRcQuotes().pipe(
+        map(data => ({
+          data: data.map(item => ({
+            id: item.id,
+            nom: item.preneur_nom,
+            prenom: item.preneur_prenom,
+            dateDemande: item.created_at,
+            statut: item.statut || 'Nouveau', // 'statut' n'est pas dans la table, on met une valeur par défaut
+            description: `Risque: ${item.risque}`
+          })),
+          loading: false,
+          error: null
+        })),
+        startWith({ data: null, loading: true, error: null }),
+        catchError(error => of({ data: null, loading: false, error }))
+      );
     } else {
       return of({ data: [], loading: false, error: null });
     }
@@ -108,7 +139,7 @@ export class ManagementService {
   private fetchAndMapVoyageData(apiCall$: Observable<any[]>): Observable<DataState<VoyageQuoteSummary[]>> {
     return apiCall$.pipe(
       map(rawData => ({
-        data: rawData.map(item => ({ id: item.id, nom: item.nom ?? 'N/A', prenom: item.prenom ?? '', dateDemande: item.date_created, statut: item.statut || 'Nouveau', description: item.message || 'Aucun message' })),
+        data: rawData.map(item => ({ id: item.id, nom: item.nom ?? 'N/A', prenom: item.prenom ?? '', dateDemande: item.date_created, statut: item.statut || 'Nouveau', description: item.description || 'Aucun message' })),
         loading: false,
         error: null
       })),

@@ -1,8 +1,12 @@
 <div class="bg-gray-50 min-h-screen">
   <div class="container mx-auto p-4 sm:p-6 lg:p-8">
-    <ng-container *ngIf="devisDetails$ | async as devis; else loadingOrError">
-      <div *ngIf="devis" class="bg-white p-6 sm:p-8 rounded-lg shadow-md">
+    <app-state-container 
+      *ngIf="devisState$ | async as state" 
+      [state]="state"
+      loadingMessage="Chargement des détails du devis..."
+      errorMessage="Impossible de charger les détails de ce devis. Il est possible que le lien soit incorrect ou que le devis n'existe plus.">
 
+      <div *ngIf="state.data as devis" class="bg-white p-6 sm:p-8 rounded-lg shadow-md">
         <!-- ====== EN-TÊTE ====== -->
         <div class="border-b pb-4 mb-6 flex justify-between items-start">
           <div>
@@ -170,23 +174,12 @@
             <a [href]="devis.document" target="_blank" class="text-blue-600 hover:underline">Voir le document joint</a>
           </section>
         </div>
-
       </div>
-    </ng-container>
-
-    <!-- ====== ÉTAT DE CHARGEMENT OU D'ERREUR ====== -->
-    <ng-template #loadingOrError>
-      <div *ngIf="!loadingError; else errorState" class="flex justify-center items-center p-10">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-        <p class="ml-4 text-gray-600">Chargement des détails...</p>
+      
+      <!-- Message si les données sont vides mais sans erreur -->
+      <div *ngIf="!state.data && !state.loading && !state.error" class="text-center py-10 px-4 bg-gray-50 rounded-lg">
+        <p class="text-gray-500">Aucun détail de devis trouvé.</p>
       </div>
-      <ng-template #errorState>
-        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md text-center" role="alert">
-          <strong class="font-bold">Erreur !</strong>
-          <p>Impossible de charger les détails de ce devis. Il est possible que le lien soit incorrect ou que le devis n'existe plus.</p>
-          <a routerLink="/management" class="mt-4 inline-block bg-red-600 text-white font-bold py-2 px-4 rounded hover:bg-red-700">Retour à la gestion</a>
-        </div>
-      </ng-template>
-    </ng-template>
+    </app-state-container>
   </div>
 </div>

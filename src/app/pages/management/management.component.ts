@@ -2,17 +2,18 @@ import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
-import { ManagementService, DataState, AutoQuoteSummary, HabitationQuoteSummary, ObsequesQuoteSummary, VoyageQuoteSummary } from '../../services/management.service';
+import { ManagementService, DataState, AutoQuoteSummary, HabitationQuoteSummary, ObsequesQuoteSummary, VoyageQuoteSummary, RcQuoteSummary } from '../../services/management.service';
 import { Observable, combineLatest, BehaviorSubject, of } from 'rxjs';
 import { map, startWith, shareReplay, tap, switchMap } from 'rxjs/operators';
+import { StateContainerComponent } from '../../state-container.component';
 
 type QuoteType = 'auto' | 'habitation' | 'obseques' | 'rc' | 'voyage';
 // Un type d'union pour représenter n'importe quel résumé de devis.
-type AnyQuoteSummary = AutoQuoteSummary | HabitationQuoteSummary | ObsequesQuoteSummary | VoyageQuoteSummary;
+type AnyQuoteSummary = AutoQuoteSummary | HabitationQuoteSummary | ObsequesQuoteSummary | VoyageQuoteSummary | RcQuoteSummary;
 @Component({
   selector: 'app-management',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule],
+  imports: [CommonModule, RouterLink, ReactiveFormsModule, StateContainerComponent],
   templateUrl: './management.component.html',
   styleUrl: './management.component.css'
 })
@@ -54,6 +55,7 @@ export class ManagementComponent implements OnInit {
     if (isPlatformBrowser(this.platformId)) {
       const quotesData$ = this.activeTab$.pipe(
         switchMap(tabId => {
+          console.log(`[ManagementComponent] Fetching data for insurance type: '${tabId}'`);
           switch (tabId) {
             case 'auto':
               return this.managementService.getAutoQuotesState();
@@ -63,7 +65,7 @@ export class ManagementComponent implements OnInit {
               return this.managementService.getObsequesQuotesState();
             // Pour RC et Voyage, on retourne un état vide pour l'instant
             case 'rc':
-              return this.managementService.getEmptyState<AnyQuoteSummary[]>();
+              return this.managementService.getRcQuotesState();
             case 'voyage':
               return this.managementService.getVoyageQuotesState();
             default:
@@ -90,9 +92,9 @@ export class ManagementComponent implements OnInit {
           const filteredData = state.data.filter(quote =>
             quote.nom.toLowerCase().includes(lowerCaseSearchTerm) ||
             quote.prenom.toLowerCase().includes(lowerCaseSearchTerm) ||
-            quote.id.toString().includes(lowerCaseSearchTerm) ||
-            ('marqueVehicule' in quote && quote.marqueVehicule.toLowerCase().includes(lowerCaseSearchTerm)) || // Recherche conditionnelle et type-safe
-            ('description' in quote && quote.description.toLowerCase().includes(lowerCaseSearchTerm))
+            String(quote.id).includes(lowerCaseSearchTerm) || // Recherche par ID
+            (this.isAutoQuote(quote) && (quote.marqueVehicule + ' ' + quote.modeleVehicule).toLowerCase().includes(lowerCaseSearchTerm)) || // Recherche sur véhicule
+            (this.isDescriptionQuote(quote) && quote.description.toLowerCase().includes(lowerCaseSearchTerm)) // Recherche sur description
           );
 
           // 2. Calcul de la pagination
@@ -125,17 +127,20 @@ export class ManagementComponent implements OnInit {
   }
 
   setActiveTab(tabId: QuoteType): void {
+    console.log(`[ManagementComponent] Setting active tab to: '${tabId}'`);
     this.activeTab$.next(tabId);
   }
 
   /**
-   * Navigue vers la page de détail d'un devis automobile.
+   * Navigue vers la page de détail d'un devis.
    * @param id L'ID du devis.
    */
   viewDetails(id: number): void {
     // Navigue vers la nouvelle page de détails sous /management.
     // On passe le type de l'onglet actif dans le state.
-    this.router.navigate(['/assurance-details', id], { state: { type: this.activeTab$.value } });
+    const quoteType = this.activeTab$.value;
+    console.log(`[ManagementComponent] Navigating to details for ID: ${id} with type: '${quoteType}' using new route.`);
+    this.router.navigate(['/assurance-details', quoteType, id]);
   }
 
   /**
@@ -148,11 +153,11 @@ export class ManagementComponent implements OnInit {
   }
 
   /**
-   * Garde de type pour vérifier si un devis a une description (Habitation, Obsèques).
+   * Garde de type pour vérifier si un devis a une description (Habitation, Obsèques, RC, Voyage).
    * @param quote L'objet devis à vérifier.
-   * @returns Un booléen indiquant si le devis est de type HabitationQuoteSummary ou ObsequesQuoteSummary.
+   * @returns Un booléen indiquant si le devis est de type avec description.
    */
-  isDescriptionQuote(quote: AnyQuoteSummary): quote is HabitationQuoteSummary | ObsequesQuoteSummary | VoyageQuoteSummary {
+  isDescriptionQuote(quote: AnyQuoteSummary): quote is HabitationQuoteSummary | ObsequesQuoteSummary | RcQuoteSummary | VoyageQuoteSummary {
     return 'description' in quote;
   }
 }
