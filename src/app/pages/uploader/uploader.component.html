@@ -1,0 +1,96 @@
+<div class="container mx-auto p-4 sm:p-6 lg:p-8">
+  <div class="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md">
+
+    <button (click)="goBack()" class="mb-6 text-sm text-blue-600 hover:text-blue-800 font-medium flex items-center">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+      </svg>
+      Retour à la gestion
+    </button>
+
+    <h1 class="text-2xl font-bold text-gray-800 mb-2">Téléverser des documents</h1>
+    <p class="text-gray-600 mb-6">Pour le devis #{{ quoteId }} ({{ quoteType }})</p>
+
+    <!-- Section des fichiers déjà téléchargés -->
+    <div *ngIf="(existingFiles$ | async) as files" class="mb-8">
+      <div *ngIf="files.length > 0; else noFiles">
+        <h3 class="text-md font-medium text-gray-800 mb-3 border-b pb-2">Fichiers existants :</h3>
+        <ul class="space-y-2 mt-3">
+          <li *ngFor="let filePath of files" class="flex items-center justify-between bg-gray-50 p-3 rounded-md hover:bg-gray-100 transition-colors">
+            <div class="flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd" />
+              </svg>
+              <span class="text-sm text-gray-800">{{ filePath.split('/').pop() }}</span>
+            </div>
+            <a [href]="getDownloadUrl(filePath)" target="_blank" download class="text-sm text-blue-600 hover:text-blue-800 font-medium">Télécharger</a>
+          </li>
+        </ul>
+      </div>
+      <ng-template #noFiles>
+        <p class="text-sm text-gray-500 text-center bg-gray-50 py-4 rounded-md">Aucun fichier n'a encore été associé à ce devis.</p>
+      </ng-template>
+    </div>
+
+    <!-- Zone de sélection de fichiers -->
+    <div class="mb-6">
+      <label for="file-upload" class="block text-sm font-medium text-gray-700 mb-2">
+        Sélectionnez un ou plusieurs fichiers
+      </label>
+      <input id="file-upload" 
+             type="file" 
+             multiple 
+             (change)="onFileSelected($event)"
+             class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+             [disabled]="isUploading">
+    </div>
+
+    <!-- Liste des fichiers sélectionnés -->
+    <div *ngIf="uploadStates.length > 0" class="mb-6">
+      <h3 class="text-md font-medium text-gray-800 mb-2">Fichiers à téléverser :</h3>
+      <ul class="space-y-2">
+        <li *ngFor="let state of uploadStates" class="flex items-center justify-between bg-gray-50 p-3 rounded-md">
+          <div class="flex items-center">
+            <!-- Icône de statut -->
+            <ng-container [ngSwitch]="state.status">
+              <!-- En cours -->
+              <svg *ngSwitchCase="'uploading'" class="animate-spin h-5 w-5 mr-3 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+              <!-- Succès -->
+              <svg *ngSwitchCase="'success'" class="h-5 w-5 mr-3 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+              <!-- Erreur -->
+              <svg *ngSwitchCase="'error'" class="h-5 w-5 mr-3 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg>
+              <!-- En attente -->
+              <svg *ngSwitchDefault class="h-5 w-5 mr-3 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            </ng-container>
+            <span class="text-sm text-gray-700">{{ state.file.name }} ({{ (state.file.size / 1024).toFixed(2) }} KB)</span>
+          </div>
+          <small *ngIf="state.status === 'error'" class="text-red-600">{{ state.error || 'Erreur inconnue' }}</small>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Bouton de téléversement et indicateurs -->
+    <div class="flex items-center justify-end">
+      <button (click)="onUpload()" 
+              [disabled]="!hasPendingFiles() || isUploading"
+              class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400 disabled:cursor-not-allowed">
+        <svg *ngIf="isUploading" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        {{ isUploading ? 'Téléversement...' : 'Téléverser les fichiers' }}
+      </button>
+    </div>
+
+    <!-- Messages de statut -->
+    <div *ngIf="uploadSuccess" class="mt-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-md" role="alert">
+      <p class="font-bold">Succès !</p>
+      <p>Les fichiers ont été téléversés avec succès.</p>
+    </div>
+    <div *ngIf="errorMessage" class="mt-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md" role="alert">
+      <p class="font-bold">Erreur</p>
+      <p>{{ errorMessage }}</p>
+    </div>
+
+  </div>
+</div>

@@ -34,7 +34,7 @@
               </div>
               <div class="sm:col-span-2">
                 <label for="phone" class="block text-sm font-medium text-gray-700">Téléphone</label>
-                <input type="tel" id="phone" formControlName="phone" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                <input type="tel" id="phone" formControlName="phone" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" appPhoneFormat placeholder="+32 4XX XX XX XX" maxlength="18">
               </div>
               <div class="sm:col-span-2">
                 <label for="address" class="block text-sm font-medium text-gray-700">Adresse</label>
@@ -46,7 +46,12 @@
               </div>
               <div>
                 <label for="city" class="block text-sm font-medium text-gray-700">Ville</label>
-                <input type="text" id="city" formControlName="city" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                <select id="city" formControlName="city" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm disabled:bg-gray-100" [disabled]="(preneurCities$ | async)?.length === 0">
+                  <option [ngValue]="null" disabled>Sélectionnez une ville</option>
+                  <option *ngFor="let city of (preneurCities$ | async)" [value]="city">
+                    {{ city }}
+                  </option>
+                </select>
               </div>
               <!-- Champs spécifiques à l'assurance auto -->
               <ng-container *ngIf="quoteType === 'auto'">
@@ -124,19 +129,24 @@
               </div>
               <div class="sm:col-span-2">
                 <label for="phone" class="block text-sm font-medium text-gray-700">Téléphone</label>
-                <input type="tel" id="phone" formControlName="phone" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                <input type="tel" id="phone" formControlName="phone" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" appPhoneFormat placeholder="+32 4XX XX XX XX" maxlength="18">
               </div>
               <div class="sm:col-span-2">
                 <label for="address" class="block text-sm font-medium text-gray-700">Adresse</label>
                 <input type="text" id="address" formControlName="address" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
               </div>
               <div>
-                <label for="postalCode" class="block text-sm font-medium text-gray-700">Code Postal</label>
-                <input type="text" id="postalCode" formControlName="postalCode" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                <label for="obseques-postalCode" class="block text-sm font-medium text-gray-700">Code Postal</label>
+                <input type="text" id="obseques-postalCode" formControlName="postalCode" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
               </div>
               <div>
-                <label for="city" class="block text-sm font-medium text-gray-700">Ville</label>
-                <input type="text" id="city" formControlName="city" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                <label for="obseques-city" class="block text-sm font-medium text-gray-700">Ville</label>
+                <select id="obseques-city" formControlName="city" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm disabled:bg-gray-100" [disabled]="(obsequesCities$ | async)?.length === 0">
+                  <option [ngValue]="null" disabled>Sélectionnez une ville</option>
+                  <option *ngFor="let city of (obsequesCities$ | async)" [value]="city">
+                    {{ city }}
+                  </option>
+                </select>
               </div>
             </div>
           </div>
@@ -163,7 +173,7 @@
               </div>
               <div class="sm:col-span-2">
                 <label for="main-driver-phone" class="block text-sm font-medium text-gray-700">Téléphone</label>
-                <input type="tel" id="main-driver-phone" formControlName="phone" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                <input type="tel" id="main-driver-phone" formControlName="phone" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" appPhoneFormat placeholder="+32 4XX XX XX XX" maxlength="18">
               </div>
               <div class="sm:col-span-2">
                 <label for="main-driver-address" class="block text-sm font-medium text-gray-700">Adresse</label>
@@ -238,7 +248,7 @@
                 <div *ngIf="isMarqueLoading" class="absolute inset-y-0 right-0 flex items-center pr-3 top-6">
                   <svg class="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                 </div>
-                <ul *ngIf="(filteredMarques$ | async)?.length" class="absolute z-20 w-full bg-white border border-gray-300 rounded-md mt-1 max-h-40 overflow-y-auto">
+                <ul *ngIf="(filteredMarques$ | async)?.length && (marqueCtrl.value || '').length >= 2" class="absolute z-20 w-full bg-white border border-gray-300 rounded-md mt-1 max-h-40 overflow-y-auto">
                   <li *ngFor="let marque of filteredMarques$ | async" (click)="selectMarque(marque)" class="px-3 py-2 cursor-pointer hover:bg-gray-100">
                     {{ marque.nom }}
                   </li>
@@ -286,9 +296,9 @@
               <div class="sm:col-span-2">
                 <label for="omniumLevel" class="block text-sm font-medium text-gray-700">Niveau d'omnium</label>
                 <select id="omniumLevel" formControlName="omniumLevel" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
-                  <option value="">Aucune</option>
-                  <option value="mini">Mini Omnium</option>
-                  <option value="complete">Omnium Complète</option>
+                  <option value="non">Aucune</option>
+                  <option value="partiel">Mini Omnium</option>
+                  <option value="total">Omnium Complète</option>
                 </select>
               </div>
               <div class="flex items-center">
@@ -320,7 +330,12 @@
               </div>
               <div>
                 <label for="batiment_ville" class="block text-sm font-medium text-gray-700">Ville</label>
-                <input type="text" id="batiment_ville" formControlName="ville" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                <select id="batiment_ville" formControlName="ville" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm disabled:bg-gray-100" [disabled]="(batimentCities$ | async)?.length === 0">
+                  <option [ngValue]="null" disabled>Sélectionnez une ville</option>
+                  <option *ngFor="let city of (batimentCities$ | async)" [value]="city">
+                    {{ city }}
+                  </option>
+                </select>
               </div>
               <div class="sm:col-span-2">
                 <label for="batiment_type_maison" class="block text-sm font-medium text-gray-700">Type de maison</label>

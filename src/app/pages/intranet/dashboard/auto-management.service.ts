@@ -26,15 +26,15 @@ export class AutoManagementService {
 
   constructor(private dbConnectService: DbConnectService) { }
 
-  getAutoRequests(): Observable<AutoRequest[]> {
-    return this.dbConnectService.getAllAutoQuotes().pipe( // The service now returns Observable<RawAutoQuote[]>
-      map((rawData: RawAutoQuote[]) => {
-        console.log('[AutoManagementService] Données brutes reçues:', rawData);
-        return rawData.map(item => this.transformToAutoRequest(item)); // Use arrow function to preserve 'this' context
+  getAutoRequests(searchTerm: string, page: number, itemsPerPage: number): Observable<{ data: AutoRequest[], count: number | null }> {
+    return this.dbConnectService.getAllAutoQuotes(searchTerm, page, itemsPerPage).pipe(
+      map(response => {
+        console.log('[AutoManagementService] Données brutes reçues:', response.data);
+        return { data: response.data.map(item => this.transformToAutoRequest(item)), count: response.count };
       }),
       catchError(error => {
         console.error('[AutoManagementService] Erreur lors de la récupération des demandes auto:', error);
-        return of([]); // Return an empty array on error to prevent the stream from breaking.
+        return of({ data: [], count: 0 }); // Return an empty object on error.
       })
     );
   }

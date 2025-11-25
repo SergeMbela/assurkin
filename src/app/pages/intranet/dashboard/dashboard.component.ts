@@ -40,7 +40,10 @@ export class DashboardComponent implements OnInit {
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       // Côté client (navigateur), on lance la récupération des données et on utilise startWith.
-      const apiCall$ = this.dbConnectService.getAllAutoQuotes();
+      const searchTerm = '';
+      const page = 1;
+      const itemsPerPage = 10;
+      const apiCall$ = this.dbConnectService.getAllAutoQuotes(searchTerm, page, itemsPerPage);
       this.quotes$ = this.fetchData(apiCall$).pipe(
         startWith({ data: null, loading: true, error: null })
       );
@@ -50,12 +53,12 @@ export class DashboardComponent implements OnInit {
     }
   }
 
-  private fetchData(apiCall$: Observable<any[]>): Observable<DataState<AutoQuoteSummary[]>> {
+  private fetchData(apiCall$: Observable<{ data: any[], count: number | null }>): Observable<DataState<AutoQuoteSummary[]>> {
     return apiCall$.pipe(
-      map(rawData => {
-        console.log('[DashboardComponent] fetchData rawData:', rawData);
+      map(response => {
+        console.log('[DashboardComponent] fetchData rawData:', response.data);
         return {
-          data: rawData.map(item => ({
+          data: response.data.map(item => ({
             id: item.id,
             nom: item.preneur?.nom ?? 'N/A',
             prenom: item.preneur?.prenom ?? '',

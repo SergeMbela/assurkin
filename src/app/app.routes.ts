@@ -56,6 +56,7 @@ export const routes: Routes = [
     { path: 'intranet/gestion-auto', component: AutoManagementComponent },
     { path: 'management', component: ManagementComponent },
     { path: 'management/:type/:id', component: ManagementDetailComponent }, // Route pour l'édition détaillée
+    { path: 'management/upload/:type/:id', loadComponent: () => import('./pages/uploader/uploader.component').then(m => m.UploaderComponent) },
     // La navigation vers les détails se fait par programmation depuis management.component.ts
     { path: 'assurance-details/:type/:id', component: AssurancesDetailsComponent }, // Nouvelle route pour les détails depuis la gestion
 

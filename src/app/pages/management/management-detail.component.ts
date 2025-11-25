@@ -1,14 +1,14 @@
-import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AbstractControl, FormBuilder, FormControl, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators, FormArray, FormGroup } from '@angular/forms';
-import { DbConnectService, Assureur } from '../../services/db-connect.service';
-import { Observable, of } from 'rxjs';
-import { debounceTime, distinctUntilChanged, map, switchMap, tap, finalize, catchError } from 'rxjs/operators';
+import { DbConnectService, Assureur, Marque } from '../../services/db-connect.service';
+import { Observable, of, BehaviorSubject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, map, switchMap, tap, finalize, catchError, toArray } from 'rxjs/operators';
 import { IdCardFormatDirective } from '../../services/id-card-format.directive';
 // import { NationalNumberFormatDirective } from '../../directives/national-number-format.directive';
 import { LicensePlateFormatDirective } from '../../directives/license-plate-format.directive';
-import { UploaderService } from '../../services/uploader.service';
+import { UploaderService, UploadResult } from '../../services/uploader.service';
 import { ContractService, ContractPayload } from '../../services/contract.service';
 
 // Interface pour le payload de mise à jour du devis auto
@@ -55,12 +55,17 @@ export class ManagementDetailComponent implements OnInit {
   private fb = inject(FormBuilder);
   private uploaderService = inject(UploaderService);
   private contractService = inject(ContractService);
+  private platformId = inject(PLATFORM_ID);
 
   quoteDetails$!: Observable<{ [key: string]: any }>;
   quoteType: string | null = null;
   quoteId: number | null = null;
   showMainDriverSection: boolean = false;
   nationalities$!: Observable<any[]>;
+  preneurCities$ = new BehaviorSubject<string[]>([]);
+  conducteurCities$ = new BehaviorSubject<string[]>([]);
+  batimentCities$ = new BehaviorSubject<string[]>([]);
+  obsequesCities$ = new BehaviorSubject<string[]>([]);
 
   // FormControls pour l'auto-complétion de la marque
   marqueCtrl = new FormControl('');
@@ -205,24 +210,77 @@ export class ManagementDetailComponent implements OnInit {
     // Charge la liste des nationalités pour les listes déroulantes
     this.nationalities$ = this.dbService.getNationalities();
 
+    if (isPlatformBrowser(this.platformId)) {
+      const preneurPostalCodeControl = this.quoteUpdateForm.get('Preneur d\'assurance.postalCode');
+      if (preneurPostalCodeControl) {
+        preneurPostalCodeControl.valueChanges.pipe(
+          debounceTime(300),
+          distinctUntilChanged(),
+          switchMap(pc => pc && pc.length >= 4 ? this.dbService.getCitiesByPostalCode(pc) : of([])),          
+        ).subscribe(cities => {
+          this.preneurCities$.next(cities);
+          // On vérifie si la ville actuelle est dans la nouvelle liste. Sinon, on la réinitialise.
+          const cityControl = this.quoteUpdateForm.get('Preneur d\'assurance.city');
+          const currentCity = cityControl?.value;
+          if (currentCity && !cities.includes(currentCity)) {
+            cityControl.reset();
+          }
+        });
+      }
+
+      const batimentPostalCodeControl = this.quoteUpdateForm.get('Bâtiment.codePostal');
+      if (batimentPostalCodeControl) {
+        batimentPostalCodeControl.valueChanges.pipe(
+          debounceTime(300),
+          distinctUntilChanged(),
+          switchMap(pc => pc && pc.length >= 4 ? this.dbService.getCitiesByPostalCode(pc) : of([]))
+        ).subscribe(cities => {
+          this.batimentCities$.next(cities);
+          const cityControl = this.quoteUpdateForm.get('Bâtiment.ville');
+          const currentCity = cityControl?.value;
+          if (currentCity && !cities.includes(currentCity)) {
+            cityControl.reset();
+          }
+        });
+      }
+
+      const obsequesPostalCodeControl = this.quoteUpdateForm.get('Preneur Obsèques.postalCode');
+      if (obsequesPostalCodeControl) {
+        obsequesPostalCodeControl.valueChanges.pipe(
+          debounceTime(300),
+          distinctUntilChanged(),
+          switchMap(pc => pc && pc.length >= 4 ? this.dbService.getCitiesByPostalCode(pc) : of([]))
+        ).subscribe(cities => {
+          this.obsequesCities$.next(cities);
+          const cityControl = this.quoteUpdateForm.get('Preneur Obsèques.city');
+          const currentCity = cityControl?.value;
+          if (currentCity && !cities.includes(currentCity)) {
+            cityControl.reset();
+          }
+        });
+      }
+    }
+
     // Logique d'auto-complétion pour la marque du véhicule
     this.filteredMarques$ = this.marqueCtrl.valueChanges.pipe(
       debounceTime(300),
       distinctUntilChanged(),
-      tap(() => {
+      tap((value) => {
         // Chaque fois que l'utilisateur tape dans le champ marque, on réinitialise le modèle.
         this.quoteUpdateForm.get('Véhicule.model')?.setValue('');
         this.modelesForSelectedMarque = [];
         this.selectedMarqueId = null;
+        // On active le loader si l'utilisateur a tapé assez de caractères
+        this.isMarqueLoading = (value || '').length >= 2;
       }),
       switchMap(value => {
-        if (value && value.length >= 3) {
-          this.isMarqueLoading = true;
+        if (value && value.length >= 2) { // Seuil abaissé à 2 caractères
           return this.dbService.searchMarques(value).pipe(
             finalize(() => this.isMarqueLoading = false)
           );
         }
-        return of([]); // Retourne une liste vide si moins de 3 caractères
+        this.isMarqueLoading = false; // S'assurer que le loader est désactivé
+        return of([]); // Retourne une liste vide si pas assez de caractères
       })
     );
 
@@ -253,6 +311,14 @@ export class ManagementDetailComponent implements OnInit {
         nationality: preneurData.nationality,
         maritalStatus: preneurData.marital_status
       });
+    }
+
+    // Après avoir patché les données, on déclenche la recherche de ville pour le code postal initial
+    if (isPlatformBrowser(this.platformId)) {
+      const preneurPostalCode = this.quoteUpdateForm.get("Preneur d'assurance.postalCode")?.value;
+      if (preneurPostalCode) {
+        this.dbService.getCitiesByPostalCode(preneurPostalCode).subscribe(cities => this.preneurCities$.next(cities));
+      }
     }
 
     // Gérer le conducteur principal (spécifique à 'auto')
@@ -288,6 +354,24 @@ export class ManagementDetailComponent implements OnInit {
         });
         // Initialise le champ d'auto-complétion de la marque
         this.marqueCtrl.setValue(details.vehicule.marque || '', { emitEvent: false });
+
+        // Après avoir patché la marque, on charge les modèles correspondants
+        if (details.vehicule.marque) {
+          this.dbService.searchMarques(details.vehicule.marque).pipe(
+            tap(marques => {
+              if (marques && marques.length > 0) {
+                const marqueTrouvee = marques[0];
+                this.selectedMarqueId = marqueTrouvee.marque_id;
+                this.isModeleLoading = true;
+                this.dbService.searchModeles(this.selectedMarqueId).pipe(
+                  finalize(() => this.isModeleLoading = false)
+                ).subscribe(modeles => {
+                  this.modelesForSelectedMarque = modeles;
+                });
+              }
+            })
+          ).subscribe();
+        }
       }
 
       // Gérer les garanties auto
@@ -326,6 +410,12 @@ export class ManagementDetailComponent implements OnInit {
         assistance: details.garantie_assistance,
         dateEffet: formatDate(details.date_effet)
       });
+
+      // Charger les villes pour le bâtiment au chargement initial
+      if (isPlatformBrowser(this.platformId) && details.batiment_code_postal) {
+        this.dbService.getCitiesByPostalCode(details.batiment_code_postal)
+          .subscribe(cities => this.batimentCities$.next(cities));
+      }
     }
 
     // Gérer les détails spécifiques à 'obseques'
@@ -342,6 +432,12 @@ export class ManagementDetailComponent implements OnInit {
           postalCode: details.preneur.code_postal,
           city: details.preneur.ville,
         });
+
+        // Charger les villes pour le preneur obsèques au chargement initial
+        if (isPlatformBrowser(this.platformId) && details.preneur.code_postal) {
+          this.dbService.getCitiesByPostalCode(details.preneur.code_postal)
+            .subscribe(cities => this.obsequesCities$.next(cities));
+        }
       }
       this.quoteUpdateForm.get('Assurés.preneurEstAssure')?.setValue(details.preneur_est_assure);
       const assuresData = details.assures as any[];
@@ -456,39 +552,8 @@ export class ManagementDetailComponent implements OnInit {
   // Gère la sélection de fichiers pour le contrat
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;    
-    const originalFilesList = input.files;
-
-    if (!originalFilesList || originalFilesList.length === 0) {
-      return;
-    }
-
-    if (!this.quoteId || !this.quoteType) {
-      console.error("L'ID ou le type de devis n'est pas disponible pour renommer les fichiers.");
-      // On utilise les fichiers originaux si les infos manquent
-      this.contractForm.patchValue({ fichiers_contrat: Array.from(originalFilesList) });
-      return;
-    }
-
-    // Formate la date en YYYYMMDD
-    const date = new Date();
-    const formattedDate = `${date.getFullYear()}${(date.getMonth() + 1).toString().padStart(2, '0')}${date.getDate().toString().padStart(2, '0')}`;
-
-    const renamedFiles: File[] = [];
-    const baseName = `${this.quoteId}_${this.quoteType}_${formattedDate}`;
-
-    for (let i = 0; i < originalFilesList.length; i++) {
-      const originalFile = originalFilesList[i];
-      const fileExtension = originalFile.name.split('.').pop();
-      // Le nom final sera par ex: 9_auto_20251123_1.pdf
-      const newName = `${baseName}_${i + 1}.${fileExtension}`;
-      
-      // On crée un nouveau fichier avec le même contenu mais un nouveau nom
-      const renamedFile = new File([originalFile], newName, { type: originalFile.type });
-      renamedFiles.push(renamedFile);
-    }
-
-    // On stocke les fichiers renommés dans le formulaire
-    this.contractForm.patchValue({ fichiers_contrat: renamedFiles });
+    const files = input.files ? Array.from(input.files) : null;
+    this.contractForm.patchValue({ fichiers_contrat: files });
   }
 
 
@@ -504,18 +569,38 @@ export class ManagementDetailComponent implements OnInit {
     }
 
     const contractValue = this.contractForm.value;
-    const filesToUpload = contractValue.fichiers_contrat;
+    const originalFiles = contractValue.fichiers_contrat;
+
+    let filesToUpload: File[] = [];
+    if (originalFiles && originalFiles.length > 0) {
+      // La logique de renommage est déplacée ici pour garantir que quoteId et quoteType sont disponibles.
+      const date = new Date();
+      const formattedDate = `${date.getFullYear()}${(date.getMonth() + 1).toString().padStart(2, '0')}${date.getDate().toString().padStart(2, '0')}`;
+      const baseName = `${this.quoteId}_${this.quoteType}_${formattedDate}`;
+
+      filesToUpload = originalFiles.map((originalFile, i) => {
+        const fileExtension = originalFile.name.split('.').pop();
+        const newName = `${baseName}_${i + 1}.${fileExtension}`;
+        return new File([originalFile], newName, { type: originalFile.type });
+      });
+    }
 
     // Crée un observable qui gère le téléversement. S'il n'y a pas de fichiers, il émet un tableau vide.
-    const upload$ = (filesToUpload && filesToUpload.length > 0)
-      ? this.uploaderService.uploadContractFiles(filesToUpload, this.quoteId!, this.quoteType)
-      : of([]);
+    const upload$ = (filesToUpload.length > 0)
+      ? this.uploaderService.uploadContractFiles(filesToUpload, this.quoteId, this.quoteType).pipe(
+          toArray() // Collecte tous les résultats de téléversement en un seul tableau
+        )
+      : of([]); // Émet un tableau vide s'il n'y a pas de fichiers
 
     upload$.pipe(
-      switchMap(uploadedFilePaths => {
-        // 'uploadedFilePaths' est le tableau des chemins des fichiers retourné par Supabase.
-        console.log('Fichiers téléversés:', uploadedFilePaths);
-
+      map((results: (UploadResult | null)[]) => 
+        // Filtre les résultats pour ne garder que les succès et extrait leurs chemins.
+        // Le `filter(Boolean)` retire les `null` potentiels du tableau.
+        results.filter((r): r is UploadResult => !!r && r.status === 'success')
+               .map(r => r.path!)
+      ),
+      switchMap(successfulPaths => {
+        console.log('Fichiers téléversés avec succès:', successfulPaths);
         // Prépare les données à sauvegarder dans votre base de données.
         const contractPayload: ContractPayload = {
           quote_id: this.quoteId!,
@@ -524,7 +609,8 @@ export class ManagementDetailComponent implements OnInit {
           date_contrat: contractValue.date_contrat!,
           periodicite: contractValue.periodicite!,
           rappel: contractValue.rappel!,
-          document_paths: uploadedFilePaths, // Ajoute les chemins des documents
+          document_paths: successfulPaths, // Ajoute les chemins des documents
+          uid: crypto.randomUUID() // Ajoute un identifiant unique pour la ligne
         };
 
         console.log('Données du contrat à sauvegarder:', contractPayload);

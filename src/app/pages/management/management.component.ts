@@ -4,7 +4,7 @@ import { Router, RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { ManagementService, DataState, AutoQuoteSummary, HabitationQuoteSummary, ObsequesQuoteSummary, VoyageQuoteSummary, RcQuoteSummary } from '../../services/management.service';
 import { Observable, combineLatest, BehaviorSubject, of } from 'rxjs';
-import { map, startWith, shareReplay, tap, switchMap } from 'rxjs/operators';
+import { map, startWith, shareReplay, tap, switchMap, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { StateContainerComponent } from '../../state-container.component';
 
 type QuoteType = 'auto' | 'habitation' | 'obseques' | 'rc' | 'voyage';
@@ -43,7 +43,7 @@ export class ManagementComponent implements OnInit {
 
   // Observable final pour le template
   vm$!: Observable<{
-    state: DataState<AnyQuoteSummary[]>;
+    state: DataState<{ quotes: AnyQuoteSummary[], totalItems: number }>;
     pagination: {
       currentPage: number;
       totalPages: number;
@@ -53,70 +53,60 @@ export class ManagementComponent implements OnInit {
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
-      const quotesData$ = this.activeTab$.pipe(
-        switchMap(tabId => {
-          console.log(`[ManagementComponent] Fetching data for insurance type: '${tabId}'`);
-          switch (tabId) {
-            case 'auto':
-              return this.managementService.getAutoQuotesState();
-            case 'habitation':
-              return this.managementService.getHabitationQuotesState();
-            case 'obseques':
-              return this.managementService.getObsequesQuotesState();
-            // Pour RC et Voyage, on retourne un état vide pour l'instant
-            case 'rc':
-              return this.managementService.getRcQuotesState();
-            case 'voyage':
-              return this.managementService.getVoyageQuotesState();
-            default:
-              return of({ data: [], loading: false, error: null });
-          }
-        }),
-        shareReplay(1)
-      );
-
       const searchTerm$ = this.searchControl.valueChanges.pipe(
         startWith(''), // Émet une valeur initiale pour que le filtre s'applique au chargement
+        debounceTime(300), // Attend 300ms après la dernière frappe
+        distinctUntilChanged(), // N'émet que si la valeur a changé
         tap(() => this.currentPage$.next(1)) // Réinitialise à la page 1 à chaque nouvelle recherche
       );
 
-      this.vm$ = combineLatest([quotesData$, searchTerm$, this.currentPage$]).pipe(
-        map(([state, searchTerm, currentPage]) => {
-          // Si chargement, erreur, ou pas de données, on retourne l'état tel quel.
-          if (state.loading || state.error || !state.data) {
-            return { state, pagination: null };
+      this.vm$ = combineLatest([this.activeTab$, searchTerm$, this.currentPage$]).pipe(
+        switchMap(([tabId, searchTerm, currentPage]) => {
+          console.log(`[ManagementComponent] Fetching data for tab: '${tabId}', search: '${searchTerm}', page: ${currentPage}`);
+          // La logique de fetch est maintenant DANS le switchMap pour réagir à tous les changements
+          let apiCall$: Observable<DataState<{ quotes: AnyQuoteSummary[], totalItems: number }>>;
+          switch (tabId) {
+            case 'auto':
+              apiCall$ = this.managementService.getAutoQuotesState(searchTerm || '', currentPage, this.itemsPerPage);
+              break;
+            case 'habitation':
+              apiCall$ = this.managementService.getHabitationQuotesState(searchTerm || '', currentPage, this.itemsPerPage);
+              break;
+            case 'obseques':
+              apiCall$ = this.managementService.getObsequesQuotesState(searchTerm || '', currentPage, this.itemsPerPage);
+              break;
+            case 'rc':
+              apiCall$ = this.managementService.getRcQuotesState(searchTerm || '', currentPage, this.itemsPerPage);
+              break;
+            case 'voyage':
+              apiCall$ = this.managementService.getVoyageQuotesState(searchTerm || '', currentPage, this.itemsPerPage);
+              break;
+            default:
+              apiCall$ = of({ data: { quotes: [], totalItems: 0 }, loading: false, error: null });
           }
-
-          // 1. Filtrage des données
-          const lowerCaseSearchTerm = (searchTerm || '').toLowerCase();
-          const filteredData = state.data.filter(quote =>
-            quote.nom.toLowerCase().includes(lowerCaseSearchTerm) ||
-            quote.prenom.toLowerCase().includes(lowerCaseSearchTerm) ||
-            String(quote.id).includes(lowerCaseSearchTerm) || // Recherche par ID
-            (this.isAutoQuote(quote) && (quote.marqueVehicule + ' ' + quote.modeleVehicule).toLowerCase().includes(lowerCaseSearchTerm)) || // Recherche sur véhicule
-            (this.isDescriptionQuote(quote) && quote.description.toLowerCase().includes(lowerCaseSearchTerm)) // Recherche sur description
+          return apiCall$.pipe(
+            map((state: DataState<{ quotes: AnyQuoteSummary[], totalItems: number }>) => {
+              if (state.loading || state.error || !state.data) {
+                return { state, pagination: null };
+              }
+              const totalItems = state.data.totalItems;
+              const totalPages = Math.ceil(totalItems / this.itemsPerPage);
+              return {
+                state: { ...state, data: { quotes: state.data.quotes, totalItems: state.data.totalItems } },
+                pagination: {
+                  currentPage,
+                  totalPages,
+                  totalItems
+                }
+              };
+            })
           );
-
-          // 2. Calcul de la pagination
-          const totalItems = filteredData.length;
-          const totalPages = Math.ceil(totalItems / this.itemsPerPage);
-          const startIndex = (currentPage - 1) * this.itemsPerPage;
-          const paginatedData = filteredData.slice(startIndex, startIndex + this.itemsPerPage);
-
-          return {
-            state: { ...state, data: paginatedData }, // L'état contient maintenant les données paginées
-            pagination: {
-              currentPage,
-              totalPages,
-              totalItems
-            }
-          };
         })
       );
     } else {
       // Côté serveur, on initialise vm$ avec un état vide pour éviter les erreurs.
       this.vm$ = of({
-        state: { data: [], loading: false, error: null },
+        state: { data: { quotes: [], totalItems: 0 }, loading: true, error: null },
         pagination: null
       });
     }

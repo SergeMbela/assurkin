@@ -29,12 +29,12 @@
       errorMessage="Une erreur est survenue lors du chargement des devis.">
 
       <!-- ===== AUCUNE DONNÉE ===== -->
-      <div *ngIf="!vm.state.data || vm.state.data.length === 0" class="text-center py-10 px-4 bg-gray-50 rounded-lg">
+      <div *ngIf="!vm.state.data || vm.state.data.quotes.length === 0" class="text-center py-10 px-4 bg-gray-50 rounded-lg">
         <p class="text-gray-500">Aucun devis trouvé pour cette catégorie ou correspondant à votre recherche.</p>
       </div>
 
       <!-- ===== TABLEAU DE DONNÉES ===== -->
-      <div *ngIf="vm.state.data && vm.state.data.length > 0" class="shadow-md rounded-lg overflow-x-auto">
+      <div *ngIf="vm.state.data && vm.state.data.quotes.length > 0" class="shadow-md rounded-lg overflow-x-auto">
         <table class="w-full text-sm text-left text-gray-600">
           <thead class="text-xs text-gray-700 uppercase bg-gray-100">
             <tr class="border-b">
@@ -44,12 +44,13 @@
               <th scope="col" class="px-6 py-3">{{ (activeTab$ | async) === 'auto' ? 'Véhicule' : 'Description' }}</th>
               <th scope="col" class="px-6 py-3">Date de la demande</th>
               <th scope="col" class="px-6 py-3">Statut</th>
-              <th scope="col" class="px-6 py-3">Gérer</th>
+              <th scope="col" class="px-6 py-3">Clients</th>
+              <th scope="col" class="px-6 py-3">Documents</th>
               <th scope="col" class="px-6 py-3">Détails</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let quote of vm.state.data" class="bg-white border-b hover:bg-gray-50 transition-colors duration-200">
+            <tr *ngFor="let quote of vm.state.data.quotes" class="bg-white border-b hover:bg-gray-50 transition-colors duration-200">
               <td class="px-6 py-4 font-semibold text-gray-900 whitespace-nowrap">#{{ quote.id }}</td>
               <td class="px-6 py-4">{{ quote.prenom }} {{ quote.nom }}</td>
               <td class="px-6 py-4 truncate max-w-xs">
@@ -61,13 +62,19 @@
                 </ng-container>
               </td>
               <td class="px-6 py-4">{{ quote.dateDemande | date:'dd/MM/yyyy HH:mm' }}</td>
-              <td class="px-6 py-4">
-                <span class="px-2.5 py-0.5 rounded-full text-xs font-medium" [ngClass]="{ 'bg-blue-100 text-blue-800': quote.statut === 'Nouveau', 'bg-yellow-100 text-yellow-800': quote.statut === 'En cours', 'bg-green-100 text-green-800': quote.statut === 'Terminé' }">
+              <td class="px-6 py-4">                
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-medium" [ngClass]="{ 
+                  'bg-blue-100 text-blue-800': quote.statut === 'Nouveau', 
+                  'bg-yellow-100 text-yellow-800': quote.statut === 'En cours' || quote.statut === 'En attente', 
+                  'bg-green-100 text-green-800': quote.statut === 'Terminé' }">
                   {{ quote.statut || 'Nouveau' }}
                 </span>
               </td>
               <td class="px-6 py-4">
                 <a [routerLink]="['/management', (activeTab$ | async), quote.id]" class="text-blue-600 hover:text-blue-800 font-medium">Gérer</a>
+              </td>
+              <td class="px-6 py-4">
+                <a [routerLink]="['/management/upload', (activeTab$ | async), quote.id]" class="text-blue-600 hover:text-blue-800 font-medium">Gérer</a>
               </td>
               <td class="px-6 py-4">
                 <button (click)="viewDetails(quote.id)" class="text-indigo-600 hover:text-indigo-800 font-medium">Voir détails</button>

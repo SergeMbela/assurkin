@@ -72,54 +72,65 @@ export class ManagementService {
    * Récupère l'état des devis auto, en gérant le rendu côté client et serveur (SSR).
    * @returns Un Observable de l'état des données (chargement, données, erreur).
    */
-  getAutoQuotesState(): Observable<DataState<AutoQuoteSummary[]>> {
+  getAutoQuotesState(searchTerm: string, page: number, itemsPerPage: number): Observable<DataState<{ quotes: AutoQuoteSummary[], totalItems: number }>> {
     if (isPlatformBrowser(this.platformId)) {
-      return this.fetchAndMapAutoData(this.db.getAllAutoQuotes());
+      // On passe maintenant les paramètres de recherche et de pagination
+      const apiCall$ = this.db.getAllAutoQuotes(searchTerm, page, itemsPerPage);
+      return this.fetchAndMapAutoData(apiCall$);
     } else {
       // Côté serveur : on retourne un état stable et vide pour ne pas bloquer le rendu.
-      return of({ data: [], loading: false, error: null });
+      return of({ data: { quotes: [], totalItems: 0 }, loading: false, error: null });
     }
   }
 
-  getHabitationQuotesState(): Observable<DataState<HabitationQuoteSummary[]>> {
+  getHabitationQuotesState(searchTerm: string, page: number, itemsPerPage: number): Observable<DataState<{ quotes: HabitationQuoteSummary[], totalItems: number }>> {
     if (isPlatformBrowser(this.platformId)) {
-      const apiCall$ = this.db.getAllHabitationQuotes();
+      const apiCall$ = this.db.getAllHabitationQuotes(searchTerm, page, itemsPerPage);
       return this.fetchAndMapHabitationData(apiCall$);
     } else {
-      return of({ data: [], loading: false, error: null });
+      return of({ data: { quotes: [], totalItems: 0 }, loading: false, error: null });
     }
   }
 
-  getObsequesQuotesState(): Observable<DataState<ObsequesQuoteSummary[]>> {
+  getObsequesQuotesState(searchTerm: string, page: number, itemsPerPage: number): Observable<DataState<{ quotes: ObsequesQuoteSummary[], totalItems: number }>> {
     if (isPlatformBrowser(this.platformId)) {
-      const apiCall$ = this.db.getAllObsequesQuotes();
+      const apiCall$ = this.db.getAllObsequesQuotes(searchTerm, page, itemsPerPage);
       return this.fetchAndMapObsequesData(apiCall$);
     } else {
-      return of({ data: [], loading: false, error: null });
+      return of({ data: { quotes: [], totalItems: 0 }, loading: false, error: null });
     }
   }
 
-  getVoyageQuotesState(): Observable<DataState<VoyageQuoteSummary[]>> {
+  getVoyageQuotesState(searchTerm: string, page: number, itemsPerPage: number): Observable<DataState<{ quotes: VoyageQuoteSummary[], totalItems: number }>> {
     if (isPlatformBrowser(this.platformId)) {
-      const apiCall$ = this.db.getAllVoyageQuotes();
-      return this.fetchAndMapVoyageData(apiCall$);
-    } else {
-      return of({ data: [], loading: false, error: null });
-    }
-  }
-
-  getRcQuotesState(): Observable<DataState<RcQuoteSummary[]>> {
-    if (isPlatformBrowser(this.platformId)) {
-      return this.db.getAllRcQuotes().pipe(
+      // TODO: Mettre à jour getAllVoyageQuotes pour la pagination et la recherche
+      const apiCall$ = this.db.getAllVoyageQuotes(/* searchTerm, page, itemsPerPage */).pipe(
         map(data => ({
-          data: data.map(item => ({
-            id: item.id,
-            nom: item.preneur_nom,
-            prenom: item.preneur_prenom,
-            dateDemande: item.created_at,
-            statut: item.statut || 'Nouveau', // 'statut' n'est pas dans la table, on met une valeur par défaut
-            description: `Risque: ${item.risque}`
-          })),
+          data: data,
+          count: data.length // Simule le comptage total en attendant la mise à jour de l'API
+        }))
+      );
+      return this.fetchAndMapVoyageData(apiCall$ as Observable<{ data: any[], count: number | null }>);
+    } else {
+      return of({ data: { quotes: [], totalItems: 0 }, loading: false, error: null });
+    }
+  }
+
+  getRcQuotesState(searchTerm: string, page: number, itemsPerPage: number): Observable<DataState<{ quotes: RcQuoteSummary[], totalItems: number }>> {
+    if (isPlatformBrowser(this.platformId)) {
+      // TODO: Mettre à jour getAllRcQuotes pour la pagination et la recherche
+      return this.db.getAllRcQuotes(/* searchTerm, page, itemsPerPage */).pipe(
+        map(response => ({
+          data: { // Assuming response is an array of quote items
+            quotes: response.map((item: any) => ({
+              id: item.id,
+              nom: item.preneur_nom,
+              prenom: item.preneur_prenom,
+              dateDemande: item.created_at,
+              statut: item.statut || 'Nouveau', // 'statut' n'est pas dans la table, on met une valeur par défaut
+              description: `Risque: ${item.risque}`
+            })), totalItems: response.length // Simulate totalItems since API doesn't provide it
+          },
           loading: false,
           error: null
         })),
@@ -127,19 +138,22 @@ export class ManagementService {
         catchError(error => of({ data: null, loading: false, error }))
       );
     } else {
-      return of({ data: [], loading: false, error: null });
+      return of({ data: { quotes: [], totalItems: 0 }, loading: false, error: null });
     }
   }
 
   // Méthodes pour les autres types de devis (RC, Voyage) à implémenter ici...
   getEmptyState<T>(): Observable<DataState<T>> {
-    return of({ data: [] as unknown as T, loading: false, error: null });
+    return of({ data: { quotes: [], totalItems: 0 } as unknown as T, loading: false, error: null });
   }
 
-  private fetchAndMapVoyageData(apiCall$: Observable<any[]>): Observable<DataState<VoyageQuoteSummary[]>> {
+  private fetchAndMapVoyageData(apiCall$: Observable<{ data: any[], count: number | null }>): Observable<DataState<{ quotes: VoyageQuoteSummary[], totalItems: number }>> {
     return apiCall$.pipe(
-      map(rawData => ({
-        data: rawData.map(item => ({ id: item.id, nom: item.nom ?? 'N/A', prenom: item.prenom ?? '', dateDemande: item.date_created, statut: item.statut || 'Nouveau', description: item.description || 'Aucun message' })),
+      map(response => ({
+        data: {
+          quotes: response.data.map(item => ({ id: item.id, nom: item.nom ?? 'N/A', prenom: item.prenom ?? '', dateDemande: item.date_created, statut: item.statut || 'Nouveau', description: item.description || 'Aucun message' })),
+          totalItems: response.count ?? 0
+        },
         loading: false,
         error: null
       })),
@@ -148,40 +162,46 @@ export class ManagementService {
     );
   }
 
-  private fetchAndMapHabitationData(apiCall$: Observable<any[]>): Observable<DataState<HabitationQuoteSummary[]>> {
+  private fetchAndMapHabitationData(apiCall$: Observable<{ data: any[], count: number | null }>): Observable<DataState<{ quotes: HabitationQuoteSummary[], totalItems: number }>> {
     return apiCall$.pipe(
-      map(rawData => ({
-        data: rawData.map((item: any) => ({ // Ajout du type 'any' pour la clarté
-          id: item.id,
-          nom: item.preneur?.nom ?? 'N/A',
-          prenom: item.preneur?.prenom ?? '',
-          dateDemande: item.created_at,
-          statut: item.statut || 'Nouveau',
-          description: `${item.batiment_type_maison} - ${item.batiment_adresse}`
-        })),
-        loading: false,
-        error: null
-      })),
-      catchError(error => of({ data: null, loading: false, error })),
-      startWith({ data: null, loading: true, error: null })
-    );
-  }
-
-  private fetchAndMapAutoData(apiCall$: Observable<any[]>): Observable<DataState<AutoQuoteSummary[]>> {
-    return apiCall$.pipe(
-      map(rawData => {
-        console.log('[ManagementService] Données brutes reçues de la DB:', rawData);
-        return {
-          data: rawData.map(item => ({
+      map(response => ({
+        data: {
+          quotes: response.data.map((item: any) => ({
             id: item.id,
             nom: item.preneur?.nom ?? 'N/A',
             prenom: item.preneur?.prenom ?? '',
             dateDemande: item.created_at,
             statut: item.statut || 'Nouveau',
-            typeVehicule: item.vehicules?.type ?? 'N/A',
-            marqueVehicule: item.vehicules?.marque ?? 'N/A',
-            modeleVehicule: item.vehicules?.modele ?? 'N/A'
+            description: `${item.batiment_type_maison} - ${item.batiment_adresse}`
           })),
+          totalItems: response.count ?? 0
+        },
+        loading: false,
+        error: null
+      })),
+      catchError(error => of({ data: null, loading: false, error })),
+      startWith({ data: null, loading: true, error: null })
+    );
+  }
+
+  private fetchAndMapAutoData(apiCall$: Observable<{ data: any[], count: number | null }>): Observable<DataState<{ quotes: AutoQuoteSummary[], totalItems: number }>> {
+    return apiCall$.pipe(
+      map(response => {
+        console.log('[ManagementService] Données brutes reçues de la DB:', response.data);
+        return {
+          data: {
+            quotes: response.data.map(item => ({
+              id: item.id,
+              nom: item.preneur?.nom ?? 'N/A',
+              prenom: item.preneur?.prenom ?? '',
+              dateDemande: item.created_at,
+              statut: item.statut || 'Nouveau',
+              typeVehicule: item.vehicules?.type ?? 'N/A',
+              marqueVehicule: item.vehicules?.marque ?? 'N/A',
+              modeleVehicule: item.vehicules?.modele ?? 'N/A'
+            })),
+            totalItems: response.count ?? 0
+          },
           loading: false,
           error: null
         };
@@ -195,17 +215,20 @@ export class ManagementService {
     );
   }
 
-  private fetchAndMapObsequesData(apiCall$: Observable<any[]>): Observable<DataState<ObsequesQuoteSummary[]>> {
+  private fetchAndMapObsequesData(apiCall$: Observable<{ data: any[], count: number | null }>): Observable<DataState<{ quotes: ObsequesQuoteSummary[], totalItems: number }>> {
     return apiCall$.pipe(
-      map(rawData => ({
-        data: rawData.map((item: any) => ({ // Ajout du type 'any' pour la clarté
-          id: item.id,
-          nom: item.preneur?.nom ?? 'N/A',
-          prenom: item.preneur?.prenom ?? '',
-          dateDemande: item.created_at,
-          statut: item.statut || 'Nouveau',
-          description: `Devis pour ${item.nombre_assures} personne(s)`
-        })),
+      map(response => ({
+        data: {
+          quotes: response.data.map((item: any) => ({
+            id: item.id,
+            nom: item.preneur?.nom ?? 'N/A',
+            prenom: item.preneur?.prenom ?? '',
+            dateDemande: item.created_at,
+            statut: item.statut || 'Nouveau',
+            description: `Devis pour ${item.nombre_assures} personne(s)`
+          })),
+          totalItems: response.count ?? 0
+        },
         loading: false,
         error: null
       })),

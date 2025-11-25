@@ -1072,57 +1072,79 @@ export class DbConnectService {
 
   /**
    * Récupère tous les devis d'assurance auto pour le tableau de bord de gestion.
+   * @param searchTerm Le terme de recherche pour filtrer les résultats.
+   * @param page La page actuelle pour la pagination.
+   * @param itemsPerPage Le nombre d'éléments par page.
    * @returns Un Observable avec la liste des devis.
    */
-  getAllAutoQuotes(): Observable<any[]> {
-    return from(
-      this.supabase.supabase
-        .from('devis_assurance')
-        .select(`
+  getAllAutoQuotes(searchTerm: string, page: number, itemsPerPage: number): Observable<{ data: any[], count: number | null }> {
+    const rangeFrom = (page - 1) * itemsPerPage;
+    const rangeTo = rangeFrom + itemsPerPage - 1;
+
+    let query = this.supabase.supabase
+      .from('devis_assurance')
+      .select(`
           id,
           created_at,
           statut,
           preneur:personnes!devis_assurance_preneur_id_fkey ( nom, prenom ),
           vehicules ( type, marque, modele )
-        `)
-        .order('created_at', { ascending: false })
-    ).pipe(
-      map(response => {
-        if (response.error) {
-          console.error('Erreur lors de la récupération de tous les devis auto:', response.error);
-          throw response.error;
-        }
-        console.log('[DbConnectService] getAllAutoQuotes response:', response.data);
-        return response.data || [];
-      })
+        `, { count: 'exact' }) // On demande le compte total
+      .order('created_at', { ascending: false })
+      .range(rangeFrom, rangeTo); // On applique la pagination
+
+    // On applique le filtre si un terme de recherche est fourni
+    if (searchTerm) {
+      const searchPattern = `%${searchTerm}%`;
+      query = query.or(
+        `preneur.nom.ilike.${searchPattern},preneur.prenom.ilike.${searchPattern},vehicules.marque.ilike.${searchPattern},vehicules.modele.ilike.${searchPattern}`
+      );
+    }
+
+    return from(query).pipe(
+      map(response => ({
+        data: response.data || [],
+        count: response.count
+      }))
     );
   }
 
   /**
    * Récupère tous les devis d'assurance habitation pour le tableau de bord de gestion.
+   * @param searchTerm Le terme de recherche pour filtrer les résultats.
+   * @param page La page actuelle pour la pagination.
+   * @param itemsPerPage Le nombre d'éléments par page.
    * @returns Un Observable avec la liste des devis.
    */
-  getAllHabitationQuotes(): Observable<any[]> {
-    return from(
-      this.supabase.supabase
-        .from('habitation_quotes')
-        .select(`
+  getAllHabitationQuotes(searchTerm: string, page: number, itemsPerPage: number): Observable<{ data: any[], count: number | null }> {
+    const rangeFrom = (page - 1) * itemsPerPage;
+    const rangeTo = rangeFrom + itemsPerPage - 1;
+
+    let query = this.supabase.supabase
+      .from('habitation_quotes')
+      .select(`
           id,
           created_at,
           statut,
           batiment_adresse,
           batiment_type_maison,
           preneur:personnes!habitation_quotes_preneur_id_fkey ( nom, prenom )
-        `)
-        .order('created_at', { ascending: false })
-    ).pipe(
-      map(response => {
-        if (response.error) {
-          console.error('Erreur lors de la récupération de tous les devis habitation:', response.error);
-          throw response.error;
-        }
-        return response.data || [];
-      })
+        `, { count: 'exact' })
+      .order('created_at', { ascending: false })
+      .range(rangeFrom, rangeTo);
+
+    if (searchTerm) {
+      const searchPattern = `%${searchTerm}%`;
+      query = query.or(
+        `preneur.nom.ilike.${searchPattern},preneur.prenom.ilike.${searchPattern},batiment_adresse.ilike.${searchPattern}`
+      );
+    }
+
+    return from(query).pipe(
+      map(response => ({
+        data: response.data || [],
+        count: response.count
+      }))
     );
   }
 
@@ -1130,17 +1152,28 @@ export class DbConnectService {
    * Récupère tous les devis d'assurance obsèques pour le tableau de bord de gestion.
    * @returns Un Observable avec la liste des devis.
    */
-  getAllObsequesQuotes(): Observable<any[]> {
-    return from(
-      this.supabase.supabase
-        .from('obseques_quotes')
-        .select(`id, created_at, statut, nombre_assures, preneur:personnes!obseques_quotes_preneur_id_fkey ( nom, prenom )`)
-        .order('created_at', { ascending: false })
-    ).pipe(
-      map(response => {
-        if (response.error) throw response.error;
-        return response.data || [];
-      })
+  getAllObsequesQuotes(searchTerm: string, page: number, itemsPerPage: number): Observable<{ data: any[], count: number | null }> {
+    const rangeFrom = (page - 1) * itemsPerPage;
+    const rangeTo = rangeFrom + itemsPerPage - 1;
+
+    let query = this.supabase.supabase
+      .from('obseques_quotes')
+      .select(`id, created_at, statut, nombre_assures, preneur:personnes!obseques_quotes_preneur_id_fkey ( nom, prenom )`, { count: 'exact' })
+      .order('created_at', { ascending: false })
+      .range(rangeFrom, rangeTo);
+
+    if (searchTerm) {
+      const searchPattern = `%${searchTerm}%`;
+      query = query.or(
+        `preneur.nom.ilike.${searchPattern},preneur.prenom.ilike.${searchPattern}`
+      );
+    }
+
+    return from(query).pipe(
+      map(response => ({
+        data: response.data || [],
+        count: response.count
+      }))
     );
   }
 

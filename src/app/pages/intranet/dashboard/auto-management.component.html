@@ -45,8 +45,10 @@
     <nav class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6" aria-label="Pagination">
       <div class="hidden sm:block">
         <p class="text-sm text-gray-700">
-          Affichage de <span class="font-medium">{{ (currentPage - 1) * itemsPerPage + 1 }}</span> à <span class="font-medium">{{ currentPage * itemsPerPage > allRequests.length ? allRequests.length : currentPage * itemsPerPage }}</span> sur
-          <span class="font-medium">{{ allRequests.length }}</span> résultats
+          Affichage de <span class="font-medium">{{ paginatedRequests.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0 }}</span>
+          à <span class="font-medium">{{ (currentPage - 1) * itemsPerPage + paginatedRequests.length }}</span>
+          sur
+          <span class="font-medium">{{ totalItems }}</span> résultats
         </p>
       </div>
       <div class="flex-1 flex justify-between sm:justify-end">
