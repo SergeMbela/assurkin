@@ -1,65 +1,38 @@
-import { Component, OnInit, inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, inject, PLATFORM_ID, Inject } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AbstractControl, FormBuilder, FormControl, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators, FormArray, FormGroup } from '@angular/forms';
-import { DbConnectService, Assureur, Marque } from '../../services/db-connect.service';
+import { DbConnectService, Assureur, Marque, AutoQuoteUpdatePayload, ObsequesQuoteUpdatePayload } from '../../services/db-connect.service';
 import { Observable, of, BehaviorSubject } from 'rxjs';
-import { debounceTime, distinctUntilChanged, map, switchMap, tap, finalize, catchError, toArray } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, map, switchMap, tap, finalize, catchError, toArray, startWith } from 'rxjs/operators';
 import { IdCardFormatDirective } from '../../services/id-card-format.directive';
 // import { NationalNumberFormatDirective } from '../../directives/national-number-format.directive';
 import { LicensePlateFormatDirective } from '../../directives/license-plate-format.directive';
 import { UploaderService, UploadResult } from '../../services/uploader.service';
 import { ContractService, ContractPayload } from '../../services/contract.service';
-
-// Interface pour le payload de mise à jour du devis auto
-// pour correspondre à la structure attendue par le service de mise à jour.
-interface AutoQuoteUpdatePayload {
-  preneur: { [key: string]: any };
-  conducteur?: { [key: string]: any };
-  vehicule: { [key: string]: any };
-  devis: {
-    garantie_base_rc: boolean;
-    garantie_omnium_niveau: string;
-    garantie_conducteur: boolean;
-    garantie_assistance: boolean;
-    date_effet: string;
-  };
-}
-
-interface ObsequesQuoteUpdatePayload {
-  preneur: { [key: string]: any };
-  devis: {
-    preneur_est_assure: boolean;
-    assures: any[];
-    nombre_assures: number;
-  };
-}
+ 
+import { NationalNumberFormatDirective } from '../../directives/national-number-format.directive';
 
 @Component({
   selector: 'app-management-detail',
   standalone: true,
   imports: [
     CommonModule, 
-    ReactiveFormsModule, 
+    ReactiveFormsModule,
     RouterLink,
     IdCardFormatDirective, 
-    // NationalNumberFormatDirective, 
-    // LicensePlateFormatDirective
+    NationalNumberFormatDirective,
+    LicensePlateFormatDirective
   ],
   templateUrl: './management-detail.component.html',
   styleUrls: []
 })
 export class ManagementDetailComponent implements OnInit {
-  private route = inject(ActivatedRoute);
-  private dbService = inject(DbConnectService);
-  private fb = inject(FormBuilder);
-  private uploaderService = inject(UploaderService);
-  private contractService = inject(ContractService);
-  private platformId = inject(PLATFORM_ID);
 
   quoteDetails$!: Observable<{ [key: string]: any }>;
   quoteType: string | null = null;
   quoteId: number | null = null;
+  activeTab: 'form' | 'text' = 'form';
   showMainDriverSection: boolean = false;
   nationalities$!: Observable<any[]>;
   preneurCities$ = new BehaviorSubject<string[]>([]);
@@ -74,7 +47,7 @@ export class ManagementDetailComponent implements OnInit {
   isModeleLoading = false;
 
   // Liste complète des compagnies pour le select
-  allCompagnies$!: Observable<Assureur[]>;
+  insuranceCompanies$!: Observable<Assureur[]>;
 
   // Tableau pour la liste des modèles
   modelesForSelectedMarque: any[] = [];
@@ -83,119 +56,140 @@ export class ManagementDetailComponent implements OnInit {
   // Liste des années pour le sélecteur du véhicule
   vehicleYears: number[] = [];
 
-  contractForm = this.fb.group({
-    date_contrat: ['', Validators.required],
-    periodicite: ['annuel', Validators.required],
-    compagnie_id: [null, Validators.required],
-    rappel: [false],
-    fichiers_contrat: new FormControl<File[] | null>(null) // Pour gérer les fichiers téléversés
-  });
+  contractForm: FormGroup;
+  quoteUpdateForm: FormGroup;
 
-  // Formulaire unique pour la mise à jour des Détails de l'offre
-  quoteUpdateForm = this.fb.group({
-    'Preneur d\'assurance': this.fb.group({
-      firstName: [''],
-      lastName: [''],
-      dateNaissance: [''],
-      email: ['', Validators.email],
-      phone: [''],
-      address: [''],
-      postalCode: [''],
-      city: [''],
-      driverLicenseNumber: [''],
-      driverLicenseDate: [''],
-      nationalRegistryNumber: ['', this.belgianNationalNumberValidator()],
-      idCardNumber: [''],
-      idCardValidityDate: [''],
-      nationality: [''],
-      maritalStatus: ['']
-    }),
-    'Preneur Obsèques': this.fb.group({
-      firstName: [''],
-      lastName: [''],
-      dateNaissance: [''],
-      email: ['', Validators.email],
-      phone: [''],
-      address: [''],
-      postalCode: [''],
-      city: [''],
-    }),
-    'Conducteur principal': this.fb.group({
-      // ... (champs identiques au preneur)
-      firstName: [''],
-      lastName: [''],
-      dateNaissance: [''],
-      email: ['', Validators.email],
-      phone: [''],
-      address: [''],
-      postalCode: [''],
-      city: [''],
-      driverLicenseNumber: [''],
-      driverLicenseDate: [''],
-      nationalRegistryNumber: ['', this.belgianNationalNumberValidator()],
-      idCardNumber: [''],
-      idCardValidityDate: [''],
-      nationality: [''],
-      maritalStatus: ['']
-    }),
-    'Véhicule': this.fb.group({
-      make: [''],
-      model: [''],
-      year: [''],
-      licensePlate: ['']
-    }),
-    'Garantie': this.fb.group({
-      baseRC: [false],
-      omniumLevel: [''],
-      driverCoverage: [false],
-      assistance: [false],
-      effectiveDate: ['']
-    }),
-    'Garanties Habitation': this.fb.group({
-      contenu: [false],
-      vol: [false],
-      pertesIndirectes: [false],
-      protectionJuridique: [false],
-      assistance: [false],
-      dateEffet: ['']
-    }),
-    'Bâtiment': this.fb.group({
-      adresse: [''],
-      codePostal: [''],
-      ville: [''],
-      typeMaison: [''],
-    }),
-    'Évaluation': this.fb.group({
-      typeValeurBatiment: [''],
-      superficie: [null],
-      nombrePieces: [null],
-      loyerMensuel: [null],
-      typeValeurContenu: [''],
-      valeurExpertise: [null],
-      dateExpertise: ['']
-    }),
-    'Assurés': this.fb.group({
-      preneurEstAssure: [false],
-      assures: this.fb.array([])
-    }),
-    description: [''], // Ajout du champ description pour le voyage
+  today: string;
 
-    'Détails RC Familiale': this.fb.group({
-      preneur_nom: [''],
-      preneur_prenom: [''],
-      preneur_genre: [''],
-      preneur_telephone: [''],
-      preneur_email: ['', Validators.email],
-      preneur_adresse: [''],
-      preneur_code_postal: [''],
-      preneur_ville: [''],
-      risque: [''],
-      nationalRegistryNumber: ['', this.belgianNationalNumberValidator()],
-      idCardNumber: [''],
-      description: ['']
-    })
-    // D'autres groupes peuvent être ajoutés ici au besoin
-  });
+  constructor(
+    private route: ActivatedRoute,
+    private dbService: DbConnectService,
+    private fb: FormBuilder,
+    private uploaderService: UploaderService,
+    private contractService: ContractService,
+    @Inject(PLATFORM_ID) private platformId: object
+  ) {
+    const todayDate = new Date();
+    const year = todayDate.getFullYear();
+    const month = ('0' + (todayDate.getMonth() + 1)).slice(-2);
+    const day = ('0' + todayDate.getDate()).slice(-2);
+    this.today = `${year}-${month}-${day}`;
+
+    this.contractForm = this.fb.group({
+      date_contrat: ['', Validators.required],
+      periodicite: ['annuel', Validators.required],
+      compagnie_id: [null, Validators.required],
+      rappel: [false],
+      fichiers_contrat: new FormControl<File[] | null>(null) // Pour gérer les fichiers téléversés
+    });
+
+    this.quoteUpdateForm = this.fb.group({
+      'Preneur d\'assurance': this.fb.group({
+        firstName: [''],
+        lastName: [''],
+        dateNaissance: [''],
+        email: ['', Validators.email],
+        phone: [''],
+        address: [''],
+        postalCode: [''],
+        city: [null], // Changed to null for better select default
+        driverLicenseNumber: [''],
+        driverLicenseDate: [''],
+        nationalRegistryNumber: ['', this.belgianNationalNumberValidator()],
+        idCardNumber: [''], // Le validateur de groupe sera ajouté ci-dessous
+        idCardValidityDate: [''],
+        nationality: [''],
+        maritalStatus: ['']
+      }),
+      'Preneur Obsèques': this.fb.group({
+        firstName: [''],
+        lastName: [''],
+        dateNaissance: [''],
+        email: ['', Validators.email],
+        phone: [''],
+        address: [''],
+        postalCode: [''],
+        city: [null], // Changed to null for better select default
+      }),
+      'Conducteur principal': this.fb.group({
+        // ... (champs identiques au preneur)
+        firstName: [''],
+        lastName: [''],
+        dateNaissance: [''],
+        email: ['', Validators.email],
+        phone: [''],
+        address: [''],
+        postalCode: [''],
+        city: [null], // Changed to null for better select default
+        driverLicenseNumber: [''],
+        driverLicenseDate: [''],
+        nationalRegistryNumber: ['', this.belgianNationalNumberValidator()],
+        idCardNumber: [''], // Le validateur de groupe sera ajouté ci-dessous
+        idCardValidityDate: [''],
+        nationality: [''],
+        maritalStatus: ['']
+      }),
+      'Véhicule': this.fb.group({
+        make: [''],
+        model: [''],
+        year: [''],
+        licensePlate: ['']
+      }),
+      'Garantie': this.fb.group({
+        baseRC: [false],
+        omniumLevel: [''],
+        driverCoverage: [false],
+        assistance: [false],
+        effectiveDate: [''],
+        insuranceCompany: [null]
+      }),
+      'Garanties Habitation': this.fb.group({
+        contenu: [false],
+        vol: [false],
+        pertesIndirectes: [false],
+        protectionJuridique: [false],
+        assistance: [false],
+        dateEffet: [''],
+        insuranceCompany: [null]
+      }),
+      'Bâtiment': this.fb.group({
+        adresse: [''],
+        codePostal: [''],
+        ville: [null], // Changed to null for better select default
+        typeMaison: [''],
+      }),
+      'Évaluation': this.fb.group({
+        typeValeurBatiment: [''],
+        superficie: [null],
+        nombrePieces: [null],
+        loyerMensuel: [null],
+        typeValeurContenu: [''],
+        valeurExpertise: [null],
+        dateExpertise: ['']
+      }),
+      'Assurés': this.fb.group({
+        preneurEstAssure: [false],
+        assures: this.fb.array([]),
+        insuranceCompany: [null]
+      }),
+      description: [''], // Ajout du champ description pour le voyage
+
+      'Détails RC Familiale': this.fb.group({
+        preneur_nom: [''],
+        preneur_prenom: [''],
+        preneur_genre: [''],
+        preneur_telephone: [''],
+        preneur_email: ['', Validators.email],
+        preneur_adresse: [''],
+        preneur_code_postal: [''],
+        preneur_ville: [''],
+        risque: [''],
+        nationalRegistryNumber: ['', this.belgianNationalNumberValidator()],
+        idCardNumber: [''],
+        description: ['']
+      })
+    });
+  }
 
   ngOnInit(): void {
     // Initialise la liste des années pour le sélecteur
@@ -204,8 +198,12 @@ export class ManagementDetailComponent implements OnInit {
       this.vehicleYears.push(year);
     }
 
-    // Charge la liste des nationalités pour les listes déroulantes
-    this.allCompagnies$ = this.dbService.getAllAssureurs();
+    // Ajout du validateur de groupe après l'initialisation du formulaire
+    this.quoteUpdateForm.get('Preneur d\'assurance')?.setValidators(this.nationalNumberDateConsistencyValidator());
+    this.quoteUpdateForm.get('Conducteur principal')?.setValidators(this.nationalNumberDateConsistencyValidator());
+
+    // Charge la liste complète des compagnies d'assurance pour la liste déroulante
+    this.insuranceCompanies$ = this.dbService.getAllAssureurs();
 
     // Charge la liste des nationalités pour les listes déroulantes
     this.nationalities$ = this.dbService.getNationalities();
@@ -215,7 +213,7 @@ export class ManagementDetailComponent implements OnInit {
       if (preneurPostalCodeControl) {
         preneurPostalCodeControl.valueChanges.pipe(
           debounceTime(300),
-          distinctUntilChanged(),
+          distinctUntilChanged(),          
           switchMap(pc => pc && pc.length >= 4 ? this.dbService.getCitiesByPostalCode(pc) : of([])),          
         ).subscribe(cities => {
           this.preneurCities$.next(cities);
@@ -224,7 +222,7 @@ export class ManagementDetailComponent implements OnInit {
           const currentCity = cityControl?.value;
           if (currentCity && !cities.includes(currentCity)) {
             cityControl.reset();
-          }
+          }          
         });
       }
 
@@ -240,7 +238,7 @@ export class ManagementDetailComponent implements OnInit {
           const currentCity = cityControl?.value;
           if (currentCity && !cities.includes(currentCity)) {
             cityControl.reset();
-          }
+          }          
         });
       }
 
@@ -256,7 +254,7 @@ export class ManagementDetailComponent implements OnInit {
           const currentCity = cityControl?.value;
           if (currentCity && !cities.includes(currentCity)) {
             cityControl.reset();
-          }
+          }          
         });
       }
     }
@@ -287,7 +285,7 @@ export class ManagementDetailComponent implements OnInit {
     this.quoteDetails$ = this.getQuoteDetailsFromRoute();
   }
 
-  private patchFormValues(details: any): void {
+  private patchFormValues(details: any): Observable<any> {
     // Fonction utilitaire pour formater les dates
     const formatDate = (dateStr: string | null | undefined) => dateStr ? this.formatDateForInput(dateStr) : null;
 
@@ -313,13 +311,6 @@ export class ManagementDetailComponent implements OnInit {
       });
     }
 
-    // Après avoir patché les données, on déclenche la recherche de ville pour le code postal initial
-    if (isPlatformBrowser(this.platformId)) {
-      const preneurPostalCode = this.quoteUpdateForm.get("Preneur d'assurance.postalCode")?.value;
-      if (preneurPostalCode) {
-        this.dbService.getCitiesByPostalCode(preneurPostalCode).subscribe(cities => this.preneurCities$.next(cities));
-      }
-    }
 
     // Gérer le conducteur principal (spécifique à 'auto')
     if (this.quoteType === 'auto') {
@@ -354,24 +345,6 @@ export class ManagementDetailComponent implements OnInit {
         });
         // Initialise le champ d'auto-complétion de la marque
         this.marqueCtrl.setValue(details.vehicule.marque || '', { emitEvent: false });
-
-        // Après avoir patché la marque, on charge les modèles correspondants
-        if (details.vehicule.marque) {
-          this.dbService.searchMarques(details.vehicule.marque).pipe(
-            tap(marques => {
-              if (marques && marques.length > 0) {
-                const marqueTrouvee = marques[0];
-                this.selectedMarqueId = marqueTrouvee.marque_id;
-                this.isModeleLoading = true;
-                this.dbService.searchModeles(this.selectedMarqueId).pipe(
-                  finalize(() => this.isModeleLoading = false)
-                ).subscribe(modeles => {
-                  this.modelesForSelectedMarque = modeles;
-                });
-              }
-            })
-          ).subscribe();
-        }
       }
 
       // Gérer les garanties auto
@@ -380,7 +353,8 @@ export class ManagementDetailComponent implements OnInit {
         omniumLevel: details.garantie_omnium_niveau,
         driverCoverage: details.garantie_conducteur,
         assistance: details.garantie_assistance,
-        effectiveDate: formatDate(details.date_effet)
+        effectiveDate: formatDate(details.date_effet),
+        insuranceCompany: details.compagnie_id // Assumant que l'ID de la compagnie est dans les détails du devis
       });
     }
 
@@ -408,14 +382,10 @@ export class ManagementDetailComponent implements OnInit {
         pertesIndirectes: details.garantie_pertes_indirectes,
         protectionJuridique: details.garantie_protection_juridique,
         assistance: details.garantie_assistance,
-        dateEffet: formatDate(details.date_effet)
+        dateEffet: formatDate(details.date_effet),
+        insuranceCompany: details.compagnie_id // Ajout de la compagnie d'assurance
       });
 
-      // Charger les villes pour le bâtiment au chargement initial
-      if (isPlatformBrowser(this.platformId) && details.batiment_code_postal) {
-        this.dbService.getCitiesByPostalCode(details.batiment_code_postal)
-          .subscribe(cities => this.batimentCities$.next(cities));
-      }
     }
 
     // Gérer les détails spécifiques à 'obseques'
@@ -433,13 +403,9 @@ export class ManagementDetailComponent implements OnInit {
           city: details.preneur.ville,
         });
 
-        // Charger les villes pour le preneur obsèques au chargement initial
-        if (isPlatformBrowser(this.platformId) && details.preneur.code_postal) {
-          this.dbService.getCitiesByPostalCode(details.preneur.code_postal)
-            .subscribe(cities => this.obsequesCities$.next(cities));
-        }
       }
       this.quoteUpdateForm.get('Assurés.preneurEstAssure')?.setValue(details.preneur_est_assure);
+      this.quoteUpdateForm.get('Assurés.insuranceCompany')?.setValue(details.compagnie_id);
       const assuresData = details.assures as any[];
       this.assures.clear();
       assuresData.forEach(assure => {
@@ -470,8 +436,52 @@ export class ManagementDetailComponent implements OnInit {
         description: details.description
       });
     }
+
+    // Chaîne d'observables pour les chargements de données asynchrones post-patch
+    const preneurPostalCode = this.quoteUpdateForm.get("Preneur d'assurance.postalCode")?.value;
+    const batimentPostalCode = this.quoteUpdateForm.get('Bâtiment.codePostal')?.value;
+    const obsequesPostalCode = this.quoteUpdateForm.get('Preneur Obsèques.postalCode')?.value;
+    const marqueVehicule = details.vehicule?.marque;
+
+    const preneurCities$ = (isPlatformBrowser(this.platformId) && preneurPostalCode)
+      ? this.dbService.getCitiesByPostalCode(preneurPostalCode).pipe(tap(cities => this.preneurCities$.next(cities)))
+      : of(null);
+
+    const batimentCities$ = (isPlatformBrowser(this.platformId) && batimentPostalCode)
+      ? this.dbService.getCitiesByPostalCode(batimentPostalCode).pipe(tap(cities => this.batimentCities$.next(cities)))
+      : of(null);
+
+    const obsequesCities$ = (isPlatformBrowser(this.platformId) && obsequesPostalCode)
+      ? this.dbService.getCitiesByPostalCode(obsequesPostalCode).pipe(tap(cities => this.obsequesCities$.next(cities)))
+      : of(null);
+
+    const modeles$ = (this.quoteType === 'auto' && marqueVehicule)
+      ? this.dbService.searchMarques(marqueVehicule).pipe(
+          switchMap(marques => {
+            if (marques && marques.length > 0) {
+              const marqueTrouvee = marques[0];
+              this.selectedMarqueId = marqueTrouvee.marque_id;
+              this.isModeleLoading = true;
+              return this.dbService.searchModeles(this.selectedMarqueId).pipe(
+                tap(modeles => {
+                  this.modelesForSelectedMarque = modeles;
+                }),
+                finalize(() => this.isModeleLoading = false)
+              );
+            }
+            return of(null);
+          })
+        )
+      : of(null);
+
+    // Combine all observables. They will run in parallel.
+    // The `patchFormValues` observable will complete when all of them have completed.
+    return of(details).pipe(
+      switchMap(() => Promise.all([preneurCities$, batimentCities$, obsequesCities$, modeles$]))
+    );
   }
 
+  // Remplacez l'ancienne méthode getQuoteDetailsFromRoute par celle-ci
   private getQuoteDetailsFromRoute(): Observable<any> {
     return this.route.paramMap.pipe(
       switchMap(params => {
@@ -481,16 +491,20 @@ export class ManagementDetailComponent implements OnInit {
         if (this.quoteType && this.quoteId) {
           return this.dbService.getQuoteDetails(this.quoteType, this.quoteId);
         }
-        return of(null); // Retourne un observable de null si les paramètres sont manquants
+        return of(null);
       }),
-      tap(details => {
+      switchMap(details => {
         if (details) {
-          this.patchFormValues(details);
+          // patchFormValues retourne maintenant un Observable que nous pouvons chaîner
+          return this.patchFormValues(details).pipe(
+            map(() => details) // Retourne les détails originaux une fois le patch terminé
+          );
         }
+        return of(null);
       }),
       catchError(error => {
         console.error('Erreur lors de la récupération des détails du devis:', error);
-        return of(null); // Gère l'erreur et retourne un observable de null
+        return of(null);
       })
     );
   }
@@ -578,7 +592,7 @@ export class ManagementDetailComponent implements OnInit {
       const formattedDate = `${date.getFullYear()}${(date.getMonth() + 1).toString().padStart(2, '0')}${date.getDate().toString().padStart(2, '0')}`;
       const baseName = `${this.quoteId}_${this.quoteType}_${formattedDate}`;
 
-      filesToUpload = originalFiles.map((originalFile, i) => {
+      filesToUpload = originalFiles.map((originalFile: File, i: number) => {
         const fileExtension = originalFile.name.split('.').pop();
         const newName = `${baseName}_${i + 1}.${fileExtension}`;
         return new File([originalFile], newName, { type: originalFile.type });
@@ -644,18 +658,19 @@ export class ManagementDetailComponent implements OnInit {
 
     if (this.quoteType === 'auto') {
       const payload: AutoQuoteUpdatePayload = {
-        preneur: formValue["Preneur d'assurance"]!,
-        vehicule: formValue['Véhicule']!,
-        devis: {
+        p_preneur: formValue["Preneur d'assurance"]!,
+        p_vehicule: formValue['Véhicule']!,
+        p_devis: {
           garantie_base_rc: formValue.Garantie?.baseRC ?? false,
           garantie_omnium_niveau: formValue.Garantie?.omniumLevel ?? '',
           garantie_conducteur: formValue.Garantie?.driverCoverage ?? false,
           garantie_assistance: formValue.Garantie?.assistance ?? false,
-          date_effet: formValue.Garantie?.effectiveDate ? this.formatDateForInput(formValue.Garantie.effectiveDate) : ''
+          date_effet: formValue.Garantie?.effectiveDate ? this.formatDateForInput(formValue.Garantie.effectiveDate) : '',
+          compagnie_id: formValue.Garantie?.insuranceCompany
         }
       };
       if (this.showMainDriverSection) {
-        payload.conducteur = formValue['Conducteur principal']!;
+        payload.p_conducteur = formValue['Conducteur principal']!;
       }
       this.executeUpdate(this.dbService.updateAutoQuote(this.quoteId!, payload));
 
@@ -670,7 +685,8 @@ export class ManagementDetailComponent implements OnInit {
         devis: {
           preneur_est_assure: formValue.Assurés?.preneurEstAssure ?? false,
           assures: assuresValue,
-          nombre_assures: assuresValue.length
+          nombre_assures: assuresValue.length,
+          compagnie_id: formValue.Assurés?.insuranceCompany
         }
       };
       this.executeUpdate(this.dbService.updateObsequesQuote(this.quoteId!, payload));
@@ -700,33 +716,97 @@ export class ManagementDetailComponent implements OnInit {
   }
 
   /**
+   * Validateur de groupe pour vérifier la cohérence entre la date de naissance et le numéro national.
+   */
+  private nationalNumberDateConsistencyValidator(): ValidatorFn {
+    return (group: AbstractControl): ValidationErrors | null => {
+      const dateNaissanceControl = group.get('dateNaissance');
+      const nationalRegistryNumberControl = group.get('nationalRegistryNumber');
+
+      // Ne rien faire si les champs ne sont pas remplis ou invalides
+      if (!dateNaissanceControl?.value || !nationalRegistryNumberControl?.value || nationalRegistryNumberControl.invalid) {
+        // Si une erreur de cohérence existait, on la retire
+        if (nationalRegistryNumberControl?.hasError('dateMismatch')) {
+          const errors = { ...nationalRegistryNumberControl.errors };
+          delete errors['dateMismatch'];
+          nationalRegistryNumberControl.setErrors(Object.keys(errors).length > 0 ? errors : null);
+        }
+        return null;
+      }
+
+      const dateNaissanceValue = new Date(dateNaissanceControl.value);
+      const digitsOnly = nationalRegistryNumberControl.value.replace(/\D/g, '');
+
+      const nnYear = parseInt(digitsOnly.substring(0, 2), 10);
+      const nnMonth = parseInt(digitsOnly.substring(2, 4), 10);
+      const nnDay = parseInt(digitsOnly.substring(4, 6), 10);
+
+      // Détermine si l'année est 19xx ou 20xx en se basant sur le siècle de la date de naissance entrée
+      const birthCentury = Math.floor(dateNaissanceValue.getFullYear() / 100) * 100;
+      const nnFullYear = birthCentury + nnYear;
+
+      const nnDate = new Date(nnFullYear, nnMonth - 1, nnDay);
+
+      // Compare les dates en ignorant l'heure
+      dateNaissanceValue.setHours(0, 0, 0, 0);
+      nnDate.setHours(0, 0, 0, 0);
+
+      if (dateNaissanceValue.getTime() !== nnDate.getTime()) {
+        nationalRegistryNumberControl.setErrors({ ...nationalRegistryNumberControl.errors, dateMismatch: true });
+        return { dateMismatch: true }; // Retourne l'erreur sur le groupe
+      }
+
+      return null;
+    };
+  }
+  /**
    * Validateur personnalisé pour le numéro national belge.
    * Vérifie le format et la somme de contrôle.
    */
   private belgianNationalNumberValidator(): ValidatorFn {
-    return (control: AbstractControl): ValidationErrors | null => {
-      const value = control.value;
-      if (!value) {
-        return null; // Ne pas valider si le champ est vide (laissé à 'required')
+    return (control: AbstractControl): ValidationErrors | null => {      
+      if (!control.value) {
+        return null; // Ne pas valider si le champ est vide
       }
-  
-      // 1. Vérification du format
-      const regex = /^\d{2}\.\d{2}\.\d{2}-\d{3}\.\d{2}$/;
-      if (!regex.test(value)) {
+
+      // 1. Nettoyer la valeur pour ne garder que les chiffres
+      const digitsOnly = control.value.replace(/\D/g, '');
+
+      if (digitsOnly.length !== 11) {
         return { invalidFormat: true };
       }
-  
-      // 2. Vérification de la somme de contrôle
-      const digitsOnly = value.replace(/\D/g, ''); // Supprime tous les caractères non numériques
+
+      // 2. Extraire les parties du numéro
+      const year = parseInt(digitsOnly.substring(0, 2), 10);
+      const month = parseInt(digitsOnly.substring(2, 4), 10);
+      const day = parseInt(digitsOnly.substring(4, 6), 10);
       const baseNumberStr = digitsOnly.substring(0, 9);
       const checkDigit = parseInt(digitsOnly.substring(9, 11), 10);
+
+      // 3. Vérification de la validité de la date
+      // On essaie pour les années 1900 et 2000
+      const date1900 = new Date(1900 + year, month - 1, day);
+      const date2000 = new Date(2000 + year, month - 1, day);
+
+      const isDate1900Valid = date1900.getFullYear() === 1900 + year && date1900.getMonth() === month - 1 && date1900.getDate() === day;
+      const isDate2000Valid = date2000.getFullYear() === 2000 + year && date2000.getMonth() === month - 1 && date2000.getDate() === day;
+
+      if (!isDate1900Valid && !isDate2000Valid) {
+        return { invalidDate: true };
+      }
+
+      // 4. Vérification de la somme de contrôle (checksum)
       const baseNumber = parseInt(baseNumberStr, 10);
-      const baseNumberFor2000 = parseInt('2' + baseNumberStr, 10);
       const calculatedCheckDigit = 97 - (baseNumber % 97);
-      const calculatedCheckDigitFor2000 = 97 - (baseNumberFor2000 % 97);
+
+      // Pour les naissances à partir de 2000, un '2' est préfixé au numéro de base pour le calcul.
+      const baseNumberFor2000 = parseInt('2' + baseNumberStr, 10);
+      const calculatedCheckDigitFor2000 = 97 - (baseNumberFor2000 % 97);      
+
       if (checkDigit !== calculatedCheckDigit && checkDigit !== calculatedCheckDigitFor2000) {
         return { invalidChecksum: true };
       }
+
       return null; // Valide
     };
   }

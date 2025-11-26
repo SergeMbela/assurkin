@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { SupabaseService } from './supabase.service';
-import { from, Observable } from 'rxjs';
-import { map, single } from 'rxjs/operators';
+import { from, Observable, of } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
 
 export interface ContractPayload {
   quote_id: number;
@@ -12,6 +12,12 @@ export interface ContractPayload {
   rappel: boolean;
   document_paths: string[];
   uid: string;
+}
+
+export interface ExistingFile {
+  path: string;
+  file_name: string;
+  raisons: string;
 }
 
 @Injectable({
@@ -31,22 +37,71 @@ export class ContractService {
   }
 
   /**
+   * Convertit le type de devis (string) en son ID numérique correspondant.
+   * @param quoteType Le type de devis sous forme de chaîne (ex: 'auto').
+   * @returns L'ID numérique correspondant.
+   */
+  private getQuoteTypeId(quoteType: string): number {
+    const typeMap: { [key: string]: number } = {
+      'auto': 1,
+      'habitation': 2,
+      'obseques': 3,
+      'rc': 4,
+      'voyage': 5,
+      // Ajoutez d'autres types si nécessaire
+    };
+    return typeMap[quoteType.toLowerCase()] || 0; // Retourne 0 si non trouvé
+  }
+
+  /**
    * Récupère les chemins des documents pour un contrat spécifique.
    * @param quoteId L'ID du devis.
    * @param quoteType Le type de devis.
    * @returns Un Observable avec un tableau des chemins de documents.
    */
-  getContractFiles(quoteId: number, quoteType: string): Observable<string[]> {
+  getContractFiles(quoteId: number, quoteType: string): Observable<ExistingFile[]> {
     return from(
       this.supabase.supabase
-        .from('contrats')
-        .select('document_paths')
-        .eq('quote_id', quoteId)
-        .eq('quote_type', quoteType)
-        .limit(1)
-        .maybeSingle() // Utiliser maybeSingle() pour gérer le cas où aucun contrat n'existe encore.
+        .from('uploaded_files')
+        .select('path, file_name, raisons')
+        .eq('id_quote', quoteId)
+        .eq('id_type', this.getQuoteTypeId(quoteType))
     ).pipe(
-      map(response => response.data?.document_paths || [])
+      map(response => {
+        if (response.error) {
+          console.error('Erreur lors de la récupération des fichiers:', response.error);
+          return [];
+        }
+        return (response.data as ExistingFile[]) || [];
+      })
+    );
+  }
+
+  /**
+   * Insère une référence de fichier dans la table 'uploaded_files'.
+   * @param quoteId L'ID du devis.
+   * @param quoteType Le type de devis (ex: 'auto').
+   * @param filePath Le chemin du fichier stocké dans Supabase Storage.
+   * @param fileName Le nom original du fichier.
+   * @param raison La raison du téléversement (sujet du contrat).
+   * @returns Un Observable qui se complète lorsque l'opération est terminée.
+   */
+  addContractFile(quoteId: number, quoteType: string, filePath: string, fileName: string, raison: string): Observable<void> {
+    const newFilePayload = {
+      id_quote: quoteId,
+      id_type: this.getQuoteTypeId(quoteType),
+      path: filePath,
+      file_name: fileName,
+      raisons: raison, // Ajout de la raison
+    };
+
+    return from(this.supabase.supabase.from('uploaded_files').insert(newFilePayload)).pipe(
+      map(finalResponse => {
+        if (finalResponse && finalResponse.error) {
+          console.error("Erreur lors de l'insertion de la référence du fichier:", finalResponse.error);
+          throw finalResponse.error;
+        }
+      })
     );
   }
 }

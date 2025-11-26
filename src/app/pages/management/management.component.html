@@ -1,6 +1,5 @@
 <div class="container mx-auto p-4 sm:p-6 lg:p-8">
-  <h1 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-6">Gestion des Devis</h1>
-
+  <h1 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-6">Gestion des offres</h1>
   <!-- Barre d'onglets -->
   <div class="border-b border-gray-200 mb-6">
     <nav class="-mb-px flex space-x-6 overflow-x-auto" aria-label="Tabs">
@@ -44,7 +43,7 @@
               <th scope="col" class="px-6 py-3">{{ (activeTab$ | async) === 'auto' ? 'Véhicule' : 'Description' }}</th>
               <th scope="col" class="px-6 py-3">Date de la demande</th>
               <th scope="col" class="px-6 py-3">Statut</th>
-              <th scope="col" class="px-6 py-3">Clients</th>
+              <th scope="col" class="px-6 py-3">Offre</th>
               <th scope="col" class="px-6 py-3">Documents</th>
               <th scope="col" class="px-6 py-3">Détails</th>
             </tr>
@@ -77,7 +76,7 @@
                 <a [routerLink]="['/management/upload', (activeTab$ | async), quote.id]" class="text-blue-600 hover:text-blue-800 font-medium">Gérer</a>
               </td>
               <td class="px-6 py-4">
-                <button (click)="viewDetails(quote.id)" class="text-indigo-600 hover:text-indigo-800 font-medium">Voir détails</button>
+                <a [routerLink]="['/management/assurance-details', (activeTab$ | async), quote.id]" class="text-blue-600 hover:text-blue-800 font-medium">Voir détails</a>
               </td>
             </tr>
           </tbody>

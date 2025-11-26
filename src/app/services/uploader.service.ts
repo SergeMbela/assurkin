@@ -7,7 +7,7 @@ import { environment } from '../../environments/environment';
 export interface UploadResult {
   fileName: string;
   status: 'success' | 'error';
-  path?: string;
+  path?: string; // Le chemin du fichier retourné par la fonction Supabase
   error?: string;
 }
 @Injectable({
@@ -80,5 +80,15 @@ export class UploaderService {
         );
       })
     );
+  }
+
+  /**
+   * Construit l'URL de téléchargement public pour un fichier stocké dans Supabase Storage.
+   * @param filePath Le chemin complet du fichier dans le bucket (ex: 'documents_auto/123/mon-fichier.pdf').
+   * @returns L'URL publique complète pour accéder au fichier.
+   */
+  getDownloadUrl(filePath: string): string {
+    // L'URL est construite en suivant le format de Supabase pour les objets publics.
+    return `${this.supabaseUrl}/storage/v1/object/public/${filePath}`;
   }
 }

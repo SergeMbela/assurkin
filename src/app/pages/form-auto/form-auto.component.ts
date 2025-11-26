@@ -10,7 +10,6 @@ import { PhoneFormatDirective } from '../../directives/phone-format.directive';
 @Component({
   selector: 'app-form-auto',
   standalone: true,
-  providers: [DbConnectService],
   imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink, PhoneFormatDirective],
   templateUrl: './form-auto.component.html'
 })
@@ -89,10 +88,14 @@ export class FormAutoComponent implements OnInit, OnDestroy {
         return of(null);
       }
       return this.dbConnectService.checkEmailExists(control.value).pipe(
+        tap(exists => this.handleEmailExists(exists, control)),
         map(exists => {
-          return exists ? { emailExists: true } : null;
+          // On ne retourne plus d'erreur de validation.
+          // L'erreur 'emailExists' est maintenant gérée par un validateur synchrone personnalisé
+          // qui est ajouté/retiré dynamiquement.
+          return null;
         }),
-        catchError(() => of(null)) // En cas d'erreur serveur, on ne bloque pas le formulaire
+        catchError(() => of(null))
       );
     };
   }
@@ -100,6 +103,19 @@ export class FormAutoComponent implements OnInit, OnDestroy {
 
   // --- Preneur d'assurance ---
   preneurPostalCode = '';
+
+  private handleEmailExists(exists: boolean, control: AbstractControl): void {
+    if (exists) {
+      // Ajoute une erreur personnalisée pour l'affichage du message dans le template
+      control.setErrors({ ...control.errors, emailExists: true });
+    } else {
+      // Retire l'erreur si l'email n'existe plus (par exemple, si l'utilisateur change l'email)
+      const errors = { ...control.errors };
+      delete errors['emailExists'];
+      control.setErrors(Object.keys(errors).length > 0 ? errors : null);
+    }
+  }
+
   preneurCity = '';
   preneurCities: string[] = [];
   filteredPreneurPostalCodes: PostalCode[] = [];
@@ -404,13 +420,82 @@ export class FormAutoComponent implements OnInit, OnDestroy {
       });
     } else {
       this.markAllAsTouched(this.autoForm);
-      this.submissionStatus = { success: false, message: 'Veuillez remplir tous les champs obligatoires avant de soumettre.' };
+      const invalidFields = this.getInvalidFields(this.autoForm);
+      let errorMessage = 'Veuillez remplir tous les champs obligatoires avant de soumettre.';
+      if (invalidFields.length > 0) {
+        errorMessage += '<br><br><strong>Champs manquants ou invalides :</strong><ul class="list-disc list-inside mt-2">';
+        invalidFields.forEach(field => {
+          errorMessage += `<li>${field}</li>`;
+        });
+        errorMessage += '</ul>';
+      }
+      this.submissionStatus = { success: false, message: errorMessage };
     }
+  }
+
+  private getInvalidFields(formGroup: FormGroup, parentPath = ''): string[] {
+    const invalidFields: string[] = [];
+    const fieldLabels: { [key: string]: string } = {
+      // Preneur
+      'preneur.genre': 'Genre (Preneur)',
+      'preneur.nom': 'Nom (Preneur)',
+      'preneur.prenom': 'Prénom (Preneur)',
+      'preneur.dateNaissance': 'Date de naissance (Preneur)',
+      'preneur.telephone': 'Numéro de téléphone (Preneur)',
+      'preneur.email': 'Email (Preneur)',
+      'preneur.adresse': 'Rue et numéro (Preneur)',
+      'preneur.codePostal': 'Code Postal (Preneur)',
+      'preneur.ville': 'Ville (Preneur)',
+      'preneur.permis': 'Numéro de permis (Preneur)',
+      'preneur.datePermis': 'Date d\'obtention du permis (Preneur)',
+      // Conducteur (seulement si différent)
+      'conducteur.genre': 'Genre (Conducteur)',
+      'conducteur.nom': 'Nom (Conducteur)',
+      'conducteur.prenom': 'Prénom (Conducteur)',
+      'conducteur.dateNaissance': 'Date de naissance (Conducteur)',
+      'conducteur.adresse': 'Rue et numéro (Conducteur)',
+      'conducteur.codePostal': 'Code Postal (Conducteur)',
+      'conducteur.ville': 'Ville (Conducteur)',
+      'conducteur.permis': 'Numéro de permis (Conducteur)',
+      'conducteur.datePermis': 'Date d\'obtention du permis (Conducteur)',
+      // Véhicule
+      'vehicule.type': 'Type de véhicule',
+      'vehicule.marque': 'Marque',
+      'vehicule.modele': 'Modèle',
+      'vehicule.puissance': 'Puissance (kW)',
+      'vehicule.places': 'Nombre de places',
+      'vehicule.dateCirculation': 'Date de 1ère mise en circulation',
+      // Garanties
+      'garanties.omnium': 'Choix Omnium',
+      // Date d'effet
+      'dateEffet': 'Date d\'effet souhaitée',
+    };
+
+    Object.keys(formGroup.controls).forEach(key => {
+      const control = formGroup.get(key);
+      const path = parentPath ? `${parentPath}.${key}` : key;
+
+      if (control instanceof FormGroup) {
+        // Ne pas descendre dans 'conducteur' si la case n'est pas cochée
+        if (key === 'conducteur' && !formGroup.get('conducteurDifferent')?.value) {
+          return;
+        }
+        invalidFields.push(...this.getInvalidFields(control, path));
+      } else if (control && control.invalid) {
+        const label = fieldLabels[path] || key;
+        if (!invalidFields.includes(label)) {
+          invalidFields.push(label);
+        }
+      }
+    });
+
+    return invalidFields;
   }
 
   private toggleConducteurValidators(isDifferent: boolean): void {
     const conducteurGroup = this.autoForm.get('conducteur') as FormGroup;
     if (isDifferent) {
+      conducteurGroup.get('genre')?.setValidators(Validators.required);
       conducteurGroup.get('nom')?.setValidators(Validators.required);
       conducteurGroup.get('prenom')?.setValidators(Validators.required);
       conducteurGroup.get('dateNaissance')?.setValidators([Validators.required, this.ageValidator(14)]);
@@ -422,14 +507,12 @@ export class FormAutoComponent implements OnInit, OnDestroy {
       conducteurGroup.get('permis')?.setAsyncValidators(this.permisExistsValidator());
       conducteurGroup.get('datePermis')?.setValidators([Validators.required, this.dateInPastValidator()]);
     } else {
-      // On vide les champs et on retire tous les validateurs pour s'assurer que le groupe est valide.
+      // On vide les champs et on retire TOUS les validateurs pour s'assurer que le groupe est valide.
       conducteurGroup.reset();
-      // On réapplique les validateurs non-obligatoires qui doivent exister par défaut.
-      // Important : On retire aussi le validateur asynchrone du permis.
-      conducteurGroup.get('permis')?.setAsyncValidators(null);
-      conducteurGroup.get('dateNaissance')?.setValidators(this.ageValidator(14));
-      conducteurGroup.get('codePostal')?.setValidators(Validators.pattern('^[0-9]{4}$'));
-      conducteurGroup.get('datePermis')?.setValidators(this.dateInPastValidator());
+      Object.keys(conducteurGroup.controls).forEach(key => {
+        conducteurGroup.get(key)?.clearValidators();
+        conducteurGroup.get(key)?.clearAsyncValidators();
+      });
     }
     Object.keys(conducteurGroup.controls).forEach(key => {
       conducteurGroup.get(key)?.updateValueAndValidity();

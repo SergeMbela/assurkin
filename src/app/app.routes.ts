@@ -48,9 +48,9 @@ export const routes: Routes = [
     { path: 'createuseraccount', component: CreateuseraccountComponent },
     // Détails assurance (le :id est un paramètre dynamique)
     // Les anciennes routes sont conservées pour la compatibilité mais redirigent vers la nouvelle route centralisée.
-    { path: 'assurance_auto/:id', redirectTo: 'assurance-details/:id' },
-    { path: 'assurance_habitation/:id', redirectTo: 'assurance-details/:id' },
-    { path: 'assurance_obseques/:id', redirectTo: 'assurance-details/:id' },
+    { path: 'assurance_auto/:id', redirectTo: 'assurance-details/auto/:id' },
+    { path: 'assurance_habitation/:id', redirectTo: 'assurance-details/habitation/:id' },
+    { path: 'assurance_obseques/:id', redirectTo: 'assurance-details/obseques/:id' },
     // Dashboard intranet
     { path: 'intranet/dashboard', component: DashboardComponent },
     { path: 'intranet/gestion-auto', component: AutoManagementComponent },
@@ -59,6 +59,7 @@ export const routes: Routes = [
     { path: 'management/upload/:type/:id', loadComponent: () => import('./pages/uploader/uploader.component').then(m => m.UploaderComponent) },
     // La navigation vers les détails se fait par programmation depuis management.component.ts
     { path: 'assurance-details/:type/:id', component: AssurancesDetailsComponent }, // Nouvelle route pour les détails depuis la gestion
+     { path: 'management/assurance-details/:type/:id', loadComponent: () => import('./pages/assurances-details/assurances-details.component').then(m => m.AssurancesDetailsComponent) },
 
     // Redirections
     { path: '', redirectTo: 'accueil', pathMatch: 'full' }, // Redirige la racine vers l'accueil

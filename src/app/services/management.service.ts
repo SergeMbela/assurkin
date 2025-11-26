@@ -4,7 +4,7 @@ import { Observable, of } from 'rxjs';
 import { map, catchError, startWith } from 'rxjs/operators';
 import { DbConnectService } from './db-connect.service';
 
-// Interfaces partagées pour la gestion des devis.
+// Interfaces partagées pour la Gestion des offres.
 export interface AutoQuoteSummary {
   id: number;
   nom: string;

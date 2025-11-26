@@ -1,4 +1,4 @@
-import { Injectable, Type } from '@angular/core';
+import { Injectable, Type, inject } from '@angular/core';
 import { from, Observable, defer, of } from 'rxjs';
 import { map, switchMap, catchError } from 'rxjs/operators';
 import { PostgrestError, User } from '@supabase/supabase-js';
@@ -6,27 +6,27 @@ import { SupabaseService } from './supabase.service';
 import { DevisAuto } from '../pages/mydata/mydata.component';
 
 export interface AutoQuoteUpdatePayload {
-  preneur: { [key: string]: any };
-  conducteur?: { [key: string]: any };
-  vehicule: { [key: string]: any };
-  devis: {
+  p_preneur: { [key: string]: any };
+  p_conducteur?: { [key: string]: any };
+  p_vehicule: { [key: string]: any };
+  p_devis: {
     garantie_base_rc: boolean;
     garantie_omnium_niveau: string;
     garantie_conducteur: boolean;
     garantie_assistance: boolean;
     date_effet: string;
+    compagnie_id?: number | null;
   };
 }
-
 export interface ObsequesQuoteUpdatePayload {
   preneur: { [key: string]: any };
   devis: {
     preneur_est_assure: boolean;
     assures: any[];
     nombre_assures: number;
+    compagnie_id?: number | null;
   };
 }
-
 export interface AutoFormData {
   preneur: {
     genre: string;
@@ -105,6 +105,12 @@ export interface ContactFormData {
   name: string;
   email: string;
   message: string;
+}
+
+export interface SubjectContract {
+  id: number;
+  created_at: string;
+  title: string | null;
 }
 
 export interface HabitationFormData {
@@ -219,7 +225,7 @@ export interface SupabaseResponse<T> {
   providedIn: 'root'
 })
 export class DbConnectService {
-
+  
   constructor(private supabase: SupabaseService) { }
 
   /**
@@ -591,6 +597,32 @@ export class DbConnectService {
           id: item.id,
           nom: item.nom_assureur
         }));
+      })
+    );
+  }
+
+  /**
+   * Récupère un assureur par son ID.
+   * @param id L'ID de l'assureur à récupérer.
+   * @returns Un Observable avec les détails de l'assureur.
+   */
+  getInsurerById(id: number): Observable<Assureur> {
+    return from(
+      this.supabase.supabase
+        .from('assureurs_belges')
+        .select('id, nom_assureur')
+        .eq('id', id)
+        .single()
+    ).pipe(
+      map(response => {
+        if (response.error) {
+          console.error(`Erreur lors de la récupération de l'assureur avec l'ID ${id}:`, response.error);
+          throw response.error;
+        }
+        return {
+          id: response.data.id,
+          nom: response.data.nom_assureur
+        } as Assureur;
       })
     );
   }
@@ -1407,15 +1439,15 @@ export class DbConnectService {
 
     const rpcPayload = {
       p_quote_id: quoteId,
-      p_preneur_data: mapPersonData(payload.preneur),
-      p_conducteur_data: payload.conducteur ? mapPersonData(payload.conducteur) : null,
+      p_preneur_data: mapPersonData(payload.p_preneur),
+      p_conducteur_data: payload.p_conducteur ? mapPersonData(payload.p_conducteur) : null,
       p_vehicule_data: {
-        marque: payload.vehicule['make'],
-        modele: payload.vehicule['model'],
-        annee: payload.vehicule['year'],
-        plaque: payload.vehicule['licensePlate']
+        marque: payload.p_vehicule['make'],
+        modele: payload.p_vehicule['model'],
+        annee: payload.p_vehicule['year'],
+        plaque: payload.p_vehicule['licensePlate']
       },
-      p_devis_data: payload.devis
+      p_devis_data: payload.p_devis
     };
 
     // 2. Appeler la fonction RPC de Supabase
@@ -1517,5 +1549,58 @@ export class DbConnectService {
 
     if (insertError) throw insertError;
     return newPerson;
+  }
+
+  /**
+   * Récupère la liste de tous les sujets de contrat.
+   * @returns Un Observable avec la liste des sujets.
+   */
+  getContractSubjects(): Observable<SubjectContract[]> {
+    return from(
+      this.supabase.supabase
+        .from('subject_contract')
+        .select('id, title')
+        .order('title', { ascending: true })
+    ).pipe(
+      map(response => {
+        if (response.error) {
+          console.error('Erreur lors de la récupération des sujets de contrat:', response.error);
+          throw response.error;
+        }
+        return (response.data as SubjectContract[]) || [];
+      })
+    );
+  }
+
+  /**
+   * Appelle la fonction (procédure stockée) sur Supabase pour obtenir
+   * toutes les données d'un devis en un seul appel.
+   * @param id L'ID du devis.
+   * @returns Un Observable avec l'objet JSON complet du devis.
+   */
+  getFullQuoteDetails(id: number): Observable<any> {
+    console.log(`[DbConnectService] Appel de getFullQuoteDetails pour l'ID: ${id}`);
+    // Utilise la méthode rpc() du client Supabase pour appeler une fonction de la BDD
+    const promise = this.supabase.supabase
+      .rpc('get_full_quote_details', { p_quote_id: id }) // 1. Nom de la fonction, 2. Paramètres
+      .then(({ data, error }) => {
+        if (error) {
+          console.error(`[DbConnectService] Erreur lors de l'appel RPC 'get_full_quote_details' pour l'ID ${id}:`, error);
+          throw error;
+        }
+
+        console.log(`[DbConnectService] Données brutes reçues de la RPC pour l'ID ${id}:`, data);
+
+        // La fonction retourne un seul objet JSON, qui est directement dans `data`.
+        if (!data) {
+          console.warn(`[DbConnectService] Aucun devis trouvé via RPC pour l'ID ${id}. La fonction a retourné null.`);
+          throw new Error(`Aucun devis trouvé pour l'ID ${id}. La fonction a retourné une réponse vide.`);
+        }
+
+        console.log(`[DbConnectService] Succès: Détails complets du devis récupérés pour l'ID ${id}.`);
+        return data;
+      });
+
+    return from(promise); // Convertit la promesse en Observable
   }
 }
