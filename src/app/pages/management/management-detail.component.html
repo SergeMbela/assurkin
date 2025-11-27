@@ -1,23 +1,27 @@
 <div class="container mx-auto p-4">
   <a routerLink="/management" class="inline-flex items-center text-indigo-600 hover:text-indigo-800 mb-4 group">
-    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 transition-transform group-hover:-translate-x-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z" clip-rule="evenodd" /></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 transition-transform group-hover:-translate-x-1"
+      viewBox="0 0 20 20" fill="currentColor">
+      <path fill-rule="evenodd"
+        d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z"
+        clip-rule="evenodd" />
+    </svg>
     Retour à la liste
   </a>
-  <div *ngIf="quoteDetails$ | async as details; else loading">
+  <div *ngIf="quoteDetails$ | async as details;">
     <h1 class="text-2xl font-bold mb-4">Détails de l'offre #{{ quoteId }} - {{ quoteType | titlecase }}</h1>
-
     <!-- Barre d'onglets -->
     <div class="mb-6 border-b border-gray-200">
       <nav class="-mb-px flex space-x-6" aria-label="Tabs">
         <button (click)="activeTab = 'form'"
-                [ngClass]="activeTab === 'form' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-                class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+          [ngClass]="activeTab === 'form' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+          class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
           Formulaire
         </button>
         <button (click)="activeTab = 'text'"
-                [ngClass]="activeTab === 'text' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-                class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
-          Texte
+          [ngClass]="activeTab === 'text' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+          class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+          Fiche
         </button>
       </nav>
     </div>
@@ -30,42 +34,55 @@
         <div class="bg-white shadow-md rounded-lg p-6">
           <form [formGroup]="quoteUpdateForm" (ngSubmit)="updateQuoteDetails()" class="space-y-6 max-w-4xl mx-auto">
             <h2 class="text-xl font-semibold border-b pb-2">Mettre à jour l'offre</h2>
-            
+
             <!-- Section Preneur d'assurance -->
-            <div *ngIf="quoteType === 'auto' || quoteType === 'habitation' || quoteType === 'rc' || quoteType === 'voyage'" formGroupName="Preneur d'assurance">
-              <h3 class="text-lg font-semibold text-gray-800 bg-gray-100 -mx-6 px-6 py-2 mb-4 border-y">Preneur d'assurance</h3>
+            <div
+              *ngIf="quoteType === 'auto' || quoteType === 'habitation' || quoteType === 'rc' || quoteType === 'voyage'"
+              formGroupName="Preneur d'assurance">
+              <h3 class="text-lg font-semibold text-gray-800 bg-gray-100 -mx-6 px-6 py-2 mb-4 border-y">Preneur
+                d'assurance</h3>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                 <div>
                   <label for="firstName" class="block text-sm font-medium text-gray-700">Prénom</label>
-                  <input type="text" id="firstName" formControlName="firstName" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                  <input type="text" id="firstName" formControlName="firstName"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                 </div>
                 <div>
                   <label for="lastName" class="block text-sm font-medium text-gray-700">Nom</label>
-                  <input type="text" id="lastName" formControlName="lastName" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                  <input type="text" id="lastName" formControlName="lastName"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                 </div>
                 <div>
                   <label for="dateNaissance" class="block text-sm font-medium text-gray-700">Date de naissance</label>
-                  <input type="date" id="dateNaissance" formControlName="dateNaissance" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                  <input type="date" id="dateNaissance" formControlName="dateNaissance"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                 </div>
                 <div class="sm:col-span-2">
                   <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-                  <input type="email" id="email" formControlName="email" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                  <input type="email" id="email" formControlName="email"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                 </div>
                 <div class="sm:col-span-2">
                   <label for="phone" class="block text-sm font-medium text-gray-700">Téléphone</label>
-                  <input type="tel" id="phone" formControlName="phone" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" appPhoneFormat placeholder="+32 4XX XX XX XX" maxlength="18">
+                  <input type="tel" id="phone" formControlName="phone"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm"
+                    appPhoneFormat placeholder="+32 4XX XX XX XX" maxlength="18">
                 </div>
                 <div class="sm:col-span-2">
                   <label for="address" class="block text-sm font-medium text-gray-700">Adresse</label>
-                  <input type="text" id="address" formControlName="address" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                  <input type="text" id="address" formControlName="address"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                 </div>
                 <div>
                   <label for="postalCode" class="block text-sm font-medium text-gray-700">Code Postal</label>
-                  <input type="text" id="postalCode" formControlName="postalCode" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                  <input type="text" id="postalCode" formControlName="postalCode"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                 </div>
                 <div>
                   <label for="city" class="block text-sm font-medium text-gray-700">Ville</label>
-                  <select id="city" formControlName="city" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm disabled:bg-gray-100" [disabled]="(preneurCities$ | async)?.length === 0">
+                  <select id="city" formControlName="city"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm disabled:bg-gray-100"
+                    [disabled]="(preneurCities$ | async)?.length === 0">
                     <option [ngValue]="null" disabled>Sélectionnez une ville</option>
                     <option *ngFor="let city of (preneurCities$ | async)" [value]="city">
                       {{ city }}
@@ -75,43 +92,61 @@
                 <!-- Champs spécifiques à l'assurance auto -->
                 <ng-container *ngIf="quoteType === 'auto'">
                   <div>
-                    <label for="driverLicenseNumber" class="block text-sm font-medium text-gray-700">N° de permis</label>
-                    <input type="text" id="driverLicenseNumber" formControlName="driverLicenseNumber" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                    <label for="driverLicenseNumber" class="block text-sm font-medium text-gray-700">N° de
+                      permis</label>
+                    <input type="text" id="driverLicenseNumber" formControlName="driverLicenseNumber"
+                      class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                   </div>
                   <div>
-                    <label for="driverLicenseDate" class="block text-sm font-medium text-gray-700">Date d'obtention permis</label>
-                    <input type="date" id="driverLicenseDate" formControlName="driverLicenseDate" [max]="today" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                    <label for="driverLicenseDate" class="block text-sm font-medium text-gray-700">Date d'obtention
+                      permis</label>
+                    <input type="date" id="driverLicenseDate" formControlName="driverLicenseDate" [max]="today"
+                      class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                   </div>
                 </ng-container>
                 <div class="sm:col-span-2">
-                  <label for="nationalRegistryNumber" class="block text-sm font-medium text-gray-700">Numéro national belge</label>
-                  <input type="text" id="nationalRegistryNumber" formControlName="nationalRegistryNumber" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" appNationalNumberFormat placeholder="XX.XX.XX-XXX.XX" maxlength="15">
-                  <div *ngIf="quoteUpdateForm.get('Preneur d\'assurance.nationalRegistryNumber')?.invalid && quoteUpdateForm.get('Preneur d\'assurance.nationalRegistryNumber')?.touched" class="text-red-600 text-sm mt-1">
-                    <div *ngIf="quoteUpdateForm.get('Preneur d\'assurance.nationalRegistryNumber')?.hasError('invalidFormat')">
+                  <label for="nationalRegistryNumber" class="block text-sm font-medium text-gray-700">Numéro national
+                    belge</label>
+                  <input type="text" id="nationalRegistryNumber" formControlName="nationalRegistryNumber"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm"
+                    appNationalNumberFormat placeholder="XX.XX.XX-XXX.XX" maxlength="15">
+                  <div
+                    *ngIf="quoteUpdateForm.get('Preneur d\'assurance.nationalRegistryNumber')?.invalid && quoteUpdateForm.get('Preneur d\'assurance.nationalRegistryNumber')?.touched"
+                    class="text-red-600 text-sm mt-1">
+                    <div
+                      *ngIf="quoteUpdateForm.get('Preneur d\'assurance.nationalRegistryNumber')?.hasError('invalidFormat')">
                       Le numéro doit contenir 11 chiffres.
                     </div>
-                    <div *ngIf="quoteUpdateForm.get('Preneur d\'assurance.nationalRegistryNumber')?.hasError('invalidDate')">
+                    <div
+                      *ngIf="quoteUpdateForm.get('Preneur d\'assurance.nationalRegistryNumber')?.hasError('invalidDate')">
                       La date de naissance dans le numéro est invalide.
                     </div>
-                    <div *ngIf="quoteUpdateForm.get('Preneur d\'assurance.nationalRegistryNumber')?.hasError('invalidChecksum')">
+                    <div
+                      *ngIf="quoteUpdateForm.get('Preneur d\'assurance.nationalRegistryNumber')?.hasError('invalidChecksum')">
                       Le numéro national est invalide.
                     </div>
-                    <div *ngIf="quoteUpdateForm.get('Preneur d\'assurance.nationalRegistryNumber')?.hasError('dateMismatch')">
+                    <div
+                      *ngIf="quoteUpdateForm.get('Preneur d\'assurance.nationalRegistryNumber')?.hasError('dateMismatch')">
                       Incohérence avec la date de naissance.
                     </div>
                   </div>
                 </div>
                 <div>
                   <label for="idCardNumber" class="block text-sm font-medium text-gray-700">N° carte d'identité</label>
-                  <input type="text" id="idCardNumber" formControlName="idCardNumber" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" appIdCardFormat placeholder="XXX-XXXXXXX-XX" maxlength="15">
+                  <input type="text" id="idCardNumber" formControlName="idCardNumber"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm"
+                    appIdCardFormat placeholder="XXX-XXXXXXX-XX" maxlength="15">
                 </div>
                 <div>
-                  <label for="idCardValidityDate" class="block text-sm font-medium text-gray-700">Date de validité CI</label>
-                  <input type="date" id="idCardValidityDate" formControlName="idCardValidityDate" [min]="today" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                  <label for="idCardValidityDate" class="block text-sm font-medium text-gray-700">Date de validité
+                    CI</label>
+                  <input type="date" id="idCardValidityDate" formControlName="idCardValidityDate" [min]="today"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                 </div>
                 <div>
                   <label for="nationality" class="block text-sm font-medium text-gray-700">Nationalité</label>
-                  <select id="nationality" formControlName="nationality" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                  <select id="nationality" formControlName="nationality"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                     <option [ngValue]="null" disabled>Sélectionnez une nationalité</option>
                     <option *ngFor="let nat of (nationalities$ | async)" [value]="nat.nationality">
                       {{ nat.nationality }}
@@ -120,7 +155,8 @@
                 </div>
                 <div>
                   <label for="maritalStatus" class="block text-sm font-medium text-gray-700">Statut marital</label>
-                  <select id="maritalStatus" formControlName="maritalStatus" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                  <select id="maritalStatus" formControlName="maritalStatus"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                     <option [ngValue]="null" disabled>Sélectionnez un statut</option>
                     <option value="Célibataire">Célibataire</option>
                     <option value="Marié(e)">Marié(e)</option>
@@ -131,42 +167,53 @@
                 </div>
               </div>
             </div>
-  
+
             <!-- Section Preneur d'assurance (spécifique Obsèques) -->
             <div *ngIf="quoteType === 'obseques'" formGroupName="Preneur Obsèques">
-              <h3 class="text-lg font-semibold text-gray-800 bg-gray-100 -mx-6 px-6 py-2 mb-4 border-y">Preneur d'assurance</h3>
+              <h3 class="text-lg font-semibold text-gray-800 bg-gray-100 -mx-6 px-6 py-2 mb-4 border-y">Preneur
+                d'assurance</h3>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                 <div>
                   <label for="firstName" class="block text-sm font-medium text-gray-700">Prénom</label>
-                  <input type="text" id="firstName" formControlName="firstName" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                  <input type="text" id="firstName" formControlName="firstName"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                 </div>
                 <div>
                   <label for="lastName" class="block text-sm font-medium text-gray-700">Nom</label>
-                  <input type="text" id="lastName" formControlName="lastName" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                  <input type="text" id="lastName" formControlName="lastName"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                 </div>
                 <div>
                   <label for="dateNaissance" class="block text-sm font-medium text-gray-700">Date de naissance</label>
-                  <input type="date" id="dateNaissance" formControlName="dateNaissance" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                  <input type="date" id="dateNaissance" formControlName="dateNaissance"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                 </div>
                 <div class="sm:col-span-2">
                   <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-                  <input type="email" id="email" formControlName="email" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                  <input type="email" id="email" formControlName="email"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                 </div>
                 <div class="sm:col-span-2">
                   <label for="phone" class="block text-sm font-medium text-gray-700">Téléphone</label>
-                  <input type="tel" id="phone" formControlName="phone" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" appPhoneFormat placeholder="+32 4XX XX XX XX" maxlength="18">
+                  <input type="tel" id="phone" formControlName="phone"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm"
+                    appPhoneFormat placeholder="+32 4XX XX XX XX" maxlength="18">
                 </div>
                 <div class="sm:col-span-2">
                   <label for="address" class="block text-sm font-medium text-gray-700">Adresse</label>
-                  <input type="text" id="address" formControlName="address" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                  <input type="text" id="address" formControlName="address"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                 </div>
                 <div>
                   <label for="obseques-postalCode" class="block text-sm font-medium text-gray-700">Code Postal</label>
-                  <input type="text" id="obseques-postalCode" formControlName="postalCode" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                  <input type="text" id="obseques-postalCode" formControlName="postalCode"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                 </div>
                 <div>
                   <label for="obseques-city" class="block text-sm font-medium text-gray-700">Ville</label>
-                  <select id="obseques-city" formControlName="city" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm disabled:bg-gray-100" [disabled]="(obsequesCities$ | async)?.length === 0">
+                  <select id="obseques-city" formControlName="city"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm disabled:bg-gray-100"
+                    [disabled]="(obsequesCities$ | async)?.length === 0">
                     <option [ngValue]="null" disabled>Sélectionnez une ville</option>
                     <option *ngFor="let city of (obsequesCities$ | async)" [value]="city">
                       {{ city }}
@@ -175,72 +222,100 @@
                 </div>
               </div>
             </div>
-  
+
             <!-- Section Conducteur principal (conditionnelle) -->
             <div formGroupName="Conducteur principal" *ngIf="quoteType === 'auto' && showMainDriverSection">
-              <h3 class="text-lg font-semibold text-gray-800 bg-gray-100 -mx-6 px-6 py-2 mb-4 border-y">Conducteur principal</h3>
+              <h3 class="text-lg font-semibold text-gray-800 bg-gray-100 -mx-6 px-6 py-2 mb-4 border-y">Conducteur
+                principal</h3>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                 <div>
                   <label for="main-driver-firstName" class="block text-sm font-medium text-gray-700">Prénom</label>
-                  <input type="text" id="main-driver-firstName" formControlName="firstName" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                  <input type="text" id="main-driver-firstName" formControlName="firstName"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                 </div>
                 <div>
                   <label for="main-driver-lastName" class="block text-sm font-medium text-gray-700">Nom</label>
-                  <input type="text" id="main-driver-lastName" formControlName="lastName" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                  <input type="text" id="main-driver-lastName" formControlName="lastName"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                 </div>
                 <div>
-                  <label for="main-driver-dateNaissance" class="block text-sm font-medium text-gray-700">Date de naissance</label>
-                  <input type="date" id="main-driver-dateNaissance" formControlName="dateNaissance" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                  <label for="main-driver-dateNaissance" class="block text-sm font-medium text-gray-700">Date de
+                    naissance</label>
+                  <input type="date" id="main-driver-dateNaissance" formControlName="dateNaissance"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                 </div>
                 <div class="sm:col-span-2">
                   <label for="main-driver-email" class="block text-sm font-medium text-gray-700">Email</label>
-                  <input type="email" id="main-driver-email" formControlName="email" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                  <input type="email" id="main-driver-email" formControlName="email"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                 </div>
                 <div class="sm:col-span-2">
                   <label for="main-driver-phone" class="block text-sm font-medium text-gray-700">Téléphone</label>
-                  <input type="tel" id="main-driver-phone" formControlName="phone" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" appPhoneFormat placeholder="+32 4XX XX XX XX" maxlength="18">
+                  <input type="tel" id="main-driver-phone" formControlName="phone"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm"
+                    appPhoneFormat placeholder="+32 4XX XX XX XX" maxlength="18">
                 </div>
                 <div class="sm:col-span-2">
                   <label for="main-driver-address" class="block text-sm font-medium text-gray-700">Adresse</label>
-                  <input type="text" id="main-driver-address" formControlName="address" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                  <input type="text" id="main-driver-address" formControlName="address"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                 </div>
                 <div>
-                  <label for="main-driver-postalCode" class="block text-sm font-medium text-gray-700">Code Postal</label>
-                  <input type="text" id="main-driver-postalCode" formControlName="postalCode" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                  <label for="main-driver-postalCode" class="block text-sm font-medium text-gray-700">Code
+                    Postal</label>
+                  <input type="text" id="main-driver-postalCode" formControlName="postalCode"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                 </div>
                 <div>
                   <label for="main-driver-city" class="block text-sm font-medium text-gray-700">Ville</label>
-                  <input type="text" id="main-driver-city" formControlName="city" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                  <input type="text" id="main-driver-city" formControlName="city"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                 </div>
                 <div>
-                  <label for="main-driver-driverLicenseNumber" class="block text-sm font-medium text-gray-700">N° de permis</label>
-                  <input type="text" id="main-driver-driverLicenseNumber" formControlName="driverLicenseNumber" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                  <label for="main-driver-driverLicenseNumber" class="block text-sm font-medium text-gray-700">N° de
+                    permis</label>
+                  <input type="text" id="main-driver-driverLicenseNumber" formControlName="driverLicenseNumber"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                 </div>
                 <div>
-                  <label for="main-driver-driverLicenseDate" class="block text-sm font-medium text-gray-700">Date d'obtention permis</label>
-                  <input type="date" id="main-driver-driverLicenseDate" formControlName="driverLicenseDate" [max]="today" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                  <label for="main-driver-driverLicenseDate" class="block text-sm font-medium text-gray-700">Date
+                    d'obtention permis</label>
+                  <input type="date" id="main-driver-driverLicenseDate" formControlName="driverLicenseDate"
+                    [max]="today"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                 </div>
                 <div class="sm:col-span-2">
-                  <label for="main-driver-nationalRegistryNumber" class="block text-sm font-medium text-gray-700">Numéro national belge</label>
-                  <input type="text" id="main-driver-nationalRegistryNumber" formControlName="nationalRegistryNumber" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" appNationalNumberFormat placeholder="XX.XX.XX-XXX.XX" maxlength="15">
-                  <div *ngIf="quoteUpdateForm.get('Conducteur principal.nationalRegistryNumber')?.invalid && quoteUpdateForm.get('Conducteur principal.nationalRegistryNumber')?.touched" class="text-red-600 text-sm mt-1">
-                    <div *ngIf="quoteUpdateForm.get('Conducteur principal.nationalRegistryNumber')?.hasError('invalidFormat')">
+                  <label for="main-driver-nationalRegistryNumber" class="block text-sm font-medium text-gray-700">Numéro
+                    national belge</label>
+                  <input type="text" id="main-driver-nationalRegistryNumber" formControlName="nationalRegistryNumber"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm"
+                    appNationalNumberFormat placeholder="XX.XX.XX-XXX.XX" maxlength="15">
+                  <div
+                    *ngIf="quoteUpdateForm.get('Conducteur principal.nationalRegistryNumber')?.invalid && quoteUpdateForm.get('Conducteur principal.nationalRegistryNumber')?.touched"
+                    class="text-red-600 text-sm mt-1">
+                    <div
+                      *ngIf="quoteUpdateForm.get('Conducteur principal.nationalRegistryNumber')?.hasError('invalidFormat')">
                       Le numéro doit contenir 11 chiffres.
                     </div>
-                    <div *ngIf="quoteUpdateForm.get('Conducteur principal.nationalRegistryNumber')?.hasError('invalidDate')">
+                    <div
+                      *ngIf="quoteUpdateForm.get('Conducteur principal.nationalRegistryNumber')?.hasError('invalidDate')">
                       La date de naissance dans le numéro est invalide.
                     </div>
-                    <div *ngIf="quoteUpdateForm.get('Conducteur principal.nationalRegistryNumber')?.hasError('invalidChecksum')">
+                    <div
+                      *ngIf="quoteUpdateForm.get('Conducteur principal.nationalRegistryNumber')?.hasError('invalidChecksum')">
                       Le numéro national est invalide.
                     </div>
-                    <div *ngIf="quoteUpdateForm.get('Conducteur principal.nationalRegistryNumber')?.hasError('dateMismatch')">
+                    <div
+                      *ngIf="quoteUpdateForm.get('Conducteur principal.nationalRegistryNumber')?.hasError('dateMismatch')">
                       Incohérence avec la date de naissance.
                     </div>
                   </div>
                 </div>
                 <div>
-                  <label for="main-driver-nationality" class="block text-sm font-medium text-gray-700">Nationalité</label>
-                  <select id="main-driver-nationality" formControlName="nationality" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                  <label for="main-driver-nationality"
+                    class="block text-sm font-medium text-gray-700">Nationalité</label>
+                  <select id="main-driver-nationality" formControlName="nationality"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                     <option [ngValue]="null" disabled>Sélectionnez une nationalité</option>
                     <option *ngFor="let nat of (nationalities$ | async)" [value]="nat.nationality">
                       {{ nat.nationality }}
@@ -248,16 +323,24 @@
                   </select>
                 </div>
                 <div>
-                  <label for="main-driver-idCardNumber" class="block text-sm font-medium text-gray-700">N° carte d'identité</label>
-                  <input type="text" id="main-driver-idCardNumber" formControlName="idCardNumber" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" appIdCardFormat placeholder="XXX-XXXXXXX-XX" maxlength="15">
+                  <label for="main-driver-idCardNumber" class="block text-sm font-medium text-gray-700">N° carte
+                    d'identité</label>
+                  <input type="text" id="main-driver-idCardNumber" formControlName="idCardNumber"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm"
+                    appIdCardFormat placeholder="XXX-XXXXXXX-XX" maxlength="15">
                 </div>
                 <div>
-                  <label for="main-driver-idCardValidityDate" class="block text-sm font-medium text-gray-700">Date de validité CI</label>
-                  <input type="date" id="main-driver-idCardValidityDate" formControlName="idCardValidityDate" [min]="today" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                  <label for="main-driver-idCardValidityDate" class="block text-sm font-medium text-gray-700">Date de
+                    validité CI</label>
+                  <input type="date" id="main-driver-idCardValidityDate" formControlName="idCardValidityDate"
+                    [min]="today"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                 </div>
                 <div>
-                  <label for="main-driver-maritalStatus" class="block text-sm font-medium text-gray-700">Statut marital</label>
-                  <select id="main-driver-maritalStatus" formControlName="maritalStatus" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                  <label for="main-driver-maritalStatus" class="block text-sm font-medium text-gray-700">Statut
+                    marital</label>
+                  <select id="main-driver-maritalStatus" formControlName="maritalStatus"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                     <option [ngValue]="null" disabled>Sélectionnez un statut</option>
                     <option value="Célibataire">Célibataire</option>
                     <option value="Marié(e)">Marié(e)</option>
@@ -268,19 +351,28 @@
                 </div>
               </div>
             </div>
-  
+
             <!-- Section Véhicule -->
             <div formGroupName="Véhicule" *ngIf="quoteType === 'auto'">
               <h3 class="text-lg font-semibold text-gray-800 bg-gray-100 -mx-6 px-6 py-2 mb-4 border-y">Véhicule</h3>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                 <div class="relative">
                   <label for="make" class="block text-sm font-medium text-gray-700">Marque</label>
-                  <input type="text" id="make" [formControl]="marqueCtrl" placeholder="Rechercher une marque..." class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                  <input type="text" id="make" [formControl]="marqueCtrl" placeholder="Rechercher une marque..."
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                   <div *ngIf="isMarqueLoading" class="absolute inset-y-0 right-0 flex items-center pr-3 top-6">
-                    <svg class="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    <svg class="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none"
+                      viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                      </path>
+                    </svg>
                   </div>
-                  <ul *ngIf="(filteredMarques$ | async)?.length && (marqueCtrl.value || '').length >= 2" class="absolute z-20 w-full bg-white border border-gray-300 rounded-md mt-1 max-h-40 overflow-y-auto">
-                    <li *ngFor="let marque of filteredMarques$ | async" (click)="selectMarque(marque)" class="px-3 py-2 cursor-pointer hover:bg-gray-100">
+                  <ul *ngIf="(filteredMarques$ | async)?.length && (marqueCtrl.value || '').length >= 2"
+                    class="absolute z-20 w-full bg-white border border-gray-300 rounded-md mt-1 max-h-40 overflow-y-auto">
+                    <li *ngFor="let marque of filteredMarques$ | async" (click)="selectMarque(marque)"
+                      class="px-3 py-2 cursor-pointer hover:bg-gray-100">
                       {{ marque.nom }}
                     </li>
                   </ul>
@@ -288,21 +380,33 @@
                 <div>
                   <div class="relative">
                     <label for="model" class="block text-sm font-medium text-gray-700">Modèle</label>
-                    <select id="model" formControlName="model" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm disabled:bg-gray-100" [disabled]="!selectedMarqueId || isModeleLoading">
+                    <select id="model" formControlName="model"
+                      class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm disabled:bg-gray-100"
+                      [disabled]="!quoteUpdateForm.get('Véhicule.marque')?.value || isModeleLoading">
                       <option value="" disabled>Sélectionnez un modèle</option>
-                      <option *ngIf="!isModeleLoading && modelesForSelectedMarque.length === 0 && selectedMarqueId" [disabled]="true">
+                      <option *ngIf="!isModeleLoading && modelesForSelectedMarque.length === 0 && selectedMarqueId"
+                        [disabled]="true">
                         Aucun modèle trouvé
                       </option>
-                      <option *ngFor="let modele of modelesForSelectedMarque" [value]="modele.nom">{{ modele.nom }}</option>
+                      <option *ngFor="let modele of modelesForSelectedMarque" [value]="modele.nom">{{ modele.nom }}
+                      </option>
                     </select>
                     <div *ngIf="isModeleLoading" class="absolute inset-y-0 right-0 flex items-center pr-3 top-6">
-                      <svg class="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                      <svg class="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none"
+                        viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                        </circle>
+                        <path class="opacity-75" fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                        </path>
+                      </svg>
                     </div>
                   </div>
                 </div>
                 <div>
                   <label for="year" class="block text-sm font-medium text-gray-700">Année</label>
-                  <select id="year" formControlName="year" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                  <select id="year" formControlName="year"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                     <option [ngValue]="null" disabled>Sélectionnez une année</option>
                     <option *ngFor="let year of vehicleYears" [value]="year">
                       {{ year }}
@@ -311,30 +415,36 @@
                 </div>
                 <div>
                   <label for="licensePlate" class="block text-sm font-medium text-gray-700">Plaque</label>
-                  <input type="text" id="licensePlate" formControlName="licensePlate" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" appLicensePlateFormat placeholder="1 ABC 123" maxlength="9">
+                  <input type="text" id="licensePlate" formControlName="licensePlate"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm"
+                    appLicensePlateFormat placeholder="1 ABC 123" maxlength="9">
                 </div>
               </div>
             </div>
-  
+
             <!-- Section Garantie -->
             <div formGroupName="Garantie" *ngIf="quoteType === 'auto'">
               <h3 class="text-lg font-semibold text-gray-800 bg-gray-100 -mx-6 px-6 py-2 mb-4 border-y">Garanties</h3>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                 <div class="sm:col-span-2">
                   <label for="effectiveDate" class="block text-sm font-medium text-gray-700">Date d'effet</label>
-                  <input type="date" id="effectiveDate" formControlName="effectiveDate" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                  <input type="date" id="effectiveDate" formControlName="effectiveDate"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                 </div>
                 <div class="sm:col-span-2">
                   <label for="omniumLevel" class="block text-sm font-medium text-gray-700">Niveau d'omnium</label>
-                  <select id="omniumLevel" formControlName="omniumLevel" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                  <select id="omniumLevel" formControlName="omniumLevel"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                     <option value="non">Aucune</option>
                     <option value="partiel">Mini Omnium</option>
                     <option value="total">Omnium Complète</option>
                   </select>
                 </div>
                 <div class="sm:col-span-2">
-                  <label for="insuranceCompany" class="block text-sm font-medium text-gray-700">Compagnie d'assurance</label>
-                  <select id="insuranceCompany" formControlName="insuranceCompany" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                  <label for="insuranceCompany" class="block text-sm font-medium text-gray-700">Compagnie
+                    d'assurance</label>
+                  <select id="insuranceCompany" formControlName="insuranceCompany"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                     <option [ngValue]="null" disabled>Sélectionnez une compagnie</option>
                     <option *ngFor="let company of (insuranceCompanies$ | async)" [value]="company.id">
                       {{ company.nom }}
@@ -342,35 +452,43 @@
                   </select>
                 </div>
                 <div class="flex items-center">
-                  <input id="baseRC" type="checkbox" formControlName="baseRC" class="form-checkbox h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                  <input id="baseRC" type="checkbox" formControlName="baseRC"
+                    class="form-checkbox h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
                   <label for="baseRC" class="ml-2 block text-sm text-gray-900">Garantie RC de base</label>
                 </div>
                 <div class="flex items-center">
-                  <input id="driverCoverage" type="checkbox" formControlName="driverCoverage" class="form-checkbox h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                  <input id="driverCoverage" type="checkbox" formControlName="driverCoverage"
+                    class="form-checkbox h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
                   <label for="driverCoverage" class="ml-2 block text-sm text-gray-900">Garantie Conducteur</label>
                 </div>
                 <div class="flex items-center">
-                  <input id="assistance" type="checkbox" formControlName="assistance" class="form-checkbox h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                  <input id="assistance" type="checkbox" formControlName="assistance"
+                    class="form-checkbox h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
                   <label for="assistance" class="ml-2 block text-sm text-gray-900">Assistance</label>
                 </div>
               </div>
             </div>
-  
+
             <!-- Section Bâtiment (pour assurance habitation) -->
             <div formGroupName="Bâtiment" *ngIf="quoteType === 'habitation' && quoteUpdateForm.get('Bâtiment')">
               <h3 class="text-lg font-semibold text-gray-800 bg-gray-100 -mx-6 px-6 py-2 mb-4 border-y">Bâtiment</h3>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                 <div class="sm:col-span-2">
-                  <label for="batiment_adresse" class="block text-sm font-medium text-gray-700">Adresse du bâtiment</label>
-                  <input type="text" id="batiment_adresse" formControlName="adresse" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                  <label for="batiment_adresse" class="block text-sm font-medium text-gray-700">Adresse du
+                    bâtiment</label>
+                  <input type="text" id="batiment_adresse" formControlName="adresse"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                 </div>
                 <div>
                   <label for="batiment_code_postal" class="block text-sm font-medium text-gray-700">Code Postal</label>
-                  <input type="text" id="batiment_code_postal" formControlName="codePostal" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                  <input type="text" id="batiment_code_postal" formControlName="codePostal"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                 </div>
                 <div>
                   <label for="batiment_ville" class="block text-sm font-medium text-gray-700">Ville</label>
-                  <select id="batiment_ville" formControlName="ville" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm disabled:bg-gray-100" [disabled]="(batimentCities$ | async)?.length === 0">
+                  <select id="batiment_ville" formControlName="ville"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm disabled:bg-gray-100"
+                    [disabled]="(batimentCities$ | async)?.length === 0">
                     <option [ngValue]="null" disabled>Sélectionnez une ville</option>
                     <option *ngFor="let city of (batimentCities$ | async)" [value]="city">
                       {{ city }}
@@ -378,54 +496,71 @@
                   </select>
                 </div>
                 <div class="sm:col-span-2">
-                  <label for="batiment_type_maison" class="block text-sm font-medium text-gray-700">Type de maison</label>
-                  <input type="text" id="batiment_type_maison" formControlName="typeMaison" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                  <label for="batiment_type_maison" class="block text-sm font-medium text-gray-700">Type de
+                    maison</label>
+                  <input type="text" id="batiment_type_maison" formControlName="typeMaison"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                 </div>
               </div>
             </div>
-  
+
             <!-- Section Évaluation (pour assurance habitation) -->
             <div formGroupName="Évaluation" *ngIf="quoteType === 'habitation'">
               <h3 class="text-lg font-semibold text-gray-800 bg-gray-100 -mx-6 px-6 py-2 mb-4 border-y">Évaluation</h3>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                 <div>
-                  <label for="evaluation_superficie" class="block text-sm font-medium text-gray-700">Superficie (m²)</label>
-                  <input type="number" id="evaluation_superficie" formControlName="superficie" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                  <label for="evaluation_superficie" class="block text-sm font-medium text-gray-700">Superficie
+                    (m²)</label>
+                  <input type="number" id="evaluation_superficie" formControlName="superficie"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                 </div>
                 <div>
-                  <label for="evaluation_nombre_pieces" class="block text-sm font-medium text-gray-700">Nombre de pièces</label>
-                  <input type="number" id="evaluation_nombre_pieces" formControlName="nombrePieces" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                  <label for="evaluation_nombre_pieces" class="block text-sm font-medium text-gray-700">Nombre de
+                    pièces</label>
+                  <input type="number" id="evaluation_nombre_pieces" formControlName="nombrePieces"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                 </div>
                 <div>
-                  <label for="evaluation_loyer_mensuel" class="block text-sm font-medium text-gray-700">Loyer mensuel (€)</label>
-                  <input type="number" id="evaluation_loyer_mensuel" formControlName="loyerMensuel" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                  <label for="evaluation_loyer_mensuel" class="block text-sm font-medium text-gray-700">Loyer mensuel
+                    (€)</label>
+                  <input type="number" id="evaluation_loyer_mensuel" formControlName="loyerMensuel"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                 </div>
               </div>
             </div>
-  
+
             <!-- Section Garanties Habitation -->
             <div formGroupName="Garanties Habitation" *ngIf="quoteType === 'habitation'">
-              <h3 class="text-lg font-semibold text-gray-800 bg-gray-100 -mx-6 px-6 py-2 mb-4 border-y">Garanties Habitation</h3>
+              <h3 class="text-lg font-semibold text-gray-800 bg-gray-100 -mx-6 px-6 py-2 mb-4 border-y">Garanties
+                Habitation</h3>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                 <div class="flex items-center">
-                  <input id="garantie_contenu" type="checkbox" formControlName="contenu" class="form-checkbox h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                  <input id="garantie_contenu" type="checkbox" formControlName="contenu"
+                    class="form-checkbox h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
                   <label for="garantie_contenu" class="ml-2 block text-sm text-gray-900">Garantie Contenu</label>
                 </div>
                 <div class="flex items-center">
-                  <input id="garantie_vol" type="checkbox" formControlName="vol" class="form-checkbox h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                  <input id="garantie_vol" type="checkbox" formControlName="vol"
+                    class="form-checkbox h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
                   <label for="garantie_vol" class="ml-2 block text-sm text-gray-900">Garantie Vol</label>
                 </div>
                 <div class="flex items-center">
-                  <input id="garantie_pertes_indirectes" type="checkbox" formControlName="pertesIndirectes" class="form-checkbox h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                  <label for="garantie_pertes_indirectes" class="ml-2 block text-sm text-gray-900">Pertes Indirectes</label>
+                  <input id="garantie_pertes_indirectes" type="checkbox" formControlName="pertesIndirectes"
+                    class="form-checkbox h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                  <label for="garantie_pertes_indirectes" class="ml-2 block text-sm text-gray-900">Pertes
+                    Indirectes</label>
                 </div>
                 <div class="flex items-center">
-                  <input id="garantie_protection_juridique" type="checkbox" formControlName="protectionJuridique" class="form-checkbox h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                  <label for="garantie_protection_juridique" class="ml-2 block text-sm text-gray-900">Protection Juridique</label>
+                  <input id="garantie_protection_juridique" type="checkbox" formControlName="protectionJuridique"
+                    class="form-checkbox h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                  <label for="garantie_protection_juridique" class="ml-2 block text-sm text-gray-900">Protection
+                    Juridique</label>
                 </div>
                 <div class="sm:col-span-2">
-                  <label for="habitationInsuranceCompany" class="block text-sm font-medium text-gray-700">Compagnie d'assurance</label>
-                  <select id="habitationInsuranceCompany" formControlName="insuranceCompany" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                  <label for="habitationInsuranceCompany" class="block text-sm font-medium text-gray-700">Compagnie
+                    d'assurance</label>
+                  <select id="habitationInsuranceCompany" formControlName="insuranceCompany"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                     <option [ngValue]="null" disabled>Sélectionnez une compagnie</option>
                     <option *ngFor="let company of (insuranceCompanies$ | async)" [value]="company.id">
                       {{ company.nom }}
@@ -434,66 +569,83 @@
                 </div>
               </div>
             </div>
-  
+
             <!-- Section Assurés (pour assurance obsèques) -->
             <div formGroupName="Assurés" *ngIf="quoteType === 'obseques'">
               <h3 class="text-lg font-semibold text-gray-800 bg-gray-100 -mx-6 px-6 py-2 mb-4 border-y">Assurés</h3>
               <div class="space-y-6">
                 <div class="flex items-center">
-                  <input id="preneurEstAssure" type="checkbox" formControlName="preneurEstAssure" class="form-checkbox h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                  <label for="preneurEstAssure" class="ml-2 block text-sm text-gray-900">Le preneur est aussi l'un des assurés</label>
+                  <input id="preneurEstAssure" type="checkbox" formControlName="preneurEstAssure"
+                    class="form-checkbox h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                  <label for="preneurEstAssure" class="ml-2 block text-sm text-gray-900">Le preneur est aussi l'un des
+                    assurés</label>
                 </div>
                 <div class="sm:col-span-2">
-                  <label for="obsequesInsuranceCompany" class="block text-sm font-medium text-gray-700">Compagnie d'assurance</label>
-                  <select id="obsequesInsuranceCompany" formControlName="insuranceCompany" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                  <label for="obsequesInsuranceCompany" class="block text-sm font-medium text-gray-700">Compagnie
+                    d'assurance</label>
+                  <select id="obsequesInsuranceCompany" formControlName="insuranceCompany"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                     <option [ngValue]="null" disabled>Sélectionnez une compagnie</option>
                     <option *ngFor="let company of (insuranceCompanies$ | async)" [value]="company.id">
                       {{ company.nom }}
                     </option>
                   </select>
                 </div>
-  
+
                 <div formArrayName="assures" class="space-y-4">
-                  <div *ngFor="let assure of assures.controls; let i=index" [formGroupName]="i" class="p-4 border rounded-md">
+                  <div *ngFor="let assure of assures.controls; let i=index" [formGroupName]="i"
+                    class="p-4 border rounded-md">
                     <h4 class="font-semibold mb-2">Assuré {{ i + 1 }}</h4>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                       <div>
-                        <label [for]="'assure-prenom-' + i" class="block text-sm font-medium text-gray-700">Prénom</label>
-                        <input type="text" [id]="'assure-prenom-' + i" formControlName="prenom" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                        <label [for]="'assure-prenom-' + i"
+                          class="block text-sm font-medium text-gray-700">Prénom</label>
+                        <input type="text" [id]="'assure-prenom-' + i" formControlName="prenom"
+                          class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                       </div>
                       <div>
                         <label [for]="'assure-nom-' + i" class="block text-sm font-medium text-gray-700">Nom</label>
-                        <input type="text" [id]="'assure-nom-' + i" formControlName="nom" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                        <input type="text" [id]="'assure-nom-' + i" formControlName="nom"
+                          class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                       </div>
                       <div>
-                        <label [for]="'assure-dateNaissance-' + i" class="block text-sm font-medium text-gray-700">Date de naissance</label>
-                        <input type="date" [id]="'assure-dateNaissance-' + i" formControlName="dateNaissance" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                        <label [for]="'assure-dateNaissance-' + i" class="block text-sm font-medium text-gray-700">Date
+                          de naissance</label>
+                        <input type="date" [id]="'assure-dateNaissance-' + i" formControlName="dateNaissance"
+                          class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                       </div>
                       <div>
-                        <label [for]="'assure-capital-' + i" class="block text-sm font-medium text-gray-700">Capital assuré (€)</label>
-                        <input type="number" [id]="'assure-capital-' + i" formControlName="capital" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                        <label [for]="'assure-capital-' + i" class="block text-sm font-medium text-gray-700">Capital
+                          assuré (€)</label>
+                        <input type="number" [id]="'assure-capital-' + i" formControlName="capital"
+                          class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
                       </div>
                     </div>
                   </div>
                 </div>
-                <button type="button" (click)="addAssure()" class="text-sm font-medium text-indigo-600 hover:text-indigo-500">+ Ajouter un assuré</button>
+                <button type="button" (click)="addAssure()"
+                  class="text-sm font-medium text-indigo-600 hover:text-indigo-500">+ Ajouter un assuré</button>
               </div>
             </div>
-  
+
             <!-- ======================================= -->
             <!-- SECTION: DÉTAILS DU VOYAGE              -->
             <!-- ======================================= -->
             <div *ngIf="quoteType === 'voyage'">
-              <h3 class="text-lg font-semibold text-gray-800 bg-gray-100 -mx-6 px-6 py-2 mb-4 border-y">Détails de la demande de voyage</h3>
+              <h3 class="text-lg font-semibold text-gray-800 bg-gray-100 -mx-6 px-6 py-2 mb-4 border-y">Détails de la
+                demande de voyage</h3>
               <div class="space-y-4">
-                <label for="voyage-description" class="block text-sm font-medium text-gray-700">Message / Description</label>
-                <textarea id="voyage-description" formControlName="description" rows="4" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm"></textarea>
+                <label for="voyage-description" class="block text-sm font-medium text-gray-700">Message /
+                  Description</label>
+                <textarea id="voyage-description" formControlName="description" rows="4"
+                  class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm"></textarea>
               </div>
             </div>
-  
+
             <!-- Bouton de soumission -->
             <div class="pt-4">
-              <button type="submit" [disabled]="quoteUpdateForm.invalid || quoteUpdateForm.pristine" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400">
+              <button type="submit" [disabled]="quoteUpdateForm.invalid || quoteUpdateForm.pristine"
+                class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400">
                 Mettre à jour les informations
               </button>
             </div>
@@ -501,53 +653,353 @@
         </div>
       </div>
 
-      <!-- ===== ONGLET TEXTE ===== -->
-      <div *ngSwitchCase="'text'" class="bg-white shadow-md rounded-lg p-6">
-        <div class="space-y-6 max-w-4xl mx-auto">
-          <h2 class="text-xl font-semibold border-b pb-2">Résumé de l'offre</h2>
-          
-          <div *ngIf="details['preneur']">
-            <h3 class="text-lg font-semibold text-gray-800 bg-gray-100 -mx-6 px-6 py-2 mb-4 border-y">Preneur d'assurance</h3>
-            <p><strong>Nom:</strong> {{ details['preneur'].prenom }} {{ details['preneur'].nom }}</p>
-            <p><strong>Email:</strong> {{ details['preneur'].email }}</p>
-            <p><strong>Téléphone:</strong> {{ details['preneur'].telephone }}</p>
-            <p><strong>Adresse:</strong> {{ details['preneur'].adresse }}, {{ details['preneur'].code_postal }} {{ details['preneur'].ville }}</p>
-          </div>
+      <div *ngSwitchCase="'text'" class="overflow-hidden">
+        <div class="bg-white shadow-md rounded-lg overflow-hidden">
 
-          <div *ngIf="details['conducteur']">
-            <h3 class="text-lg font-semibold text-gray-800 bg-gray-100 -mx-6 px-6 py-2 mb-4 border-y">Conducteur principal</h3>
-            <p><strong>Nom:</strong> {{ details['conducteur'].prenom }} {{ details['conducteur'].nom }}</p>
-            <p><strong>Email:</strong> {{ details['conducteur'].email }}</p>
-            <p><strong>Date de naissance:</strong> {{ details['conducteur'].date_naissance | date:'dd/MM/yyyy' }}</p>
-          </div>
+          <div class="w-full">
 
-          <div *ngIf="details['vehicule']">
-            <h3 class="text-lg font-semibold text-gray-800 bg-gray-100 -mx-6 px-6 py-2 mb-4 border-y">Véhicule</h3>
-            <p><strong>Marque:</strong> {{ details['vehicule'].marque }}</p>
-            <p><strong>Modèle:</strong> {{ details['vehicule'].modele }}</p>
-            <p><strong>Année:</strong> {{ details['vehicule'].annee }}</p>
-            <p><strong>Plaque:</strong> {{ details['vehicule'].plaque }}</p>
-          </div>
+            <div class="px-6 py-4 border-b border-gray-200 bg-white flex justify-between items-center">
+              <h2 class="text-xl font-semibold text-gray-800">Résumé de l'offre (Lecture seule)</h2>
+              <button (click)="printQuote()"
+                class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm leading-5 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-500 focus:outline-none focus:border-indigo-700 focus:ring-indigo active:bg-indigo-700 transition ease-in-out duration-150">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd"
+                    d="M5 4v3H4a2 2 0 00-2 2v6a2 2 0 002 2h12a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a2 2 0 00-2-2H7a2 2 0 00-2 2zm8 0H7v3h6V4zm-2 5a1 1 0 00-1 1v4a1 1 0 102 0v-4a1 1 0 00-1-1z"
+                    clip-rule="evenodd" />
+                </svg>
+                Imprimer
+              </button>
+            </div>
 
-          <div *ngIf="details['details']">
-            <h3 class="text-lg font-semibold text-gray-800 bg-gray-100 -mx-6 px-6 py-2 mb-4 border-y">Garanties</h3>
-            <p><strong>Compagnie:</strong> {{ details['compagnie_nom'] }}</p>
-            <p><strong>Date d'effet:</strong> {{ details['details'].date_effet | date:'dd/MM/yyyy' }}</p>
-            <p><strong>RC de base:</strong> {{ details['details'].garantie_base_rc ? 'Oui' : 'Non' }}</p>
-            <p><strong>Assistance:</strong> {{ details['details'].garantie_assistance ? 'Oui' : 'Non' }}</p>
-            <p><strong>Protection du conducteur:</strong> {{ details['details'].garantie_conducteur ? 'Oui' : 'Non' }}</p>
-            <p><strong>Omnium:</strong> {{ details['details'].garantie_omnium_niveau || 'Aucune' }}</p>
-          </div>
+            <table id="printable-section" class="min-w-full divide-y divide-gray-200">
 
-          <div *ngIf="details['description']">
-            <h3 class="text-lg font-semibold text-gray-800 bg-gray-100 -mx-6 px-6 py-2 mb-4 border-y">Description</h3>
-            <p class="whitespace-pre-wrap">{{ details['description'] }}</p>
-          </div>
+              <tbody
+                *ngIf="(quoteType === 'auto' || quoteType === 'habitation' || quoteType === 'rc' || quoteType === 'voyage') && quoteUpdateForm.get('Preneur d\'assurance')?.value as preneur"
+                class="bg-white divide-y divide-gray-200">
 
+                <tr class="bg-gray-100">
+                  <th colspan="2" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                    Preneur d'assurance
+                  </th>
+                </tr>
+
+                <tr>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50 w-1/3">Prénom &
+                    Nom</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {{ preneur.firstName | titlecase }} {{ preneur.lastName | uppercase }}
+                  </td>
+                </tr>
+                <tr>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Date de naissance
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {{ preneur.dateNaissance | date:'dd/MM/yyyy' }}
+                  </td>
+                </tr>
+                <tr>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Contact</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <div><span class="font-medium">Email:</span> {{ preneur.email }}</div>
+                    <div><span class="font-medium">Tél:</span> {{ preneur.phone }}</div>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Adresse</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {{ preneur.address }}<br>
+                    {{ preneur.postalCode }} {{ preneur.city }}
+                  </td>
+                </tr>
+
+                <ng-container *ngIf="quoteType === 'auto'">
+                  <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Permis de
+                      conduire</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      N° {{ preneur.driverLicenseNumber }} (Obtenu le {{ preneur.driverLicenseDate | date:'dd/MM/yyyy'
+                      }})
+                    </td>
+                  </tr>
+                </ng-container>
+
+                <tr>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Identité
+                    nationale</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <div><span class="font-medium">RN:</span> {{ preneur.nationalRegistryNumber }}</div>
+                    <div><span class="font-medium">Carte Id:</span> {{ preneur.idCardNumber }} (Validité: {{
+                      preneur.idCardValidityDate | date:'dd/MM/yyyy' }})</div>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Infos persos</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {{ preneur.nationality }} — {{ preneur.maritalStatus }}
+                  </td>
+                </tr>
+              </tbody>
+
+              <tbody *ngIf="quoteType === 'obseques' && quoteUpdateForm.get('Preneur Obsèques')?.value as preneurObs"
+                class="bg-white divide-y divide-gray-200 border-t-8 border-gray-50">
+                <tr class="bg-gray-100">
+                  <th colspan="2" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                    Preneur d'assurance (Obsèques)
+                  </th>
+                </tr>
+                <tr>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50 w-1/3">Identité
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {{ preneurObs.firstName }} {{ preneurObs.lastName }} (Né le {{ preneurObs.dateNaissance |
+                    date:'dd/MM/yyyy' }})
+                  </td>
+                </tr>
+                <tr>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Contact & Adresse
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {{ preneurObs.email }} <br>
+                    {{ preneurObs.phone }} <br>
+                    {{ preneurObs.address }}, {{ preneurObs.postalCode }} {{ preneurObs.city }}
+                  </td>
+                </tr>
+              </tbody>
+
+              <tbody
+                *ngIf="quoteType === 'auto' && showMainDriverSection && quoteUpdateForm.get('Conducteur principal')?.value as driver"
+                class="bg-white divide-y divide-gray-200 border-t-8 border-gray-50">
+                <tr class="bg-gray-100">
+                  <th colspan="2" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                    Conducteur Principal
+                  </th>
+                </tr>
+                <tr>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Identité</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {{ driver.firstName }} {{ driver.lastName }}
+                  </td>
+                </tr>
+                <tr>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Date de naissance
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {{ driver.dateNaissance | date:'dd/MM/yyyy' }}
+                  </td>
+                </tr>
+                <tr>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Contact</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {{ driver.email }} | {{ driver.phone }}
+                  </td>
+                </tr>
+                <tr>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Adresse</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {{ driver.address }}<br>
+                    {{ driver.postalCode }} {{ driver.city }}
+                  </td>
+                </tr>
+                <tr>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Permis</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    N° {{ driver.driverLicenseNumber }} ({{ driver.driverLicenseDate | date:'dd/MM/yyyy' }})
+                  </td>
+                </tr>
+                <tr>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Infos
+                    administratives</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    RN: {{ driver.nationalRegistryNumber }}<br>
+                    CI: {{ driver.idCardNumber }} ({{ driver.nationality }})<br>
+                    Statut: {{ driver.maritalStatus }}
+                  </td>
+                </tr>
+              </tbody>
+
+              <tbody *ngIf="quoteType === 'auto' && quoteUpdateForm.get('Véhicule')?.value as vehicule"
+                class="bg-white divide-y divide-gray-200 border-t-8 border-gray-50">
+                <tr class="bg-gray-100">
+                  <th colspan="2" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                    Véhicule
+                  </th>
+                </tr>
+                <tr>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Véhicule</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <span class="font-bold">{{ vehicule.marque }}</span> {{ vehicule.model }}
+                  </td>
+                </tr>
+                <tr>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Détails</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    Année: {{ vehicule.year }}<br>
+                    Plaque: <span class="uppercase font-mono bg-gray-100 px-2 py-1 rounded">{{ vehicule.licensePlate
+                      }}</span>
+                  </td>
+                </tr>
+              </tbody>
+
+              <tbody *ngIf="quoteType === 'auto' && quoteUpdateForm.get('Garantie')?.value as garantie"
+                class="bg-white divide-y divide-gray-200 border-t-8 border-gray-50">
+                <tr class="bg-gray-100">
+                  <th colspan="2" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                    Garanties
+                  </th>
+                </tr>
+                <tr>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Général</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <div><span class="font-medium">Date d'effet:</span> {{ garantie.effectiveDate | date:'dd/MM/yyyy' }}
+                    </div>
+                    <div><span class="font-medium">Compagnie ID:</span> {{ garantie.insuranceCompany }}</div>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Niveau d'omnium
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <span
+                      class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                      {{ garantie.omniumLevel | uppercase }}
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Options
+                    souscrites</td>
+                  <td class="px-6 py-4 text-sm text-gray-900">
+                    <ul class="list-disc list-inside">
+                      <li>RC de base: <strong>{{ garantie.baseRC ? 'Oui' : 'Non' }}</strong></li>
+                      <li>Garantie Conducteur: <strong>{{ garantie.driverCoverage ? 'Oui' : 'Non' }}</strong></li>
+                      <li>Assistance: <strong>{{ garantie.assistance ? 'Oui' : 'Non' }}</strong></li>
+                    </ul>
+                  </td>
+                </tr>
+              </tbody>
+
+              <tbody *ngIf="quoteType === 'habitation' && quoteUpdateForm.get('Bâtiment')?.value as batiment"
+                class="bg-white divide-y divide-gray-200 border-t-8 border-gray-50">
+                <tr class="bg-gray-100">
+                  <th colspan="2" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                    Bâtiment
+                  </th>
+                </tr>
+                <tr>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Adresse assurée
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {{ batiment.adresse }}<br>
+                    {{ batiment.codePostal }} {{ batiment.ville }}
+                  </td>
+                </tr>
+                <tr>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Type</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {{ batiment.typeMaison }}
+                  </td>
+                </tr>
+              </tbody>
+
+              <tbody *ngIf="quoteType === 'habitation' && quoteUpdateForm.get('Évaluation')?.value as eval"
+                class="bg-white divide-y divide-gray-200 border-t-8 border-gray-50">
+                <tr class="bg-gray-100">
+                  <th colspan="2" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                    Évaluation
+                  </th>
+                </tr>
+                <tr>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Détails</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <div>Superficie: {{ eval.superficie }} m²</div>
+                    <div>Pièces: {{ eval.nombrePieces }}</div>
+                    <div>Loyer: {{ eval.loyerMensuel | currency:'EUR' }}</div>
+                  </td>
+                </tr>
+              </tbody>
+
+              <tbody *ngIf="quoteType === 'habitation' && quoteUpdateForm.get('Garanties Habitation')?.value as garHab"
+                class="bg-white divide-y divide-gray-200 border-t-8 border-gray-50">
+                <tr class="bg-gray-100">
+                  <th colspan="2" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                    Garanties Habitation
+                  </th>
+                </tr>
+                <tr>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Compagnie</td>
+                  <td class="px-6 py-4 text-sm text-gray-900">{{ garHab.insuranceCompany }}</td>
+                </tr>
+                <tr>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Inclusions</td>
+                  <td class="px-6 py-4 text-sm text-gray-900">
+                    <div class="grid grid-cols-2 gap-2">
+                      <div>Contenu: <strong>{{ garHab.contenu ? 'Oui' : 'Non' }}</strong></div>
+                      <div>Vol: <strong>{{ garHab.vol ? 'Oui' : 'Non' }}</strong></div>
+                      <div>Pertes Ind.: <strong>{{ garHab.pertesIndirectes ? 'Oui' : 'Non' }}</strong></div>
+                      <div>Protection Jur.: <strong>{{ garHab.protectionJuridique ? 'Oui' : 'Non' }}</strong></div>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+
+              <tbody *ngIf="quoteType === 'obseques' && quoteUpdateForm.get('Assurés')?.value as assuresGroup"
+                class="bg-white divide-y divide-gray-200 border-t-8 border-gray-50">
+                <tr class="bg-gray-100">
+                  <th colspan="2" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                    Assurés
+                  </th>
+                </tr>
+                <tr>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Option Preneur
+                  </td>
+                  <td class="px-6 py-4 text-sm text-gray-900">
+                    Le preneur est aussi assuré: <strong>{{ assuresGroup.preneurEstAssure ? 'Oui' : 'Non' }}</strong>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Compagnie</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ assuresGroup.insuranceCompany }}</td>
+                </tr>
+
+                <ng-container *ngFor="let assure of assuresGroup.assures; let i = index">
+                  <tr class="bg-gray-50 border-t border-gray-200">
+                    <th colspan="2" class="px-6 py-2 text-left text-xs font-medium text-indigo-600 uppercase">Assuré {{
+                      i + 1 }}</th>
+                  </tr>
+                  <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50 pl-10">Identité
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {{ assure.prenom }} {{ assure.nom }} ({{ assure.dateNaissance | date:'dd/MM/yyyy' }})
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50 pl-10">Capital
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {{ assure.capital | currency:'EUR' }}
+                    </td>
+                  </tr>
+                </ng-container>
+              </tbody>
+
+              <tbody *ngIf="quoteType === 'voyage'" class="bg-white divide-y divide-gray-200 border-t-8 border-gray-50">
+                <tr class="bg-gray-100">
+                  <th colspan="2" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                    Voyage</th>
+                </tr>
+                <tr>
+                  <td class="px-6 py-4 text-sm font-medium text-gray-700 bg-gray-50 align-top">Description</td>
+                  <td class="px-6 py-4 text-sm text-gray-900 whitespace-pre-wrap">
+                    {{ quoteUpdateForm.get('description')?.value || 'Aucune description fournie.' }}
+                  </td>
+                </tr>
+              </tbody>
+
+            </table>
+
+          </div>
         </div>
       </div>
+      <ng-template #loadingTpl>Chargement des Détails de l'offre...</ng-template>
     </div>
-  </div>
-
-  <ng-template #loading>Chargement des Détails de l'offre...</ng-template>
-</div>

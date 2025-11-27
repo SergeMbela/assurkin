@@ -12,6 +12,7 @@ import { UploaderService, UploadResult } from '../../services/uploader.service';
 import { ContractService, ContractPayload } from '../../services/contract.service';
  
 import { NationalNumberFormatDirective } from '../../directives/national-number-format.directive';
+import { OmniumLevelPipe } from './omnium-level.pipe';
 
 @Component({
   selector: 'app-management-detail',
@@ -22,7 +23,8 @@ import { NationalNumberFormatDirective } from '../../directives/national-number-
     RouterLink,
     IdCardFormatDirective, 
     NationalNumberFormatDirective,
-    LicensePlateFormatDirective
+    LicensePlateFormatDirective,
+    OmniumLevelPipe
   ],
   templateUrl: './management-detail.component.html',
   styleUrls: []
@@ -455,7 +457,7 @@ export class ManagementDetailComponent implements OnInit {
       ? this.dbService.getCitiesByPostalCode(obsequesPostalCode).pipe(tap(cities => this.obsequesCities$.next(cities)))
       : of(null);
 
-    const modeles$ = (this.quoteType === 'auto' && marqueVehicule)
+    const modeles$ = (isPlatformBrowser(this.platformId) && this.quoteType === 'auto' && marqueVehicule)
       ? this.dbService.searchMarques(marqueVehicule).pipe(
           switchMap(marques => {
             if (marques && marques.length > 0) {
@@ -644,6 +646,34 @@ export class ManagementDetailComponent implements OnInit {
         console.error('Échec de l\'enregistrement du contrat.', result?.error);
       }
     });
+  }
+
+  printQuote(): void {
+    const printContent = document.getElementById('printable-section');
+    if (printContent) {
+      const WindowPrt = window.open('', '', 'left=0,top=0,width=900,height=900,toolbar=0,scrollbars=0,status=0');
+      if (WindowPrt) {
+        // Les styles TailwindCSS peuvent ne pas être disponibles directement.
+        // Une meilleure approche pour la production serait de lier une feuille de style.
+        // Pour la simplicité, nous injectons quelques styles de base.
+        const styles = `
+          <style>
+            body { font-family: sans-serif; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f2f2f2; }
+            .bg-gray-100 { background-color: #f3f4f6; }
+            .font-bold { font-weight: 700; }
+            .uppercase { text-transform: uppercase; }
+          </style>
+        `;
+        WindowPrt.document.write('<html><head><title>Imprimer</title>' + styles + '</head><body>' + printContent.innerHTML + '</body></html>');
+        WindowPrt.document.close();
+        WindowPrt.focus();
+        WindowPrt.print();
+        WindowPrt.close();
+      }
+    }
   }
 
   updateQuoteDetails() {
