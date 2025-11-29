@@ -663,10 +663,13 @@ export class DbConnectService {
         .single()
     ).pipe(
       map(response => {
-        if (response.error) {
+        // Si une erreur est retournée par Supabase OU si aucune donnée n'est trouvée
+        if (response.error || !response.data) {
           console.error(`Erreur lors de la récupération de l'assureur avec l'ID ${id}:`, response.error);
-          throw response.error;
+          // Lève une erreur claire si l'assureur n'est pas trouvé
+          throw response.error || new Error(`Aucun assureur trouvé pour l'ID ${id}`);
         }
+        // À ce stade, nous sommes sûrs que response.data n'est pas null
         return {
           id: response.data.id,
           nom: response.data.nom_assureur
@@ -1839,5 +1842,32 @@ export class DbConnectService {
         return data ?? [];
       })
     );
+  }
+
+  /**
+   * Crée une URL signée pour un fichier dans Supabase Storage.
+   * @param bucketName Le nom du bucket.
+   * @param filePath Le chemin du fichier dans le bucket.
+   * @param expiresIn La durée de validité de l'URL en secondes.
+   * @returns Une promesse qui se résout avec l'URL signée.
+   */
+  public async createSignedUrl(bucketName: string, filePath: string, expiresIn: number): Promise<{ data: { signedUrl: string; } | null; error: Error | null; }> {
+    // Note: l'accès se fait via this.supabase.supabase car votre service injecte SupabaseService
+    return this.supabase.supabase.storage
+      .from(bucketName)
+      .createSignedUrl(filePath, expiresIn);
+  }
+
+  /**
+   * Génère l'URL publique pour un fichier dans Supabase Storage.
+   * @param bucketName Le nom du bucket.
+   * @param filePath Le chemin du fichier dans le bucket.
+   * @returns Un objet contenant l'URL publique.
+   */
+  public getPublicUrl(bucketName: string, filePath: string): { data: { publicUrl: string; }; } {
+    // Note: l'accès se fait via this.supabase.supabase car votre service injecte SupabaseService
+    return this.supabase.supabase.storage
+      .from(bucketName)
+      .getPublicUrl(filePath);
   }
 }

@@ -63,7 +63,7 @@ export class ContractService {
     return from(
       this.supabase.supabase
         .from('uploaded_files')
-        .select('path, file_name, raisons')
+        .select('path, file_name, raisons,date_created')
         .eq('id_quote', quoteId)
         .eq('id_type', this.getQuoteTypeId(quoteType))
     ).pipe(

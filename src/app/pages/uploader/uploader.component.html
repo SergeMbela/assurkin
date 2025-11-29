@@ -28,21 +28,19 @@
               <tr>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fichier</th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                <th scope="col" class="relative px-6 py-3"><span class="sr-only">Action</span></th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date d'ajout</th>
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
               <tr *ngFor="let file of files" class="hover:bg-gray-50 transition-colors">
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 font-medium">{{ file.file_name }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ file.raisons }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <a [href]="getDownloadUrl(file.path)" target="_blank" class="text-blue-600 hover:text-blue-900 inline-flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                    </svg>
-                    Télécharger
+                <td class="px-6 py-4 text-sm text-gray-800 font-medium align-middle">
+                  <a [href]="file.downloadUrl" target="_blank" class="inline-flex items-center text-blue-600 hover:text-blue-800 group" [class.opacity-50]="!file.downloadUrl" [class.pointer-events-none]="!file.downloadUrl" [title]="file.downloadUrl ? 'Télécharger ' + file.file_name : 'Génération du lien...'">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-gray-400 group-hover:text-blue-600 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                    <span class="block max-w-xs truncate group-hover:underline" [title]="file.file_name">{{ file.file_name }}</span>
                   </a>
                 </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ file.raisons }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ file.date_created | date:'dd/MM/yyyy HH:mm' }}</td>
               </tr>
             </tbody>
           </table>
@@ -129,7 +127,7 @@
                     [disabled]="state.status !== 'pending' && state.status !== 'error'"
                     class="block w-full pl-3 pr-10 py-2 text-sm border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 rounded-md disabled:bg-gray-100 disabled:text-gray-500">
               <option value="" disabled>Choisir un type...</option>
-              <option *ngFor="let docType of documentTypes" [value]="docType.view">
+              <option *ngFor="let docType of documentTypes" [value]="docType.Label">
                 {{ docType.Label }}
               </option>
             </select>

@@ -2,15 +2,17 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { Observable, of, forkJoin, catchError, map, finalize } from 'rxjs';
+import { Observable, of, forkJoin, catchError, map, finalize, switchMap, from } from 'rxjs';
 
 // Services and Models
 import { UploaderService, UploadResult } from '../../services/uploader.service';
 import { ContractService, ExistingFile } from '../../services/contract.service';
 import { DbConnectService, DocumentType } from '../../services/db-connect.service';
+import { SendsmsService } from '../../services/sendsms.service';
 import { ImatService } from '../../services/imat.service';
 import { AssuranceMapperService } from '../../services/assurance-mapper.service';
 import { dossierAssuranceLabels } from '../../pipes/dossier-assurance.model';
+import { environment } from '../../../environments/environment';
 
 interface UploadState {
   file: File;
@@ -18,6 +20,11 @@ interface UploadState {
   raison: string;
   error?: string;
   filePath?: string;
+}
+
+// Interface locale pour étendre ExistingFile avec la nouvelle propriété
+interface ExistingFileWithDate extends ExistingFile {
+  date_created: string | Date;
 }
 
 // Type definition for a row of CSV data
@@ -38,6 +45,7 @@ export class UploaderComponent implements OnInit {
   private contractService = inject(ContractService);
   private dbConnectService = inject(DbConnectService);
   private imatService = inject(ImatService);
+  private sendsmsService = inject(SendsmsService);
   private assuranceMapperService = inject(AssuranceMapperService);
 
   // Component State
@@ -50,8 +58,9 @@ export class UploaderComponent implements OnInit {
   uploadSuccess = false;
   errorMessage: string | null = null;
   documentTypes: DocumentType[] = [];
-  existingFiles$: Observable<ExistingFile[]> = of([]);
+  existingFiles$: Observable<(ExistingFileWithDate & { downloadUrl: string | null })[]> = of([]);
 
+  private clientInfo: any = null; // Pour stocker les infos du client (preneur)
   // CSV State
   isSavingCsvData = false;
   csvSaveSuccess = false;
@@ -73,8 +82,22 @@ export class UploaderComponent implements OnInit {
   }
 
   private initData(): void {
-    // Load existing files
-    this.existingFiles$ = this.contractService.getContractFiles(this.quoteId, this.quoteType);
+    // Charger les fichiers existants et générer les URLs de téléchargement signées
+    this.existingFiles$ = this.contractService.getContractFiles(this.quoteId, this.quoteType).pipe(
+      switchMap(files => {
+        if (!files || files.length === 0) {
+          return of([]); // Retourne un observable avec un tableau vide s'il n'y a pas de fichiers
+        }
+        // Pour chaque fichier, on crée une promesse qui génère l'URL signée
+        const filesWithUrlPromises = files.map(file => {
+          const downloadUrl = this.getPublicDownloadUrl(file.path);
+          return Promise.resolve({ ...file, downloadUrl } as (ExistingFileWithDate & { downloadUrl: string | null })); // On retourne un nouvel objet fichier avec l'URL
+        });
+        // On attend que toutes les promesses soient résolues et on retourne le résultat comme un observable
+        return from(Promise.all(filesWithUrlPromises));
+      }),
+      catchError(err => { console.error("Erreur lors de la génération des URLs signées:", err); return of([]); })
+    );
     
     // Load Doc types
     this.loadDocumentTypes();
@@ -85,6 +108,15 @@ export class UploaderComponent implements OnInit {
         this.csvData = data;
       },
       error: (err) => console.error("Erreur chargement CSV:", err)
+    });
+
+    // Charger les informations du client pour l'envoi de SMS
+    this.dbConnectService.getQuoteDetails(this.quoteType, this.quoteId).subscribe({
+      next: (details) => {
+        // On stocke les informations du preneur
+        this.clientInfo = details?.preneur;
+      },
+      error: (err) => console.error("Erreur lors de la récupération des détails du devis:", err)
     });
   }
 
@@ -106,7 +138,7 @@ export class UploaderComponent implements OnInit {
         .map(file => ({
           file: file,
           status: 'pending' as const,
-          raison: this.documentTypes.length > 0 ? this.documentTypes[0].view ?? '' : '',
+          raison: '', // On initialise sans valeur par défaut
           error: undefined
         }));
 
@@ -203,9 +235,33 @@ export class UploaderComponent implements OnInit {
     forkJoin(tasks$).subscribe({
       next: () => {
         console.log('Synchronisation BDD terminée.');
-        this.existingFiles$ = this.contractService.getContractFiles(this.quoteId, this.quoteType);
+        // On rafraîchit la liste des fichiers en appliquant la même logique que dans initData()
+        this.existingFiles$ = this.contractService.getContractFiles(this.quoteId, this.quoteType).pipe(
+          switchMap(files => {
+            if (!files || files.length === 0) {
+              return of([]);
+            }
+            const filesWithUrlPromises = files.map(file => {
+              const downloadUrl = this.getPublicDownloadUrl(file.path);
+              return { ...file, downloadUrl } as (ExistingFileWithDate & { downloadUrl: string | null });
+            });
+            return from(Promise.all(filesWithUrlPromises));
+          }),
+          catchError(err => { console.error("Erreur lors du rafraîchissement des URLs signées:", err); return of([]); })
+        );
+
         // Clean up successful uploads from the list so user sees they are done
         this.uploadStates = this.uploadStates.filter(s => s.status !== 'success');
+      },
+      complete: () => {
+        // Vérifier si un contrat a été uploadé et envoyer un SMS
+        const contractUpload = successfulUploads.find(s => s.raison.toLowerCase() === 'Contrat');
+        if (contractUpload && this.clientInfo?.telephone) {
+          this.sendContractSms(this.clientInfo.telephone, this.clientInfo.prenom);
+        } else if (contractUpload) {
+          console.warn("Un contrat a été uploadé mais aucun numéro de téléphone n'a été trouvé pour le client.");
+          this.errorMessage = "Contrat sauvegardé, mais le SMS n'a pas pu être envoyé (téléphone manquant).";
+        }
       },
       error: (err) => {
         this.errorMessage = "Erreur critique lors de la sauvegarde.";
@@ -309,8 +365,38 @@ export class UploaderComponent implements OnInit {
     return this.uploadStates.some(s => s.status === 'pending');
   }
 
-  getDownloadUrl(filePath: string): string {
-    return this.uploaderService.getDownloadUrl(filePath);
+  /**
+   * Génère une URL de téléchargement publique pour un fichier.
+   * @param filePath Le chemin du fichier dans le bucket Supabase Storage.
+   * @returns L'URL de téléchargement publique.
+   */
+  getPublicDownloadUrl(filePath: string): string | null {
+    const bucketName = 'documents_auto';
+    try {
+      // Utilise la méthode du service pour obtenir l'URL publique
+      const { data } = this.dbConnectService.getPublicUrl(bucketName, filePath);
+      return data.publicUrl;
+    } catch (error) {
+      console.error('Erreur inattendue dans getPublicDownloadUrl:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Envoie un SMS pour notifier le client de la réception du contrat.
+   * @param phoneNumber Le numéro de téléphone du client.
+   * @param clientName Le prénom du client.
+   */
+  private async sendContractSms(phoneNumber: string, clientName: string): Promise<void> {
+    const message = `Bonjour ${clientName}, votre contrat est disponible dans votre espace client. Veuillez le signer. L'équipe Assurkins. ${environment.website}`;
+    try {
+      await this.sendsmsService.sendSms(phoneNumber, message);
+      console.log('SMS de confirmation de contrat envoyé avec succès.');
+    } catch (error) {
+      console.error("Échec de l'envoi du SMS de confirmation de contrat:", error);
+      // Afficher une erreur non bloquante à l'utilisateur
+      this.errorMessage = "Le contrat a été sauvegardé, mais une erreur est survenue lors de l'envoi du SMS de confirmation.";
+    }
   }
 
   goBack(): void {

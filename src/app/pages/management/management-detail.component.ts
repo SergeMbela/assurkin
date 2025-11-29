@@ -39,6 +39,12 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
   quoteId: number | null = null;
   activeTab: 'form' | 'text' = 'form';
   csvData$: Observable<any[]> = of([]);
+
+  // Propriétés pour la popup de notification
+  showPopup = false;
+  popupMessage = '';
+  popupType: 'success' | 'error' = 'success';
+  private popupTimeout: any; // Pour gérer le minuteur
   showMainDriverSection: boolean = false;
   nationalities$!: Observable<any[]>;
   preneurCities$ = new BehaviorSubject<string[]>([]);
@@ -811,21 +817,44 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
     }
   }
 
+  private showNotification(message: string, type: 'success' | 'error') {
+    this.popupMessage = message;
+    this.popupType = type;
+    this.showPopup = true;
+    
+    // On s'assure de nettoyer un éventuel minuteur précédent
+    if (this.popupTimeout) {
+      clearTimeout(this.popupTimeout);
+    }
+    
+    // Masquer la popup après 5 secondes
+    this.popupTimeout = setTimeout(() => {
+      this.hideNotification();
+    }, 5000);
+  }
+
+  public hideNotification(): void {
+    this.showPopup = false;
+    if (this.popupTimeout) {
+      clearTimeout(this.popupTimeout);
+    }
+  }
+
   private executeUpdate(updateObservable: Observable<{ success: boolean, error?: any, data?: any }>): void {
     console.log('Envoi des données de mise à jour...');
     updateObservable.pipe(
         catchError(error => {
           console.error('Erreur lors de la mise à jour du devis:', error);
-          // Idéalement, afficher une notification à l'utilisateur
+          this.showNotification('Erreur lors de la mise à jour du devis.', 'error');
           return of({ success: false, error });
         })
       ).subscribe(response => {
         if (response && response.success) {
           console.log('Devis mis à jour avec succès !', response);
           this.quoteUpdateForm.markAsPristine(); // Réinitialise l'état du formulaire pour désactiver le bouton
-          // Idéalement, afficher une notification de succès à l'utilisateur
+          this.showNotification('Devis mis à jour avec succès !', 'success');
         } else {
-          console.error("La mise à jour du devis a échoué.", response?.error);
+          this.showNotification("La mise à jour du devis a échoué. " + (response?.error?.message || ''), 'error');
         }
       });
   }
