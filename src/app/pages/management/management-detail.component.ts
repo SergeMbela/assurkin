@@ -11,6 +11,7 @@ import { LicensePlateFormatDirective } from '../../directives/license-plate-form
 import { UploaderService, UploadResult } from '../../services/uploader.service';
 import { ContractService, ContractPayload } from '../../services/contract.service';
  
+import { SendsmsService } from '../../services/sendsms.service';
 import { NationalNumberFormatDirective } from '../../directives/national-number-format.directive';
 import { OmniumLevelPipe } from './omnium-level.pipe';
 
@@ -33,6 +34,7 @@ import { OmniumLevelPipe } from './omnium-level.pipe';
 export class ManagementDetailComponent implements OnInit, OnDestroy {
 
   quoteDetails$!: Observable<{ [key: string]: any }>;
+  private quoteDetails: any; // Pour stocker les détails actuels
   quoteType: string | null = null;
   quoteId: number | null = null;
   activeTab: 'form' | 'text' = 'form';
@@ -74,6 +76,7 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
     private fb: FormBuilder,
     private uploaderService: UploaderService,
     private contractService: ContractService,
+    private sendsmsService: SendsmsService,
     @Inject(PLATFORM_ID) private platformId: object
   ) {
     const todayDate = new Date();
@@ -533,6 +536,7 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
       }),
       switchMap(details => {
         if (details) {
+          this.quoteDetails = details; // Stocker les détails
           // patchFormValues retourne maintenant un Observable que nous pouvons chaîner
           return this.patchFormValues(details).pipe(
             map(() => details) // Retourne les détails originaux une fois le patch terminé
@@ -720,6 +724,20 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
     }
 
     const formValue = this.quoteUpdateForm.value;
+
+    // Logique d'envoi de SMS
+    const newStatus = formValue.Garantie?.statut;
+    const oldStatus = this.quoteDetails?.statut;
+    const phoneNumber = formValue["Preneur d'assurance"]?.phone;
+
+    if (this.quoteType === 'auto' && newStatus === 'Nouveau' && oldStatus !== 'Nouveau' && phoneNumber) {
+      const message = "AssurKin: Un nouveau document relatif à l'assurance automobile est disponible dans votre espace";
+      console.log(`Envoi du SMS au ${phoneNumber}`);
+      this.sendsmsService.sendSms(phoneNumber, message)
+        .then(() => console.log('SMS envoyé avec succès.'))
+        .catch(error => console.error("Erreur lors de l'envoi du SMS:", error));
+    }
+    // Fin de la logique d'envoi de SMS
 
     if (this.quoteType === 'auto') {
       const payload: AutoQuoteUpdatePayload = {
