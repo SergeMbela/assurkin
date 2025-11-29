@@ -1,10 +1,10 @@
-import { Component, OnInit, inject, PLATFORM_ID, Inject } from '@angular/core';
+import { Component, OnInit, inject, PLATFORM_ID, Inject, OnDestroy } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { AbstractControl, FormBuilder, FormControl, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators, FormArray, FormGroup } from '@angular/forms';
-import { DbConnectService, Assureur, Marque, AutoQuoteUpdatePayload, ObsequesQuoteUpdatePayload } from '../../services/db-connect.service';
-import { Observable, of, BehaviorSubject } from 'rxjs';
-import { debounceTime, distinctUntilChanged, map, switchMap, tap, finalize, catchError, toArray, startWith } from 'rxjs/operators';
+import { AbstractControl, FormBuilder, FormControl, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators, FormArray, FormGroup, FormsModule } from '@angular/forms';
+import { DbConnectService, Assureur, Marque, AutoQuoteUpdatePayload, ObsequesQuoteUpdatePayload, HabitationQuoteUpdatePayload, Statut } from '../../services/db-connect.service';
+import { Observable, of, BehaviorSubject, Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, map, switchMap, tap, finalize, catchError, toArray, startWith, takeUntil } from 'rxjs/operators';
 import { IdCardFormatDirective } from '../../services/id-card-format.directive';
 // import { NationalNumberFormatDirective } from '../../directives/national-number-format.directive';
 import { LicensePlateFormatDirective } from '../../directives/license-plate-format.directive';
@@ -21,6 +21,7 @@ import { OmniumLevelPipe } from './omnium-level.pipe';
     CommonModule, 
     ReactiveFormsModule,
     RouterLink,
+    FormsModule,
     IdCardFormatDirective, 
     NationalNumberFormatDirective,
     LicensePlateFormatDirective,
@@ -29,15 +30,17 @@ import { OmniumLevelPipe } from './omnium-level.pipe';
   templateUrl: './management-detail.component.html',
   styleUrls: []
 })
-export class ManagementDetailComponent implements OnInit {
+export class ManagementDetailComponent implements OnInit, OnDestroy {
 
   quoteDetails$!: Observable<{ [key: string]: any }>;
   quoteType: string | null = null;
   quoteId: number | null = null;
   activeTab: 'form' | 'text' = 'form';
+  csvData$: Observable<any[]> = of([]);
   showMainDriverSection: boolean = false;
   nationalities$!: Observable<any[]>;
   preneurCities$ = new BehaviorSubject<string[]>([]);
+  statuts$!: Observable<Statut[]>;
   conducteurCities$ = new BehaviorSubject<string[]>([]);
   batimentCities$ = new BehaviorSubject<string[]>([]);
   obsequesCities$ = new BehaviorSubject<string[]>([]);
@@ -50,6 +53,8 @@ export class ManagementDetailComponent implements OnInit {
 
   // Liste complète des compagnies pour le select
   insuranceCompanies$!: Observable<Assureur[]>;
+  private insuranceCompanies: Assureur[] = [];
+  private destroy$ = new Subject<void>();
 
   // Tableau pour la liste des modèles
   modelesForSelectedMarque: any[] = [];
@@ -143,7 +148,8 @@ export class ManagementDetailComponent implements OnInit {
         driverCoverage: [false],
         assistance: [false],
         effectiveDate: [''],
-        insuranceCompany: [null]
+        insuranceCompany: [null],
+        statut: ['']
       }),
       'Garanties Habitation': this.fb.group({
         contenu: [false],
@@ -151,7 +157,8 @@ export class ManagementDetailComponent implements OnInit {
         pertesIndirectes: [false],
         protectionJuridique: [false],
         assistance: [false],
-        dateEffet: [''],
+        dateEffet: [''], // Note: date_effet is part of the main table, not a separate garanties table for habitation
+        statut: [''],
         insuranceCompany: [null]
       }),
       'Bâtiment': this.fb.group({
@@ -172,10 +179,13 @@ export class ManagementDetailComponent implements OnInit {
       'Assurés': this.fb.group({
         preneurEstAssure: [false],
         assures: this.fb.array([]),
-        insuranceCompany: [null]
+        statut: [''],
+        insuranceCompany: [null],
       }),
-      description: [''], // Ajout du champ description pour le voyage
-
+      'Détails Voyage': this.fb.group({ // Ajout du groupe manquant
+        description: [''],
+        statut: [''],
+      }),
       'Détails RC Familiale': this.fb.group({
         preneur_nom: [''],
         preneur_prenom: [''],
@@ -187,6 +197,7 @@ export class ManagementDetailComponent implements OnInit {
         preneur_ville: [''],
         risque: [''],
         nationalRegistryNumber: ['', this.belgianNationalNumberValidator()],
+        statut: [''],
         idCardNumber: [''],
         description: ['']
       })
@@ -205,10 +216,13 @@ export class ManagementDetailComponent implements OnInit {
     this.quoteUpdateForm.get('Conducteur principal')?.setValidators(this.nationalNumberDateConsistencyValidator());
 
     // Charge la liste complète des compagnies d'assurance pour la liste déroulante
-    this.insuranceCompanies$ = this.dbService.getAllAssureurs();
+    this.subscribeToInsuranceCompanies();
 
     // Charge la liste des nationalités pour les listes déroulantes
     this.nationalities$ = this.dbService.getNationalities();
+
+    // Charge la liste des statuts pour les listes déroulantes
+    this.statuts$ = this.dbService.getAllStatuts();
 
     if (isPlatformBrowser(this.platformId)) {
       const preneurPostalCodeControl = this.quoteUpdateForm.get('Preneur d\'assurance.postalCode');
@@ -285,6 +299,23 @@ export class ManagementDetailComponent implements OnInit {
     );
 
     this.quoteDetails$ = this.getQuoteDetailsFromRoute();
+
+    // Charger les données CSV associées à ce devis
+    this.csvData$ = this.route.paramMap.pipe(
+      switchMap(params => {
+        const type = params.get('type');
+        const id = Number(params.get('id'));
+        if (type && id) {
+          return this.dbService.getCsvData(id, type);
+        }
+        return of([]); // Retourne un tableau vide si les paramètres sont manquants
+      })
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   private patchFormValues(details: any): Observable<any> {
@@ -356,7 +387,8 @@ export class ManagementDetailComponent implements OnInit {
         driverCoverage: details.garantie_conducteur,
         assistance: details.garantie_assistance,
         effectiveDate: formatDate(details.date_effet),
-        insuranceCompany: details.compagnie_id // Assumant que l'ID de la compagnie est dans les détails du devis
+        insuranceCompany: details.compagnie_id, // Assumant que l'ID de la compagnie est dans les détails du devis
+        statut: details.statut
       });
     }
 
@@ -384,7 +416,8 @@ export class ManagementDetailComponent implements OnInit {
         pertesIndirectes: details.garantie_pertes_indirectes,
         protectionJuridique: details.garantie_protection_juridique,
         assistance: details.garantie_assistance,
-        dateEffet: formatDate(details.date_effet),
+        dateEffet: formatDate(details.date_effet), // La date d'effet est au niveau du devis
+        statut: details.statut,
         insuranceCompany: details.compagnie_id // Ajout de la compagnie d'assurance
       });
 
@@ -392,23 +425,22 @@ export class ManagementDetailComponent implements OnInit {
 
     // Gérer les détails spécifiques à 'obseques'
     if (this.quoteType === 'obseques' && details.hasOwnProperty('nombre_assures')) {
-      // Remplir le formulaire simplifié du preneur pour les obsèques
-      if (details.preneur) {
-        this.quoteUpdateForm.get('Preneur Obsèques')?.patchValue({
-          firstName: details.preneur.prenom,
-          lastName: details.preneur.nom,
-          dateNaissance: formatDate(details.preneur.date_naissance),
-          email: details.preneur.email,
-          phone: details.preneur.telephone,
-          address: details.preneur.adresse,
-          postalCode: details.preneur.code_postal,
-          city: details.preneur.ville,
-        });
-
-      }
+      // Remplir le formulaire du preneur pour les obsèques
+      const preneurObsData = details.preneur || details;
+      this.quoteUpdateForm.get('Preneur Obsèques')?.patchValue({
+        firstName: preneurObsData.prenom,
+        lastName: preneurObsData.nom,
+        dateNaissance: formatDate(preneurObsData.date_naissance),
+        email: preneurObsData.email,
+        phone: preneurObsData.telephone,
+        address: preneurObsData.adresse,
+        postalCode: preneurObsData.code_postal,
+        city: preneurObsData.ville,
+      });
       this.quoteUpdateForm.get('Assurés.preneurEstAssure')?.setValue(details.preneur_est_assure);
+      this.quoteUpdateForm.get('Assurés.statut')?.setValue(details.statut);
       this.quoteUpdateForm.get('Assurés.insuranceCompany')?.setValue(details.compagnie_id);
-      const assuresData = details.assures as any[];
+      const assuresData = (details.assures || []) as any[];
       this.assures.clear();
       assuresData.forEach(assure => {
         assure.dateNaissance = formatDate(assure.dateNaissance);
@@ -418,7 +450,10 @@ export class ManagementDetailComponent implements OnInit {
 
     // Gérer les détails spécifiques à 'voyage'
     if (this.quoteType === 'voyage') {
-      this.quoteUpdateForm.get('description')?.patchValue(details.description);
+      this.quoteUpdateForm.get('Détails Voyage')?.patchValue({
+        description: details.description,
+        statut: details.statut
+      });
     }
 
     // Gérer les détails spécifiques à 'rc'
@@ -433,6 +468,7 @@ export class ManagementDetailComponent implements OnInit {
         preneur_code_postal: details.preneur_code_postal,
         preneur_ville: details.preneur_ville,
         risque: details.risque,
+        statut: details.statut,
         nationalRegistryNumber: details.numero_national, // Assurez-vous que le nom de la propriété est correct
         idCardNumber: details.idcard_number, // Assurez-vous que le nom de la propriété est correct
         description: details.description
@@ -547,7 +583,6 @@ export class ManagementDetailComponent implements OnInit {
         this.modelesForSelectedMarque = modeles;
       });
     }
-
     // Vide la liste de suggestions
     this.filteredMarques$ = of([]);
   }
@@ -696,7 +731,8 @@ export class ManagementDetailComponent implements OnInit {
           garantie_conducteur: formValue.Garantie?.driverCoverage ?? false,
           garantie_assistance: formValue.Garantie?.assistance ?? false,
           date_effet: formValue.Garantie?.effectiveDate ? this.formatDateForInput(formValue.Garantie.effectiveDate) : '',
-          compagnie_id: formValue.Garantie?.insuranceCompany
+          compagnie_id: formValue.Garantie?.insuranceCompany,
+          statut: formValue.Garantie?.statut
         }
       };
       if (this.showMainDriverSection) {
@@ -711,16 +747,47 @@ export class ManagementDetailComponent implements OnInit {
       }));
 
       const payload: ObsequesQuoteUpdatePayload = {
-        preneur: formValue["Preneur Obsèques"]!,
+        preneur: {
+          ...formValue["Preneur Obsèques"]!,
+          dateNaissance: formValue["Preneur Obsèques"]?.dateNaissance ? this.formatDateForInput(formValue["Preneur Obsèques"].dateNaissance) : null
+        },
         devis: {
           preneur_est_assure: formValue.Assurés?.preneurEstAssure ?? false,
           assures: assuresValue,
           nombre_assures: assuresValue.length,
+          statut: formValue.Assurés?.statut,
           compagnie_id: formValue.Assurés?.insuranceCompany
         }
       };
       this.executeUpdate(this.dbService.updateObsequesQuote(this.quoteId!, payload));
-
+    } else if (this.quoteType === 'habitation') {
+        const payload: HabitationQuoteUpdatePayload = {
+            p_preneur: formValue["Preneur d'assurance"]!,
+            p_devis: {
+                batiment_adresse: formValue.Bâtiment?.adresse,
+                batiment_code_postal: formValue.Bâtiment?.codePostal,
+                batiment_ville: formValue.Bâtiment?.ville,
+                batiment_type_maison: formValue.Bâtiment?.typeMaison,
+                evaluation_type_valeur_batiment: formValue.Évaluation?.typeValeurBatiment,
+                evaluation_superficie: formValue.Évaluation?.superficie,
+                evaluation_nombre_pieces: formValue.Évaluation?.nombrePieces,
+                evaluation_loyer_mensuel: formValue.Évaluation?.loyerMensuel,
+                evaluation_type_valeur_contenu: formValue.Évaluation?.typeValeurContenu,
+                evaluation_valeur_expertise: formValue.Évaluation?.valeurExpertise,
+                evaluation_date_expertise: formValue.Évaluation?.dateExpertise ? this.formatDateForInput(formValue.Évaluation.dateExpertise) : null,
+                garantie_contenu: formValue['Garanties Habitation']?.contenu,
+                garantie_vol: formValue['Garanties Habitation']?.vol,
+                garantie_pertes_indirectes: formValue['Garanties Habitation']?.pertesIndirectes,
+                garantie_protection_juridique: formValue['Garanties Habitation']?.protectionJuridique,
+                garantie_assistance: formValue['Garanties Habitation']?.assistance,
+                date_effet: formValue['Garanties Habitation']?.dateEffet ? this.formatDateForInput(formValue['Garanties Habitation'].dateEffet) : null,
+                statut: formValue['Garanties Habitation']?.statut,
+                compagnie_id: formValue['Garanties Habitation']?.insuranceCompany
+            }
+        };
+        this.executeUpdate(this.dbService.updateHabitationQuote(this.quoteId!, payload));
+    
+    // NOTE: La logique de mise à jour pour 'rc' et 'voyage' n'est pas encore implémentée.
     } else {
       console.error(`Le type de devis '${this.quoteType}' n'est pas supporté pour la mise à jour.`);
     }
@@ -840,4 +907,30 @@ export class ManagementDetailComponent implements OnInit {
       return null; // Valide
     };
   }
+
+  private subscribeToInsuranceCompanies(): void {
+    this.insuranceCompanies$ = this.dbService.getAllAssureurs();
+    this.insuranceCompanies$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe(companies => {
+      if (companies) {
+        this.insuranceCompanies = companies;
+      }
+    });
+  }
+
+  getCompanyName(companyId: number): string {
+    if (!companyId || !this.insuranceCompanies || this.insuranceCompanies.length === 0) {
+      return 'N/A';
+    }
+    const company = this.insuranceCompanies.find(c => c.id === companyId);
+    return company ? company.nom : `Inconnue (ID: ${companyId})`;
+  }
+
+  // Fonctions utilitaires pour l'affichage des données CSV
+  getObjectKeys(obj: any): string[] {
+    return obj ? Object.keys(obj) : [];
+  }
+
+
 }

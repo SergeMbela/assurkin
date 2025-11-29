@@ -3,9 +3,10 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { ManagementService, DataState, AutoQuoteSummary, HabitationQuoteSummary, ObsequesQuoteSummary, VoyageQuoteSummary, RcQuoteSummary } from '../../services/management.service';
-import { Observable, combineLatest, BehaviorSubject, of } from 'rxjs';
-import { map, startWith, shareReplay, tap, switchMap, debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { Observable, combineLatest, BehaviorSubject, of, Subject } from 'rxjs';
+import { map, startWith, shareReplay, tap, switchMap, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import { StateContainerComponent } from '../../state-container.component';
+import { EcheanceStatusPipe } from '../../pipes/echeance-status.pipe';
 
 type QuoteType = 'auto' | 'habitation' | 'obseques' | 'rc' | 'voyage';
 // Un type d'union pour représenter n'importe quel résumé de devis.
@@ -13,7 +14,7 @@ type AnyQuoteSummary = AutoQuoteSummary | HabitationQuoteSummary | ObsequesQuote
 @Component({
   selector: 'app-management',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule, StateContainerComponent],
+  imports: [CommonModule, RouterLink, ReactiveFormsModule, StateContainerComponent, EcheanceStatusPipe],
   templateUrl: './management.component.html',
   styleUrl: './management.component.css'
 })
@@ -51,6 +52,8 @@ export class ManagementComponent implements OnInit {
     } | null;
   }>;
 
+  private destroy$ = new Subject<void>();
+
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       const searchTerm$ = this.searchControl.valueChanges.pipe(
@@ -60,7 +63,9 @@ export class ManagementComponent implements OnInit {
         tap(() => this.currentPage$.next(1)) // Réinitialise à la page 1 à chaque nouvelle recherche
       );
 
-      this.vm$ = combineLatest([this.activeTab$, searchTerm$, this.currentPage$]).pipe(
+      this.vm$ = combineLatest([
+        this.activeTab$, searchTerm$, this.currentPage$
+      ]).pipe(
         switchMap(([tabId, searchTerm, currentPage]) => {
           console.log(`[ManagementComponent] Fetching data for tab: '${tabId}', search: '${searchTerm}', page: ${currentPage}`);
           // La logique de fetch est maintenant DANS le switchMap pour réagir à tous les changements
@@ -93,7 +98,7 @@ export class ManagementComponent implements OnInit {
               const totalPages = Math.ceil(totalItems / this.itemsPerPage);
               return {
                 state: { ...state, data: { quotes: state.data.quotes, totalItems: state.data.totalItems } },
-                pagination: {
+                pagination: { // On passe les statuts au vm$
                   currentPage,
                   totalPages,
                   totalItems
@@ -101,7 +106,8 @@ export class ManagementComponent implements OnInit {
               };
             })
           );
-        })
+        }),
+        takeUntil(this.destroy$)
       );
     } else {
       // Côté serveur, on initialise vm$ avec un état vide pour éviter les erreurs.

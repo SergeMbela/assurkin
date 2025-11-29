@@ -8,7 +8,7 @@
     </svg>
     Retour à la liste
   </a>
-  <div *ngIf="quoteDetails$ | async as details;">
+  <div *ngIf="quoteDetails$ | async as details; else loadingTpl">
     <h1 class="text-2xl font-bold mb-4">Détails de l'offre #{{ quoteId }} - {{ quoteType | titlecase }}</h1>
     <!-- Barre d'onglets -->
     <div class="mb-6 border-b border-gray-200">
@@ -441,6 +441,14 @@
                   </select>
                 </div>
                 <div class="sm:col-span-2">
+                  <label for="statut" class="block text-sm font-medium text-gray-700">Statut de l'offre</label>
+                  <select id="statut" formControlName="statut"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                    <option [ngValue]="null" disabled>Sélectionnez un statut</option>
+                    <option *ngFor="let stat of statuts$ | async" [value]="stat.statut">{{ stat.statut }}</option>
+                  </select>
+                </div>
+                <div class="sm:col-span-2">
                   <label for="insuranceCompany" class="block text-sm font-medium text-gray-700">Compagnie
                     d'assurance</label>
                   <select id="insuranceCompany" formControlName="insuranceCompany"
@@ -567,6 +575,14 @@
                     </option>
                   </select>
                 </div>
+                <div class="sm:col-span-2">
+                  <label for="habitationStatut" class="block text-sm font-medium text-gray-700">Statut de l'offre</label>
+                  <select id="habitationStatut" formControlName="statut"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                    <option [ngValue]="null" disabled>Sélectionnez un statut</option>
+                    <option *ngFor="let stat of statuts$ | async" [value]="stat.statut">{{ stat.statut }}</option>
+                  </select>
+                </div>
               </div>
             </div>
 
@@ -592,7 +608,16 @@
                   </select>
                 </div>
 
-                <div formArrayName="assures" class="space-y-4">
+                <div class="sm:col-span-2">
+                  <label for="obsequesStatut" class="block text-sm font-medium text-gray-700">Statut de l'offre</label>
+                  <select id="obsequesStatut" formControlName="statut"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                    <option [ngValue]="null" disabled>Sélectionnez un statut</option>
+                    <option *ngFor="let stat of statuts$ | async" [value]="stat.statut">{{ stat.statut }}</option>
+                  </select>
+                </div>
+
+                <div formArrayName="assures" class="space-y-4 sm:col-span-2">
                   <div *ngFor="let assure of assures.controls; let i=index" [formGroupName]="i"
                     class="p-4 border rounded-md">
                     <h4 class="font-semibold mb-2">Assuré {{ i + 1 }}</h4>
@@ -623,22 +648,54 @@
                     </div>
                   </div>
                 </div>
-                <button type="button" (click)="addAssure()"
-                  class="text-sm font-medium text-indigo-600 hover:text-indigo-500">+ Ajouter un assuré</button>
+                <button type="button" (click)="addAssure()" class="sm:col-span-2 text-sm font-medium text-indigo-600 hover:text-indigo-500">+ Ajouter un assuré</button>
+              </div>
+            </div>
+
+            <!-- ======================================= -->
+            <!-- SECTION: DÉTAILS RC FAMILIALE           -->
+            <!-- ======================================= -->
+            <div formGroupName="Détails RC Familiale" *ngIf="quoteType === 'rc'">
+              <h3 class="text-lg font-semibold text-gray-800 bg-gray-100 -mx-6 px-6 py-2 mb-4 border-y">Détails de la
+                demande RC Familiale</h3>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                <div class="sm:col-span-2">
+                  <label for="rcStatut" class="block text-sm font-medium text-gray-700">Statut de l'offre</label>
+                  <select id="rcStatut" formControlName="statut"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                    <option [ngValue]="null" disabled>Sélectionnez un statut</option>
+                    <option *ngFor="let stat of statuts$ | async" [value]="stat.statut">{{ stat.statut }}</option>
+                  </select>
+                </div>
+                <div class="sm:col-span-2">
+                  <label for="rc-description" class="block text-sm font-medium text-gray-700">Message /
+                    Description</label>
+                  <textarea id="rc-description" formControlName="description" rows="4"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm"></textarea>
+                </div>
               </div>
             </div>
 
             <!-- ======================================= -->
             <!-- SECTION: DÉTAILS DU VOYAGE              -->
             <!-- ======================================= -->
-            <div *ngIf="quoteType === 'voyage'">
+            <div formGroupName="Détails Voyage" *ngIf="quoteType === 'voyage'">
               <h3 class="text-lg font-semibold text-gray-800 bg-gray-100 -mx-6 px-6 py-2 mb-4 border-y">Détails de la
                 demande de voyage</h3>
               <div class="space-y-4">
-                <label for="voyage-description" class="block text-sm font-medium text-gray-700">Message /
-                  Description</label>
-                <textarea id="voyage-description" formControlName="description" rows="4"
-                  class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm"></textarea>
+                <div>
+                  <label for="voyageStatut" class="block text-sm font-medium text-gray-700">Statut de l'offre</label>                  
+                  <select id="voyageStatut" formControlName="statut"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                    <option [ngValue]="null" disabled>Sélectionnez un statut</option>
+                    <option *ngFor="let stat of statuts$ | async" [value]="stat.statut">{{ stat.statut }}</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="voyage-description" class="block text-sm font-medium text-gray-700">Message / Description</label>
+                  <textarea id="voyage-description" formControlName="description" rows="4"
+                    class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm"></textarea>
+                </div>
               </div>
             </div>
 
@@ -653,6 +710,9 @@
         </div>
       </div>
 
+      <!-- ======================================= -->
+      <!-- ===== ONGLET FICHE (LECTURE SEULE) ==== -->
+      <!-- ======================================= -->
       <div *ngSwitchCase="'text'" class="overflow-hidden">
         <div class="bg-white shadow-md rounded-lg overflow-hidden">
 
@@ -672,17 +732,17 @@
             </div>
 
             <table id="printable-section" class="min-w-full divide-y divide-gray-200">
-
+              <!-- ======================================= -->
+              <!-- SECTION: PRENEUR D'ASSURANCE (GÉNÉRIQUE) -->
+              <!-- ======================================= -->
               <tbody
                 *ngIf="(quoteType === 'auto' || quoteType === 'habitation' || quoteType === 'rc' || quoteType === 'voyage') && quoteUpdateForm.get('Preneur d\'assurance')?.value as preneur"
                 class="bg-white divide-y divide-gray-200">
-
                 <tr class="bg-gray-100">
                   <th colspan="2" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
                     Preneur d'assurance
                   </th>
                 </tr>
-
                 <tr>
                   <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50 w-1/3">Prénom &
                     Nom</td>
@@ -711,7 +771,6 @@
                     {{ preneur.postalCode }} {{ preneur.city }}
                   </td>
                 </tr>
-
                 <ng-container *ngIf="quoteType === 'auto'">
                   <tr>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Permis de
@@ -722,7 +781,6 @@
                     </td>
                   </tr>
                 </ng-container>
-
                 <tr>
                   <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Identité
                     nationale</td>
@@ -740,6 +798,9 @@
                 </tr>
               </tbody>
 
+              <!-- ======================================= -->
+              <!-- SECTION: PRENEUR D'ASSURANCE (OBSÈQUES) -->
+              <!-- ======================================= -->
               <tbody *ngIf="quoteType === 'obseques' && quoteUpdateForm.get('Preneur Obsèques')?.value as preneurObs"
                 class="bg-white divide-y divide-gray-200 border-t-8 border-gray-50">
                 <tr class="bg-gray-100">
@@ -766,6 +827,9 @@
                 </tr>
               </tbody>
 
+              <!-- ======================================= -->
+              <!-- SECTION: CONDUCTEUR PRINCIPAL (AUTO)    -->
+              <!-- ======================================= -->
               <tbody
                 *ngIf="quoteType === 'auto' && showMainDriverSection && quoteUpdateForm.get('Conducteur principal')?.value as driver"
                 class="bg-white divide-y divide-gray-200 border-t-8 border-gray-50">
@@ -817,6 +881,9 @@
                 </tr>
               </tbody>
 
+              <!-- ======================================= -->
+              <!-- SECTION: VÉHICULE (AUTO)               -->
+              <!-- ======================================= -->
               <tbody *ngIf="quoteType === 'auto' && quoteUpdateForm.get('Véhicule')?.value as vehicule"
                 class="bg-white divide-y divide-gray-200 border-t-8 border-gray-50">
                 <tr class="bg-gray-100">
@@ -840,6 +907,9 @@
                 </tr>
               </tbody>
 
+              <!-- ======================================= -->
+              <!-- SECTION: GARANTIES (AUTO)              -->
+              <!-- ======================================= -->
               <tbody *ngIf="quoteType === 'auto' && quoteUpdateForm.get('Garantie')?.value as garantie"
                 class="bg-white divide-y divide-gray-200 border-t-8 border-gray-50">
                 <tr class="bg-gray-100">
@@ -848,11 +918,21 @@
                   </th>
                 </tr>
                 <tr>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Statut</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-medium" [ngClass]="{ 
+                      'bg-blue-100 text-blue-800': garantie.statut === 'Nouveau' || garantie.statut === 'En cours de traitement', 
+                      'bg-yellow-100 text-yellow-800': garantie.statut === 'En attente' || garantie.statut === 'En cours', 
+                      'bg-green-100 text-green-800': garantie.statut === 'Terminé',
+                      'bg-red-100 text-red-800': garantie.statut === 'Refusé' || garantie.statut === 'Inactif'}">{{ garantie.statut }}</span>
+                  </td>
+                </tr>
+                <tr>
                   <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Général</td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     <div><span class="font-medium">Date d'effet:</span> {{ garantie.effectiveDate | date:'dd/MM/yyyy' }}
                     </div>
-                    <div><span class="font-medium">Compagnie ID:</span> {{ garantie.insuranceCompany }}</div>
+                    <div><span class="font-medium">Compagnie:</span> {{ getCompanyName(garantie.insuranceCompany) }}</div>
                   </td>
                 </tr>
                 <tr>
@@ -878,6 +958,9 @@
                 </tr>
               </tbody>
 
+              <!-- ======================================= -->
+              <!-- SECTION: BÂTIMENT (HABITATION)         -->
+              <!-- ======================================= -->
               <tbody *ngIf="quoteType === 'habitation' && quoteUpdateForm.get('Bâtiment')?.value as batiment"
                 class="bg-white divide-y divide-gray-200 border-t-8 border-gray-50">
                 <tr class="bg-gray-100">
@@ -901,6 +984,9 @@
                 </tr>
               </tbody>
 
+              <!-- ======================================= -->
+              <!-- SECTION: ÉVALUATION (HABITATION)       -->
+              <!-- ======================================= -->
               <tbody *ngIf="quoteType === 'habitation' && quoteUpdateForm.get('Évaluation')?.value as eval"
                 class="bg-white divide-y divide-gray-200 border-t-8 border-gray-50">
                 <tr class="bg-gray-100">
@@ -918,6 +1004,9 @@
                 </tr>
               </tbody>
 
+              <!-- ======================================= -->
+              <!-- SECTION: GARANTIES (HABITATION)       -->
+              <!-- ======================================= -->
               <tbody *ngIf="quoteType === 'habitation' && quoteUpdateForm.get('Garanties Habitation')?.value as garHab"
                 class="bg-white divide-y divide-gray-200 border-t-8 border-gray-50">
                 <tr class="bg-gray-100">
@@ -926,8 +1015,18 @@
                   </th>
                 </tr>
                 <tr>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Statut</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-medium" [ngClass]="{ 
+                      'bg-blue-100 text-blue-800': garHab.statut === 'Nouveau' || garHab.statut === 'En cours de traitement', 
+                      'bg-yellow-100 text-yellow-800': garHab.statut === 'En attente' || garHab.statut === 'En cours', 
+                      'bg-green-100 text-green-800': garHab.statut === 'Terminé',
+                      'bg-red-100 text-red-800': garHab.statut === 'Refusé' || garHab.statut === 'Inactif'}">{{ garHab.statut }}</span>
+                  </td>
+                </tr>
+                <tr>
                   <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Compagnie</td>
-                  <td class="px-6 py-4 text-sm text-gray-900">{{ garHab.insuranceCompany }}</td>
+                  <td class="px-6 py-4 text-sm text-gray-900">{{ getCompanyName(garHab.insuranceCompany) }}</td>
                 </tr>
                 <tr>
                   <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Inclusions</td>
@@ -942,6 +1041,9 @@
                 </tr>
               </tbody>
 
+              <!-- ======================================= -->
+              <!-- SECTION: ASSURÉS (OBSÈQUES)            -->
+              <!-- ======================================= -->
               <tbody *ngIf="quoteType === 'obseques' && quoteUpdateForm.get('Assurés')?.value as assuresGroup"
                 class="bg-white divide-y divide-gray-200 border-t-8 border-gray-50">
                 <tr class="bg-gray-100">
@@ -958,7 +1060,8 @@
                 </tr>
                 <tr>
                   <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Compagnie</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ assuresGroup.insuranceCompany }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{
+                    getCompanyName(assuresGroup.insuranceCompany) }}</td>
                 </tr>
 
                 <ng-container *ngFor="let assure of assuresGroup.assures; let i = index">
@@ -983,23 +1086,91 @@
                 </ng-container>
               </tbody>
 
-              <tbody *ngIf="quoteType === 'voyage'" class="bg-white divide-y divide-gray-200 border-t-8 border-gray-50">
+              <!-- ======================================= -->
+              <!-- SECTION: VOYAGE                         -->
+              <!-- ======================================= -->
+              <tbody *ngIf="quoteType === 'voyage' && quoteUpdateForm.get('Détails Voyage')?.value as voyageDetails"
+                class="bg-white divide-y divide-gray-200 border-t-8 border-gray-50">
                 <tr class="bg-gray-100">
                   <th colspan="2" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
                     Voyage</th>
                 </tr>
                 <tr>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Statut</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-medium" [ngClass]="{ 
+                      'bg-blue-100 text-blue-800': voyageDetails.statut === 'Nouveau' || voyageDetails.statut === 'En cours de traitement', 
+                      'bg-yellow-100 text-yellow-800': voyageDetails.statut === 'En attente' || voyageDetails.statut === 'En cours', 
+                      'bg-green-100 text-green-800': voyageDetails.statut === 'Terminé',
+                      'bg-red-100 text-red-800': voyageDetails.statut === 'Refusé' || voyageDetails.statut === 'Inactif'}">{{ voyageDetails.statut }}</span>
+                  </td>
+                </tr>
+                <tr>
                   <td class="px-6 py-4 text-sm font-medium text-gray-700 bg-gray-50 align-top">Description</td>
                   <td class="px-6 py-4 text-sm text-gray-900 whitespace-pre-wrap">
-                    {{ quoteUpdateForm.get('description')?.value || 'Aucune description fournie.' }}
+                    {{ voyageDetails.description || 'Aucune description fournie.' }}
                   </td>
                 </tr>
               </tbody>
+
+              <!-- ======================================= -->
+              <!-- SECTION: RC FAMILIALE                   -->
+              <!-- ======================================= -->
+              <tbody *ngIf="quoteType === 'rc' && quoteUpdateForm.get('Détails RC Familiale')?.value as rcDetails"
+                class="bg-white divide-y divide-gray-200 border-t-8 border-gray-50">
+                <tr class="bg-gray-100">
+                  <th colspan="2" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                    RC Familiale</th>
+                </tr>
+                <tr>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Statut</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-medium" [ngClass]="{ 
+                      'bg-blue-100 text-blue-800': rcDetails.statut === 'Nouveau' || rcDetails.statut === 'En cours de traitement', 
+                      'bg-yellow-100 text-yellow-800': rcDetails.statut === 'En attente' || rcDetails.statut === 'En cours', 
+                      'bg-green-100 text-green-800': rcDetails.statut === 'Terminé',
+                      'bg-red-100 text-red-800': rcDetails.statut === 'Refusé' || rcDetails.statut === 'Inactif'}">{{ rcDetails.statut }}</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="px-6 py-4 text-sm font-medium text-gray-700 bg-gray-50 align-top">Description</td>
+                  <td class="px-6 py-4 text-sm text-gray-900 whitespace-pre-wrap">
+                    {{ rcDetails.description || 'Aucune description fournie.' }}
+                  </td>
+                </tr>
+              </tbody>
+
+              <!-- ======================================= -->
+              <!-- SECTION: DONNÉES CSV IMPORTÉES          -->
+              <!-- ======================================= -->
+              <ng-container *ngIf="csvData$ | async as csvData">
+                <tbody *ngIf="csvData.length > 0"
+                  class="bg-white divide-y divide-gray-200 border-t-8 border-gray-50">
+                  <tr class="bg-gray-100">
+                    <th colspan="2" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                      Données importées
+                    </th>
+                  </tr>
+                  <!-- Itérer sur chaque en-tête de la première ligne de données pour créer une ligne de tableau -->
+                  <tr *ngFor="let header of getObjectKeys(csvData[0])">
+                    <!-- Colonne de l'en-tête -->
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50 w-1/3">
+                      {{ header }}
+                    </td>
+                    <!-- Colonne de la valeur -->
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {{ csvData[0][header] }}
+                    </td>
+                  </tr>
+                </tbody>
+              </ng-container>
 
             </table>
 
           </div>
         </div>
       </div>
-      <ng-template #loadingTpl>Chargement des Détails de l'offre...</ng-template>
     </div>
+  </div>
+  <ng-template #loadingTpl>Chargement des Détails de l'offre...</ng-template>
+</div>

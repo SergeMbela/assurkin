@@ -1,4 +1,4 @@
-import { Injectable, Type, inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { from, Observable, defer, of } from 'rxjs';
 import { map, switchMap, catchError } from 'rxjs/operators';
 import { PostgrestError, User } from '@supabase/supabase-js';
@@ -16,6 +16,7 @@ export interface AutoQuoteUpdatePayload {
     garantie_assistance: boolean;
     date_effet: string;
     compagnie_id?: number | null;
+    statut?: string;
   };
 }
 export interface ObsequesQuoteUpdatePayload {
@@ -24,6 +25,35 @@ export interface ObsequesQuoteUpdatePayload {
     preneur_est_assure: boolean;
     assures: any[];
     nombre_assures: number;
+    compagnie_id?: number | null;
+    statut?: string;
+  };
+}
+
+export interface HabitationQuoteUpdatePayload {
+  p_preneur: { [key: string]: any };
+  p_devis: {
+    // Bâtiment (correspond aux colonnes batiment_*)
+    batiment_adresse: string;
+    batiment_code_postal: string;
+    batiment_ville: string;
+    batiment_type_maison: string;
+    // Évaluation (correspond aux colonnes evaluation_*)
+    evaluation_type_valeur_batiment: string;
+    evaluation_superficie: number;
+    evaluation_nombre_pieces: number;
+    evaluation_loyer_mensuel: number;
+    evaluation_type_valeur_contenu: string;
+    evaluation_valeur_expertise: number;
+    evaluation_date_expertise: string | null;
+    // Garanties (correspond aux colonnes garantie_*)
+    garantie_contenu: boolean;
+    garantie_vol: boolean;
+    garantie_pertes_indirectes: boolean;
+    garantie_protection_juridique: boolean;
+    garantie_assistance: boolean;
+    date_effet: string | null;
+    statut?: string;
     compagnie_id?: number | null;
   };
 }
@@ -89,6 +119,11 @@ export interface Modele {
 export interface Assureur {
   id: number;
   nom: string;
+}
+
+export interface Statut {
+  id: number;
+  statut: string | null;
 }
 
 export interface Contrat {
@@ -212,6 +247,19 @@ export interface ObsequesFormData {
   }[];
 }
 
+export interface EcheanceStatus {
+  id: number;
+  id_echeance: number;
+  label: string;
+}
+
+export interface DocumentType {
+  id: number;
+  created_at: string;
+  Label: string;
+  view: string | null;
+}
+
 export interface InfoRequestFormData {
   // Define properties for Info Request form
 }
@@ -225,7 +273,7 @@ export interface SupabaseResponse<T> {
   providedIn: 'root'
 })
 export class DbConnectService {
-  
+
   constructor(private supabase: SupabaseService) { }
 
   /**
@@ -643,6 +691,28 @@ export class DbConnectService {
           id: item.id,
           nom: item.nom_assureur
         }));
+      })
+    );
+  }
+
+  /**
+   * Récupère la liste de tous les statuts de devis.
+   * @returns Un Observable avec la liste des statuts.
+   */
+  getAllStatuts(): Observable<Statut[]> {
+    return from(
+      this.supabase.supabase
+        .from('statut')
+        .select('id, statut')
+        .order('statut', { ascending: true })
+    ).pipe(
+      map(response => {
+        if (response.error) {
+          console.error('Erreur lors de la récupération des statuts:', response.error);
+          throw response.error;
+        }
+        console.log('Statuts récupérés depuis Supabase:', response.data);
+        return (response.data as Statut[]) || [];
       })
     );
   }
@@ -1128,9 +1198,11 @@ export class DbConnectService {
     // On applique le filtre si un terme de recherche est fourni
     if (searchTerm) {
       const searchPattern = `%${searchTerm}%`;
+      // Utilisation d'une syntaxe plus sûre pour le filtre .or()
       query = query.or(
-        `preneur.nom.ilike.${searchPattern},preneur.prenom.ilike.${searchPattern},vehicules.marque.ilike.${searchPattern},vehicules.modele.ilike.${searchPattern}`
-      );
+        `marque.ilike.${searchPattern},modele.ilike.${searchPattern}`,
+        { foreignTable: 'vehicules' }
+      ).or(`nom.ilike.${searchPattern},prenom.ilike.${searchPattern}`, { foreignTable: 'personnes' });
     }
 
     return from(query).pipe(
@@ -1167,9 +1239,10 @@ export class DbConnectService {
 
     if (searchTerm) {
       const searchPattern = `%${searchTerm}%`;
+      // Utilisation d'une syntaxe plus sûre pour le filtre .or()
       query = query.or(
-        `preneur.nom.ilike.${searchPattern},preneur.prenom.ilike.${searchPattern},batiment_adresse.ilike.${searchPattern}`
-      );
+        `batiment_adresse.ilike.${searchPattern}`
+      ).or(`nom.ilike.${searchPattern},prenom.ilike.${searchPattern}`, { foreignTable: 'personnes' });
     }
 
     return from(query).pipe(
@@ -1196,8 +1269,9 @@ export class DbConnectService {
 
     if (searchTerm) {
       const searchPattern = `%${searchTerm}%`;
+      // Utilisation d'une syntaxe plus sûre pour le filtre .or()
       query = query.or(
-        `preneur.nom.ilike.${searchPattern},preneur.prenom.ilike.${searchPattern}`
+        `nom.ilike.${searchPattern},prenom.ilike.${searchPattern}`, { foreignTable: 'personnes' }
       );
     }
 
@@ -1510,6 +1584,69 @@ export class DbConnectService {
   }
 
   /**
+   * Met à jour un devis d'assurance habitation complet.
+   * @param quoteId L'ID du devis à mettre à jour.
+   * @param payload Les données du formulaire contenant les informations à jour.
+   * @returns Un Observable qui émet la réponse de la fonction RPC.
+   */
+  updateHabitationQuote(quoteId: number, payload: HabitationQuoteUpdatePayload): Observable<{ success: boolean, error?: any, data?: any }> {
+    const mapPersonData = (personForm: any) => ({
+      prenom: personForm.firstName,
+      nom: personForm.lastName,
+      date_naissance: personForm.dateNaissance,
+      email: personForm.email,
+      telephone: personForm.phone,
+      adresse: personForm.address,
+      code_postal: personForm.postalCode,
+      ville: personForm.city,
+      numero_national: personForm.nationalRegistryNumber,
+      idcard_number: personForm.idCardNumber,
+      idcard_validity: personForm.idCardValidityDate,
+      nationality: personForm.nationality,
+      marital_status: personForm.maritalStatus
+    });
+
+    // Mapper les données du devis pour correspondre aux attentes de la fonction RPC.
+    const mapDevisData = (devisForm: any) => ({
+      // Bâtiment
+      adresse: devisForm.batiment_adresse,
+      codePostal: devisForm.batiment_code_postal,
+      ville: devisForm.batiment_ville,
+      typeMaison: devisForm.batiment_type_maison,
+      // Évaluation
+      superficie: devisForm.evaluation_superficie,
+      nombrePieces: devisForm.evaluation_nombre_pieces,
+      loyerMensuel: devisForm.evaluation_loyer_mensuel,
+      // Garanties
+      contenu: devisForm.garantie_contenu,
+      vol: devisForm.garantie_vol,
+      pertesIndirectes: devisForm.garantie_pertes_indirectes,
+      protectionJuridique: devisForm.garantie_protection_juridique,
+      // Infos générales
+      insuranceCompany: devisForm.compagnie_id,
+      statut: devisForm.statut
+    });
+
+    const rpcPayload = {
+      p_quote_id: quoteId,
+      p_preneur_data: mapPersonData(payload.p_preneur),
+      p_devis_data: mapDevisData(payload.p_devis)
+    };
+
+    const promise = this.supabase.supabase
+      .rpc('update_habitation_quote_details', rpcPayload)
+      .then(({ data, error }) => {
+        if (error) {
+          console.error('Erreur RPC update_habitation_quote_details:', error);
+          return { success: false, error };
+        }
+        return { success: true, data };
+      });
+
+    return from(promise);
+  }
+
+  /**
    * Cherche une personne par email. Si elle n'existe pas, la crée.
    * @param personData Les données de la personne.
    * @returns Une promesse qui se résout avec les données de la personne trouvée ou créée.
@@ -1602,5 +1739,105 @@ export class DbConnectService {
       });
 
     return from(promise); // Convertit la promesse en Observable
+  }
+
+  /**
+   * Récupère la liste de tous les statuts d'échéancier.
+   * @returns Un Observable avec la liste des statuts.
+   */
+  getAllEcheanceStatuts(): Observable<EcheanceStatus[]> {
+    return from(
+      this.supabase.supabase
+        .from('echeancier')
+        .select('id, id_echeance, label')
+    ).pipe(
+      map(response => {
+        if (response.error) {
+          console.error('Erreur lors de la récupération des statuts d\'échéancier:', response.error);
+          throw response.error;
+        }
+        return (response.data as EcheanceStatus[]) || [];
+      })
+    );
+  }
+
+  /**
+   * Enregistre les données JSON provenant d'un fichier CSV dans la base de données.
+   * @param quoteId L'ID du devis associé.
+   * @param quoteType Le type de devis associé.
+   * @param data Les données JSON à enregistrer. 
+   *        Le tableau 'data' doit contenir des objets représentant chaque ligne du CSV, 
+   *        avec des clés correspondant aux colonnes du fichier CSV.
+   *        Exemple : [{ col1: 'valeur1', col2: 'valeur2' }, ...]
+   *        La table 'csv_imports' doit avoir au minimum les colonnes : 
+   *        - quote_id (number)
+   *        - quote_type (string)
+   *        - json_data (JSON ou JSONB)
+   * @returns Un Observable avec le résultat de l'insertion.
+   */
+  saveCsvDataToDb(quoteId: number, quoteType: string, data: any[]): Observable<any> {
+    const cleanData = JSON.parse(JSON.stringify(data).replace(/\u0000/g, ''));
+    const payload = {
+      quote_id: quoteId,
+      quote_type: quoteType,
+      json_data: cleanData // La colonne 'json_data' doit être de type JSON ou JSONB dans Supabase
+    };
+
+    // 'csv_imports' est le nom de la table où les données seront stockées.
+    // Vous devrez créer cette table dans votre base de données Supabase.
+    return from(this.supabase.insertData('csv_imports', payload)).pipe(
+      map(response => {
+        if (response.error) throw response.error;
+        return response.data;
+      })
+    );
+  }
+  /**
+   * Récupère les données CSV via la procédure stockée
+   */
+  getCsvData(quoteId: number, quoteType: string): Observable<any[]> {
+
+    // Appel de la fonction SQL 'get_csv_import_data'
+    const request = this.supabase
+      .supabase
+      .rpc('get_csv_import_data', {
+        p_quote_id: quoteId,
+        p_quote_type: quoteType
+      });
+
+    return from(request).pipe(
+      map((response) => {
+        if (response.error) {
+          throw response.error;
+        }
+        // response.data contient directement votre tableau JSON
+        // S'il est vide (pas de résultat), on retourne un tableau vide pour éviter les bugs
+        return response.data || [];
+      })
+    );
+  }
+
+  /**
+   * Récupère la liste de tous les types de documents.
+   * @returns Un Observable avec la liste des types de documents.
+   */
+  getDocumentTypes(): Observable<DocumentType[]> {
+    return from(
+      this.supabase.supabase
+        .from('type_documents')
+        .select('id, created_at, Label, view')
+        .order('Label', { ascending: true })
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) {
+          console.error(
+            'Erreur lors de la récupération des types de documents :',
+            error
+          );
+          throw error;
+        }
+        return data ?? [];
+      })
+    );
   }
 }
