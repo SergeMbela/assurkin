@@ -2,14 +2,11 @@ import { Component, ViewChild, ElementRef, ViewChildren, QueryList, AfterViewIni
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterLink, RouterLinkActive, NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
-import { PreloadOnHoverDirective } from './preload-on-hover.directive';
-import { AuthService } from './auth.service';
-import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive, PreloadOnHoverDirective],
+  imports: [CommonModule, RouterLink, RouterLinkActive],
   templateUrl: './navbar.component.html',
 })
 export class NavbarComponent implements AfterViewInit {
@@ -23,27 +20,24 @@ export class NavbarComponent implements AfterViewInit {
   showMentionsLegalesSubMenu = false;
   particulierSubMenuOpen = false;
   professionelSubMenuOpen = false;
-  isLoggedIn$: Observable<boolean>;
 
   constructor(
     private router: Router,
     private cdr: ChangeDetectorRef,
-    @Inject(PLATFORM_ID) private platformId: object,
-    private authService: AuthService
-  ) {
-    this.isLoggedIn$ = this.authService.isLoggedIn$;
-  }
+    @Inject(PLATFORM_ID) private platformId: object
+  ) {}
 
   ngAfterViewInit(): void {
     // Positionne le trait sur l'élément actif au chargement et après chaque navigation
     this.router.events.pipe(
       filter((event): event is NavigationEnd => event instanceof NavigationEnd)
     ).subscribe(() => {
-      this.moveUnderlineToActiveLink();
+      // This should only run in the browser.
+      // The logic inside manipulates the DOM which is not available on the server.
+      if (isPlatformBrowser(this.platformId)) {
+        this.moveUnderlineToActiveLink();
+      }
     });
-
-    // Positionnement initial
-    this.moveUnderlineToActiveLink();
   }
 
   @HostListener('window:scroll', [])
@@ -66,11 +60,15 @@ export class NavbarComponent implements AfterViewInit {
   }
 
   onLinkHover(event: MouseEvent): void {
-    this.moveUnderline(event.currentTarget as HTMLElement);
+    if (isPlatformBrowser(this.platformId)) {
+      this.moveUnderline(event.currentTarget as HTMLElement);
+    }
   }
 
   onMenuLeave(): void {
-    this.moveUnderlineToActiveLink();
+    if (isPlatformBrowser(this.platformId)) {
+      this.moveUnderlineToActiveLink();
+    }
   }
 
   private moveUnderlineToActiveLink(): void {

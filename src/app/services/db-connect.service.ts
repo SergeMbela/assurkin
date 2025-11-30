@@ -5,6 +5,31 @@ import { PostgrestError, User } from '@supabase/supabase-js';
 import { SupabaseService } from './supabase.service';
 import { DevisAuto } from '../pages/mydata/mydata.component';
 
+export interface Person {
+  id: number;
+  user_id?: string;
+  nom: string;
+  prenom: string;
+  email: string;
+  telephone?: string;
+  adresse?: string;
+  code_postal?: string;
+  ville?: string;
+  date_naissance?: string;
+  permis_numero?: string;
+  permis_date?: string;
+  genre?: string;
+  folder_id?: boolean;
+}
+
+export interface CorporateAccount {
+  id?: number;
+  nom: string;
+  prenom: string;
+  fonction?: string;
+  email: string;
+}
+
 export interface AutoQuoteUpdatePayload {
   p_preneur: { [key: string]: any };
   p_conducteur?: { [key: string]: any };
@@ -378,6 +403,37 @@ export class DbConnectService {
   }
 
   /**
+   * Crée un nouveau compte corporate dans la base de données.
+   * @param accountData Les données du formulaire (nom, prenom, email, etc.)
+   * @returns Un Observable du résultat de l'insertion.
+   */
+  createCorporateAccount(accountData: CorporateAccount & { password?: string }): Observable<SupabaseResponse<any>> {
+    // IMPORTANT : L'ordre des clés doit correspondre EXACTEMENT à l'ordre des arguments de la fonction SQL.
+    const rpcPayload = {
+      user_email: accountData.email,
+      user_password: accountData.password,
+      user_nom: accountData.nom,
+      user_prenom: accountData.prenom,
+      user_fonction: accountData.fonction
+    };
+
+    console.log('[DbConnectService] Appel de la fonction RPC handle_new_corporate_user avec:', rpcPayload);
+
+    const promise = this.supabase.supabase
+      .rpc('handle_new_corporate_user', rpcPayload)
+      .then(({ data, error }) => {
+        if (error) {
+          // Si une erreur survient, on la rejette pour qu'elle soit capturée par le bloc 'catch' de l'Observable.
+          console.error('Erreur lors de l\'appel RPC handle_new_corporate_user:', error);
+          throw error;
+        }
+        return data; // En cas de succès, on ne retourne que les données.
+      });
+
+    return from(promise);
+  }
+
+  /**
    * Enregistre les données du formulaire d'assurance habitation.
    * @param formData Les données du formulaire.
    * @returns Un Observable du résultat de l'insertion.
@@ -462,7 +518,7 @@ export class DbConnectService {
    * @param formData Les données du formulaire.
    * @returns Un Observable du résultat de l'insertion.
    */
-  saveObsequesForm(formData: ObsequesFormData): Observable<SupabaseResponse<ObsequesFormData>> {
+  saveObsequesForm(formData: ObsequesFormData): Observable<any> {
     return this.createObsequesQuote(formData);
   }
 
@@ -514,12 +570,12 @@ export class DbConnectService {
    */
 
   getPostalCodes(prefix: string): Observable<PostalCode[]> {
-    return from(
-      this.supabase
-        .fetchData('code_postal_belge', 'postal, name')
-        .like('postal', `${prefix}%`)
-        .limit(10)
-    ).pipe(
+    const query = this.supabase.supabase
+      .from('code_postal_belge')
+      .select('postal, name')
+      .like('postal', `${prefix}%`)
+      .limit(10);
+    return from(query).pipe(
       map(response => {
         return (response.data || []).map((item: any) => ({
           postalCode: item.postal,
@@ -535,13 +591,14 @@ export class DbConnectService {
    * @param namePrefix Le préfixe du nom de la ville à rechercher.
    * @returns Un Observable avec la liste des villes et leurs codes postaux.
    */
-  getVilles(namePrefix: string): Observable<PostalCode[]> {
-    return from(
-      this.supabase
-        .fetchData('code_postal_belge', 'postal, name')
-        .ilike('name', `${namePrefix}%`)
-        .limit(10) // Limite les résultats pour de meilleures performances
-    ).pipe(
+ getVilles(namePrefix: string): Observable<PostalCode[]> {
+    const query = this.supabase.supabase
+      .from('code_postal_belge')
+      .select('postal, name')
+      .ilike('name', `${namePrefix}%`)
+      .limit(10); // Limite les résultats pour de meilleures performances
+
+    return from(query).pipe(
       map(response => {
         // Map les résultats pour correspondre à l'interface PostalCode
         const data = response.data as { postal: string; name: string; }[] | null;
@@ -558,22 +615,28 @@ export class DbConnectService {
    * @param postalCode Le code postal exact à rechercher.
    * @returns Un Observable avec la liste des noms de villes.
    */
-  getCitiesByPostalCode(postalCode: string): Observable<string[]> {
-    return from(
-      this.supabase
-        .fetchData('code_postal_belge', 'name') // Sélectionne uniquement le nom de la ville
-        .eq('postal', postalCode) // Correspondance exacte du code postal
-    ).pipe(
-      map(response => {
-        const data = response.data as { name: string; }[] | null;
-        return (data || []).map(item => item.name);
-      }),
-      catchError(error => {
-        console.error('Erreur lors de la récupération des villes par code postal:', error);
-        return of([]);
-      })
-    );
-  }
+getCitiesByPostalCode(postalCode: string): Observable<string[]> {
+  return from(
+    this.supabase.supabase // Accès au client natif
+      .from('code_postal_belge')
+      .select('name')
+      .eq('postal', postalCode)
+  ).pipe(
+    map(response => {
+      // Il est recommandé de vérifier l'erreur Supabase ici
+      if (response.error) {
+        throw response.error;
+      }
+      
+      const data = response.data as { name: string; }[] | null;
+      return (data || []).map(item => item.name);
+    }),
+    catchError(error => {
+      console.error('Erreur lors de la récupération des villes par code postal:', error);
+      return of([]); // Retourne un tableau vide en cas d'erreur pour ne pas casser l'UI
+    })
+  );
+}
 
   /**
    * Recherche les marques de véhicules correspondant à un préfixe.
@@ -582,8 +645,8 @@ export class DbConnectService {
    */
   searchMarques(prefix: string): Observable<Marque[]> {
     return from(
-      this.supabase
-        .fetchData('marques', 'marque_id:id, nom')
+      this.supabase.supabase
+        .from('marques').select('marque_id:id, nom')
         .ilike('nom', `${prefix}%`)
         .limit(10)
     ).pipe(
@@ -604,8 +667,8 @@ export class DbConnectService {
    * @returns Un Observable avec la liste des modèles correspondants.
    */
   searchModeles(marqueId: number, prefix?: string): Observable<Modele[]> {
-    let query = this.supabase
-      .fetchData('modeles', 'marque_id, nom')
+    let query = this.supabase.supabase
+      .from('modeles').select('marque_id, nom')
       .eq('marque_id', marqueId)
       .order('nom', { ascending: true });
 
@@ -631,8 +694,8 @@ export class DbConnectService {
    */
   searchAssureurs(prefix: string): Observable<Assureur[]> {
     return from(
-      this.supabase
-        .fetchData('assureurs_belges', 'id, nom_assureur')
+      this.supabase.supabase
+        .from('assureurs_belges').select('id, nom_assureur')
         .ilike('nom_assureur', `${prefix}%`)
         .order('nom_assureur', { ascending: true })
         .limit(10)
@@ -684,8 +747,8 @@ export class DbConnectService {
    */
   getAllAssureurs(): Observable<Assureur[]> {
     return from(
-      this.supabase
-        .fetchData('assureurs_belges', 'id, nom_assureur')
+      this.supabase.supabase
+        .from('assureurs_belges').select('id, nom_assureur') // This returns a PostgrestFilterBuilder
         .order('nom_assureur', { ascending: true })
     ).pipe(
       map(response => {
@@ -1291,10 +1354,9 @@ export class DbConnectService {
    * @returns Un Observable avec la liste des demandes.
    */
   getAllVoyageQuotes(): Observable<any[]> {
-    return from(
-      this.supabase.supabase
-        .from('assu_voyage')
-        .select(`
+    const query = this.supabase.supabase
+      .from('assu_voyage')
+      .select(`
           id,
           date_created,
           statut,
@@ -1303,7 +1365,7 @@ export class DbConnectService {
           description
         `)
         .order('date_created', { ascending: false })
-    ).pipe(
+    return from(query).pipe(
       map(response => {
         if (response.error) throw response.error;
         return response.data || [];
@@ -1316,18 +1378,17 @@ export class DbConnectService {
    * @returns Un Observable avec la liste des devis.
    */
   getAllRcQuotes(): Observable<any[]> {
-    return from(
-      this.supabase.supabase
-        .from('rc_familiale_quotes')
-        .select(`
+    const query = this.supabase.supabase
+      .from('rc_familiale_quotes')
+      .select(`
           id,
           created_at,
           preneur_nom,
           preneur_prenom,
           risque
         `)
-        .order('created_at', { ascending: false })
-    ).pipe(
+      .order('created_at', { ascending: false });
+    return from(query).pipe(
       map(response => {
         if (response.error) throw response.error;
         // Note: La table rc_familiale_quotes n'a pas de colonne 'statut' pour le moment.
@@ -1342,18 +1403,17 @@ export class DbConnectService {
    * @returns Un Observable avec la liste des devis récents.
    */
   getRecentAutoQuotes(limit: number): Observable<any[]> {
-    return from(
-      this.supabase.supabase
-        .from('devis_assurance')
-        .select(`
+    const query = this.supabase.supabase
+      .from('devis_assurance')
+      .select(`
           id,
           created_at,
           statut,
           preneur:personnes!devis_assurance_preneur_id_fkey ( nom, prenom )
         `)
-        .order('created_at', { ascending: false })
-        .limit(limit) // Limite le nombre de résultats
-    ).pipe(
+      .order('created_at', { ascending: false })
+      .limit(limit); // Limite le nombre de résultats
+    return from(query).pipe(
       map(response => {
         if (response.error) throw response.error;
         console.log('[DbConnectService] Recent auto quotes fetched:', response.data);
@@ -1368,18 +1428,17 @@ export class DbConnectService {
    * @returns Un Observable avec la liste des devis récents.
    */
   getRecentHabitationQuotes(limit: number): Observable<any[]> {
-    return from(
-      this.supabase.supabase
-        .from('habitation_quotes')
-        .select(`
+    const query = this.supabase.supabase
+      .from('habitation_quotes')
+      .select(`
           id,
           created_at,
           statut,
           preneur:personnes!habitation_quotes_preneur_id_fkey ( nom, prenom )
         `)
-        .order('created_at', { ascending: false })
-        .limit(limit)
-    ).pipe(
+      .order('created_at', { ascending: false })
+      .limit(limit);
+    return from(query).pipe(
       map(response => {
         if (response.error) {
           console.error('Erreur lors de la récupération des devis habitation récents:', response.error);
@@ -1396,10 +1455,9 @@ export class DbConnectService {
    * @returns Un Observable avec la liste des contrats.
    */
   getAutoPolicies(limit: number): Observable<any[]> {
-    return from(
-      this.supabase.supabase
-        .from('polices_auto') // Assurez-vous que le nom de la table est correct
-        .select(`
+    const query = this.supabase.supabase
+      .from('polices_auto') // Assurez-vous que le nom de la table est correct
+      .select(`
           id,
           numero_police,
           date_debut,
@@ -1407,9 +1465,9 @@ export class DbConnectService {
           statut,
           preneur:personnes ( nom, prenom )
         `)
-        .order('created_at', { ascending: false })
-        .limit(limit)
-    ).pipe(
+      .order('created_at', { ascending: false })
+      .limit(limit);
+    return from(query).pipe(
       map(response => {
         if (response.error) throw response.error;
         return response.data || [];
@@ -1422,12 +1480,11 @@ export class DbConnectService {
    * @returns Un Observable avec la liste des nationalités.
    */
   getNationalities(): Observable<Nationality[]> {
-    return from(
-      this.supabase.supabase
-        .from('nationalities')
-        .select('*')
-        .order('nationality', { ascending: true }) // Ordonne les nationalités par ordre alphabétique
-    ).pipe(
+    const query = this.supabase.supabase
+      .from('nationalities')
+      .select('*')
+      .order('nationality', { ascending: true }); // Ordonne les nationalités par ordre alphabétique
+    return from(query).pipe(
       map(response => {
         if (response.error) {
           console.error('Erreur lors de la récupération des nationalités:', response.error);
@@ -1472,7 +1529,11 @@ export class DbConnectService {
     ).pipe(
       map(response => {
         if (response.error) {
-          console.error('Erreur lors de la récupération de la catégorie du devis:', response.error);
+          console.warn(
+            `[DbConnectService] Erreur 500 probable dans 'getQuoteCategoryById' pour l'ID ${id}.`,
+            'Erreur RPC Supabase:',
+            response.error
+          );
           throw response.error;
         }
         // La fonction RPC retourne un objet { category: '...' } ou null
@@ -1480,7 +1541,10 @@ export class DbConnectService {
       }),
       catchError(error => {
         console.error('Erreur dans le pipe de getQuoteCategoryById:', error);
-        return of(null);
+        console.warn(
+          `[DbConnectService] 'getQuoteCategoryById' a échoué pour l'ID ${id}.`
+        );
+        return of(null); // Retourne null pour ne pas casser le flux
       })
     );
   }
@@ -1495,29 +1559,10 @@ export class DbConnectService {
    * @returns Un Observable qui émet la réponse de la fonction RPC.
    */
   updateAutoQuote(quoteId: number, payload: AutoQuoteUpdatePayload): Observable<{ success: boolean, error?: any, data?: any }> {
-    // 1. Mapper les noms de champs du formulaire vers les noms de colonnes de la BDD
-    const mapPersonData = (personForm: any) => ({
-      prenom: personForm.firstName,
-      nom: personForm.lastName,
-      date_naissance: personForm.dateNaissance,
-      email: personForm.email,
-      telephone: personForm.phone,
-      adresse: personForm.address,
-      code_postal: personForm.postalCode,
-      ville: personForm.city,
-      permis_numero: personForm.driverLicenseNumber,
-      permis_date: personForm.driverLicenseDate,
-      numero_national: personForm.nationalRegistryNumber,
-      idcard_number: personForm.idCardNumber,
-      idcard_validity: personForm.idCardValidityDate,
-      nationality: personForm.nationality,
-      marital_status: personForm.maritalStatus
-    });
-
     const rpcPayload = {
       p_quote_id: quoteId,
-      p_preneur_data: mapPersonData(payload.p_preneur),
-      p_conducteur_data: payload.p_conducteur ? mapPersonData(payload.p_conducteur) : null,
+      p_preneur_data: this.mapPersonDataForRpc(payload.p_preneur),
+      p_conducteur_data: payload.p_conducteur ? this.mapPersonDataForRpc(payload.p_conducteur) : null,
       p_vehicule_data: {
         marque: payload.p_vehicule['make'],
         modele: payload.p_vehicule['model'],
@@ -1527,11 +1572,16 @@ export class DbConnectService {
       p_devis_data: payload.p_devis
     };
 
-    // 2. Appeler la fonction RPC de Supabase
+    // Appeler la fonction RPC de Supabase
     const promise = this.supabase.supabase
       .rpc('update_auto_quote_details', rpcPayload)
       .then(({ data, error }) => {
         if (error) {
+          console.warn(
+            `[DbConnectService] Erreur 500 probable dans 'updateAutoQuote' pour l'ID ${quoteId}.`,
+            'Erreur RPC Supabase:',
+            error
+          );
           console.error('Erreur RPC update_auto_quote_details:', error);
           return { success: false, error };
         }
@@ -1548,28 +1598,11 @@ export class DbConnectService {
    * @returns Un Observable qui émet la réponse de la fonction RPC.
    */
   updateObsequesQuote(quoteId: number, payload: ObsequesQuoteUpdatePayload): Observable<{ success: boolean, error?: any, data?: any }> {
-    const mapPersonData = (personForm: any) => ({
-      prenom: personForm.firstName,
-      nom: personForm.lastName,
-      date_naissance: personForm.dateNaissance,
-      email: personForm.email,
-      telephone: personForm.phone,
-      adresse: personForm.address,
-      code_postal: personForm.postalCode,
-      ville: personForm.city,
-      // Les autres champs ne sont pas pertinents pour le preneur obsèques
-      permis_numero: null,
-      permis_date: null,
-      numero_national: null,
-      idcard_number: null,
-      idcard_validity: null,
-      nationality: null,
-      marital_status: null
-    });
-
     const rpcPayload = {
       p_quote_id: quoteId,
-      p_preneur_data: mapPersonData(payload.preneur),
+      p_preneur_data: this.mapPersonDataForRpc(payload.preneur, {
+        includeDrivingLicense: false, includeNationalRegistry: false
+      }),
       p_devis_data: payload.devis
     };
 
@@ -1577,7 +1610,11 @@ export class DbConnectService {
       .rpc('update_obseques_quote_details', rpcPayload)
       .then(({ data, error }) => {
         if (error) {
-          console.error('Erreur RPC update_obseques_quote_details:', error);
+          console.warn(
+            `[DbConnectService] Erreur 500 probable dans 'updateObsequesQuote' pour l'ID ${quoteId}.`,
+            'Erreur RPC Supabase:',
+            error
+          );
           return { success: false, error };
         }
         return { success: true, data };
@@ -1593,22 +1630,6 @@ export class DbConnectService {
    * @returns Un Observable qui émet la réponse de la fonction RPC.
    */
   updateHabitationQuote(quoteId: number, payload: HabitationQuoteUpdatePayload): Observable<{ success: boolean, error?: any, data?: any }> {
-    const mapPersonData = (personForm: any) => ({
-      prenom: personForm.firstName,
-      nom: personForm.lastName,
-      date_naissance: personForm.dateNaissance,
-      email: personForm.email,
-      telephone: personForm.phone,
-      adresse: personForm.address,
-      code_postal: personForm.postalCode,
-      ville: personForm.city,
-      numero_national: personForm.nationalRegistryNumber,
-      idcard_number: personForm.idCardNumber,
-      idcard_validity: personForm.idCardValidityDate,
-      nationality: personForm.nationality,
-      marital_status: personForm.maritalStatus
-    });
-
     // Mapper les données du devis pour correspondre aux attentes de la fonction RPC.
     const mapDevisData = (devisForm: any) => ({
       // Bâtiment
@@ -1626,21 +1647,24 @@ export class DbConnectService {
       pertesIndirectes: devisForm.garantie_pertes_indirectes,
       protectionJuridique: devisForm.garantie_protection_juridique,
       // Infos générales
-      insuranceCompany: devisForm.compagnie_id,
-      statut: devisForm.statut
+      insuranceCompany: devisForm.compagnie_id // Utiliser la clé attendue par la procédure SQL
     });
 
     const rpcPayload = {
       p_quote_id: quoteId,
-      p_preneur_data: mapPersonData(payload.p_preneur),
-      p_devis_data: mapDevisData(payload.p_devis)
+      p_preneur_data: this.mapPersonDataForRpc(payload.p_preneur),
+      p_devis_data: payload.p_devis // The payload already has the correct structure for the RPC
     };
 
     const promise = this.supabase.supabase
       .rpc('update_habitation_quote_details', rpcPayload)
       .then(({ data, error }) => {
         if (error) {
-          console.error('Erreur RPC update_habitation_quote_details:', error);
+          console.warn(
+            `[DbConnectService] Erreur 500 probable dans 'updateHabitationQuote' pour l'ID ${quoteId}.`,
+            'Erreur RPC Supabase:',
+            error
+          );
           return { success: false, error };
         }
         return { success: true, data };
@@ -1666,7 +1690,7 @@ export class DbConnectService {
     ville?: string;
     permis_numero?: string;
     permis_date?: string;
-  }): Promise<any> {
+  }): Promise<Person> {
     // 1. Chercher la personne par email
     const { data: existingPerson } = await this.supabase.supabase
       .from('personnes')
@@ -1689,6 +1713,73 @@ export class DbConnectService {
 
     if (insertError) throw insertError;
     return newPerson;
+  }
+
+  /**
+   * Maps form data for a person to the format expected by RPC functions.
+   * @param personForm The person data from the form.
+   * @param options Options to include/exclude certain fields.
+   * @returns The mapped person data.
+   */
+  private mapPersonDataForRpc(personForm: any, options: { includeDrivingLicense?: boolean, includeNationalRegistry?: boolean } = { includeDrivingLicense: true, includeNationalRegistry: true }) {
+    const mappedData: any = {
+      prenom: personForm.firstName,
+      nom: personForm.lastName,
+      date_naissance: personForm.dateNaissance,
+      email: personForm.email,
+      telephone: personForm.phone,
+      adresse: personForm.address,
+      code_postal: personForm.postalCode,
+      ville: personForm.city,
+      nationality: personForm.nationality,
+      marital_status: personForm.maritalStatus
+    };
+
+    if (options.includeDrivingLicense) {
+      mappedData.permis_numero = personForm.driverLicenseNumber;
+      mappedData.permis_date = personForm.driverLicenseDate;
+    }
+
+    if (options.includeNationalRegistry) {
+      mappedData.numero_national = personForm.nationalRegistryNumber;
+      mappedData.idcard_number = personForm.idCardNumber;
+      mappedData.idcard_validity = personForm.idCardValidityDate;
+    }
+
+    return mappedData;
+  }
+
+  /**
+   * Generic function to fetch paginated and searchable quotes.
+   * @param tableName The name of the quote table.
+   * @param selectQuery The select query string.
+   * @param searchTerm The term to search for.
+   * @param page The current page.
+   * @param itemsPerPage The number of items per page.
+   * @param searchConfig The configuration for the search.
+   * @returns An Observable with the paginated data and total count.
+   */
+  private getAllQuotesGeneric(tableName: string, selectQuery: string, searchTerm: string, page: number, itemsPerPage: number, searchConfig: { localColumns?: string[], foreignTables?: { name: string, columns: string[] }[] }): Observable<{ data: any[], count: number | null }> {
+    const rangeFrom = (page - 1) * itemsPerPage;
+    const rangeTo = rangeFrom + itemsPerPage - 1;
+
+    let query = this.supabase.supabase.from(tableName).select(selectQuery, { count: 'exact' }).order('created_at', { ascending: false }).range(rangeFrom, rangeTo);
+
+    if (searchTerm && (searchConfig.localColumns?.length || searchConfig.foreignTables?.length)) {
+      const searchPattern = `%${searchTerm}%`;
+      const orFilters = [];
+      if (searchConfig.localColumns) {
+        orFilters.push(searchConfig.localColumns.map(col => `${col}.ilike.${searchPattern}`).join(','));
+      }
+      if (searchConfig.foreignTables) {
+        searchConfig.foreignTables.forEach(ft => {
+          const foreignOr = ft.columns.map(col => `${col}.ilike.${searchPattern}`).join(',');
+          query = query.or(foreignOr, { foreignTable: ft.name });
+        });
+      }
+    }
+
+    return from(query).pipe(map(response => ({ data: response.data || [], count: response.count })));
   }
 
   /**
@@ -1725,7 +1816,16 @@ export class DbConnectService {
       .rpc('get_full_quote_details', { p_quote_id: id }) // 1. Nom de la fonction, 2. Paramètres
       .then(({ data, error }) => {
         if (error) {
-          console.error(`[DbConnectService] Erreur lors de l'appel RPC 'get_full_quote_details' pour l'ID ${id}:`, error);
+          console.warn(
+            `[DbConnectService] Erreur 500 probable dans 'getFullQuoteDetails' pour l'ID ${id}.`,
+            'Erreur RPC Supabase:',
+            error
+          );
+          console.warn(
+            `[DbConnectService] Erreur 500 probable dans 'getFullQuoteDetails' pour l'ID ${id}.`,
+            'Erreur RPC Supabase:',
+            error
+          );
           throw error;
         }
 
@@ -1795,27 +1895,39 @@ export class DbConnectService {
       })
     );
   }
-  /**
+/**
    * Récupère les données CSV via la procédure stockée
    */
   getCsvData(quoteId: number, quoteType: string): Observable<any[]> {
-
-    // Appel de la fonction SQL 'get_csv_import_data'
-    const request = this.supabase
-      .supabase
+    // 1. On prépare la requête (Promesse) sans modifier sa chaîne d'erreur ici
+    const request = this.supabase.supabase
       .rpc('get_csv_import_data', {
         p_quote_id: quoteId,
         p_quote_type: quoteType
       });
 
+    // 2. On transforme en Observable
     return from(request).pipe(
       map((response) => {
+        // Gestion des erreurs fonctionnelles (renvoyées par Supabase dans l'objet response)
         if (response.error) {
+          console.warn(
+            `[DbConnectService] Erreur 500 probable dans 'getCsvData' pour quoteId ${quoteId}.`,
+            'Erreur RPC Supabase:',
+            response.error
+          );
           throw response.error;
         }
-        // response.data contient directement votre tableau JSON
-        // S'il est vide (pas de résultat), on retourne un tableau vide pour éviter les bugs
-        return response.data || [];
+        
+        // Cast explicite et sécurisation du retour
+        return (response.data as any[]) || [];
+      }),
+      // 3. Gestion globale des erreurs (Réseau ou RPC) via RxJS
+      catchError((error) => {
+        console.error(`[DbConnectService] Erreur dans getCsvData pour quoteId ${quoteId}:`, error);
+        // Retourne un tableau vide pour éviter de casser l'interface utilisateur
+        // Si vous préférez bloquer l'UI, remplacez par : return throwError(() => error);
+        return of([]); 
       })
     );
   }

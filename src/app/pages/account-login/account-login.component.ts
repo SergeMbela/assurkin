@@ -15,6 +15,7 @@ export class AccountLoginComponent implements OnInit {
   loginForm!: FormGroup;
   submitted = false;
   errorMessage: string | null = null;
+  loading = false;
 
   constructor(
     private fb: FormBuilder,
@@ -34,6 +35,7 @@ export class AccountLoginComponent implements OnInit {
   onSubmit(): void {
     this.submitted = true;
     this.errorMessage = null;
+    this.loading = true;
 
     if (this.loginForm.invalid) {
       return;
@@ -44,16 +46,15 @@ export class AccountLoginComponent implements OnInit {
     this.authService.signIn({ email, password }).subscribe({
       next: (response) => {
         if (response.error) {
+          this.loading = false;
           this.errorMessage = 'Email ou mot de passe incorrect.';
           console.error(response.error);
         } else {
-          console.log('Login successful!', response.data.user);
-          console.log('Full Supabase AuthResponse:', response); // Affiche l'objet de réponse complet de Supabase
-          console.log('Attempting to navigate to /mydata...'); // Confirme que cette ligne est atteinte
           this.router.navigate(['/mydata']); // Redirige vers la page mydata en cas de succès
         }
       },
       error: (err) => {
+        this.loading = false;
         this.errorMessage = 'Une erreur inattendue est survenue. Veuillez réessayer.';
         console.error(err);
       }

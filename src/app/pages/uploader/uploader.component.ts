@@ -214,8 +214,11 @@ export class UploaderComponent implements OnInit {
 
     if (successfulUploads.length === 0) return;
 
-    const tasks$ = successfulUploads.map(s => 
-      this.contractService.addContractFile(
+    const tasks$ = successfulUploads.map(s => {
+      // Affiche le type de document (raison) dans la console pour chaque fichier.
+      console.log(`Fichier téléversé : '${s.file.name}', Type : '${s.raison}'`);
+
+      return this.contractService.addContractFile(
         this.quoteId, 
         this.quoteType, 
         s.filePath!, 
@@ -230,7 +233,7 @@ export class UploaderComponent implements OnInit {
           return of(null);
         })
       )
-    );
+    });
 
     forkJoin(tasks$).subscribe({
       next: () => {
@@ -255,12 +258,12 @@ export class UploaderComponent implements OnInit {
       },
       complete: () => {
         // Vérifier si un contrat a été uploadé et envoyer un SMS
-        const contractUpload = successfulUploads.find(s => s.raison.toLowerCase() === 'Contrat');
+        const contractUpload = successfulUploads.find(s => s.raison === 'Contrat');
         if (contractUpload && this.clientInfo?.telephone) {
           this.sendContractSms(this.clientInfo.telephone, this.clientInfo.prenom);
         } else if (contractUpload) {
           console.warn("Un contrat a été uploadé mais aucun numéro de téléphone n'a été trouvé pour le client.");
-          this.errorMessage = "Contrat sauvegardé, mais le SMS n'a pas pu être envoyé (téléphone manquant).";
+          this.errorMessage = "Contrat sauvegardé, mais le SMS n'a pas pu être envoyé (numéro de téléphone manquant).";
         }
       },
       error: (err) => {
@@ -363,6 +366,15 @@ export class UploaderComponent implements OnInit {
   
   hasPendingFiles(): boolean {
     return this.uploadStates.some(s => s.status === 'pending');
+  }
+
+  /**
+   * Vérifie si tous les fichiers en attente ont un type de document sélectionné.
+   * @returns `true` si tous les fichiers en attente ont un type, sinon `false`.
+   */
+  allPendingFilesHaveReason(): boolean {
+    const pendingFiles = this.uploadStates.filter(s => s.status === 'pending');
+    return pendingFiles.every(s => s.raison && s.raison.trim() !== '');
   }
 
   /**

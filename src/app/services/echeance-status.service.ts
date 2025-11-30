@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { Injectable, PLATFORM_ID, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { DbConnectService, EcheanceStatus } from './db-connect.service'; // Correction du chemin si nécessaire
 import { tap } from 'rxjs/operators';
 
@@ -6,11 +7,15 @@ import { tap } from 'rxjs/operators';
   providedIn: 'root'
 })
 export class EcheanceStatusService {
+  private platformId = inject(PLATFORM_ID);
   private statusMap = new Map<number, string>();
   private statusesLoaded = false;
 
   constructor(private dbService: DbConnectService) {
-    this.loadStatuses();
+    // Only load statuses if running in a browser environment
+    if (isPlatformBrowser(this.platformId)) {
+      this.loadStatuses();
+    }
   }
 
   private loadStatuses(): void {

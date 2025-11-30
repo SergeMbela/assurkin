@@ -1,0 +1,146 @@
+<div class="bg-gray-50 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+
+  <!-- Popup de notification -->
+  <div *ngIf="showPopup"
+       class="fixed top-20 right-5 z-50 p-4 rounded-lg shadow-xl text-white max-w-sm"
+       [ngClass]="{ 'bg-green-600': popupType === 'success', 'bg-red-600': popupType === 'error' }">
+    <div class="flex justify-between items-start">
+      <p class="flex-grow">{{ popupMessage }}</p>
+      <button (click)="hideNotification()" class="ml-4 -mt-1 -mr-1 text-2xl font-semibold leading-none hover:text-gray-200">&times;</button>
+    </div>
+  </div>
+
+  <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10">
+
+    <!-- Formulaire d'authentification -->
+    <div class="bg-white p-8 rounded-lg shadow-md">
+      <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">S'authentifier</h2>
+      <form [formGroup]="loginForm" (ngSubmit)="onLoginSubmit()" class="space-y-6" novalidate>
+        <div>
+          <label for="login-email" class="block text-sm font-medium text-gray-700">Adresse e-mail</label>
+          <div class="mt-1">
+            <input id="login-email" type="email" formControlName="email" autocomplete="email"
+              class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            <div *ngIf="loginForm.get('email')?.invalid && (loginForm.get('email')?.dirty || loginForm.get('email')?.touched)"
+              class="text-red-600 text-xs mt-1">
+              <div *ngIf="loginForm.get('email')?.errors?.['required']">L'adresse e-mail est requise.</div>
+              <div *ngIf="loginForm.get('email')?.errors?.['email']">Adresse e-mail invalide.</div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label for="login-password" class="block text-sm font-medium text-gray-700">Mot de passe</label>
+          <div class="mt-1">
+            <input id="login-password" type="password" formControlName="password" autocomplete="current-password"
+              class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            <div
+              *ngIf="loginForm.get('password')?.invalid && (loginForm.get('password')?.dirty || loginForm.get('password')?.touched)"
+              class="text-red-600 text-xs mt-1">
+              <div *ngIf="loginForm.get('password')?.errors?.['required']">Le mot de passe est requis.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <div class="text-sm">
+            <a href="#" class="font-medium text-indigo-600 hover:text-indigo-500"> Mot de passe oublié ? </a>
+          </div>
+        </div>
+
+        <div>
+          <button type="submit" [disabled]="loginForm.invalid"
+            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed">
+            Se connecter
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Formulaire de création de compte -->
+    <div class="bg-white p-8 rounded-lg shadow-md">
+      <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">Créer un compte</h2>
+      <form [formGroup]="registerForm" (ngSubmit)="onRegisterSubmit()" class="space-y-6" novalidate>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="register-nom" class="block text-sm font-medium text-gray-700">Nom</label>
+            <input id="register-nom" type="text" formControlName="nom"
+              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            <div *ngIf="registerForm.get('nom')?.invalid && (registerForm.get('nom')?.dirty || registerForm.get('nom')?.touched)"
+              class="text-red-600 text-xs mt-1">
+              <div *ngIf="registerForm.get('nom')?.errors?.['required']">Le nom est requis.</div>
+            </div>
+          </div>
+          <div>
+            <label for="register-prenom" class="block text-sm font-medium text-gray-700">Prénom</label>
+            <input id="register-prenom" type="text" formControlName="prenom"
+              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            <div *ngIf="registerForm.get('prenom')?.invalid && (registerForm.get('prenom')?.dirty || registerForm.get('prenom')?.touched)"
+              class="text-red-600 text-xs mt-1">
+              <div *ngIf="registerForm.get('prenom')?.errors?.['required']">Le prénom est requis.</div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label for="register-fonction" class="block text-sm font-medium text-gray-700">Fonction</label>
+          <input id="register-fonction" type="text" formControlName="fonction"
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+          <div
+            *ngIf="registerForm.get('fonction')?.invalid && (registerForm.get('fonction')?.dirty || registerForm.get('fonction')?.touched)"
+            class="text-red-600 text-xs mt-1">
+            <div *ngIf="registerForm.get('fonction')?.errors?.['required']">La fonction est requise.</div>
+          </div>
+        </div>
+
+        <div>
+          <label for="register-email" class="block text-sm font-medium text-gray-700">Adresse e-mail</label>
+          <input id="register-email" type="email" formControlName="email"
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+          <div *ngIf="registerForm.get('email')?.invalid && (registerForm.get('email')?.dirty || registerForm.get('email')?.touched)"
+            class="text-red-600 text-xs mt-1">
+            <div *ngIf="registerForm.get('email')?.errors?.['required']">L'adresse e-mail est requise.</div>
+            <div *ngIf="registerForm.get('email')?.errors?.['email']">Adresse e-mail invalide.</div>
+            <div *ngIf="registerForm.get('email')?.errors?.['pattern']">L'email doit se terminer par &#64;assurkin.be</div>
+          </div>
+        </div>
+
+        <div>
+          <label for="register-password" class="block text-sm font-medium text-gray-700">Mot de passe</label>
+          <input id="register-password" type="password" formControlName="password"
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+          <div
+            *ngIf="registerForm.get('password')?.invalid && (registerForm.get('password')?.dirty || registerForm.get('password')?.touched)"
+            class="text-red-600 text-xs mt-1">
+            <div *ngIf="registerForm.get('password')?.errors?.['required']">Le mot de passe est requis.</div>
+            <div *ngIf="registerForm.get('password')?.errors?.['minlength']">Le mot de passe doit contenir au moins 6
+              caractères.</div>
+          </div>
+        </div>
+
+        <!-- 
+          Le champ de confirmation n'est pas dans le formGroup car il n'est pas envoyé à la DB.
+          Sa validation doit être gérée manuellement dans la méthode onRegisterSubmit si nécessaire.
+          Pour une validation plus avancée, un validateur personnalisé peut être ajouté au FormGroup.
+        --> 
+        <div>
+          <label for="register-password-confirm" class="block text-sm font-medium text-gray-700">Confirmer le mot de
+            passe</label>
+          <input id="register-password-confirm" type="password" formControlName="passwordConfirm"
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+          <div *ngIf="registerForm.errors?.['passwordsMismatch'] && (registerForm.get('passwordConfirm')?.dirty || registerForm.get('passwordConfirm')?.touched)" class="text-red-600 text-xs mt-1">
+            Les mots de passe ne correspondent pas.
+          </div>
+        </div>
+
+        <div>
+          <button type="submit" [disabled]="registerForm.invalid"
+            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
+            Créer le compte
+          </button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</div>

@@ -13,12 +13,15 @@
       <!-- Menu Desktop -->
       <div class="hidden md:flex flex-grow items-center justify-between">
         <div #menuContainer class="relative flex items-center space-x-8 ml-10" (mouseleave)="onMenuLeave()">
-          <a #menuLink routerLink="/accueil" routerLinkActive="text-indigo-600"
+          <a #menuLink routerLink="/accueil" routerLinkActive="text-indigo-600" [attr.aria-current]="'page'"
             [routerLinkActiveOptions]="{exact: true}" (mouseenter)="onLinkHover($event)"
-            class="text-gray-700 hover:text-indigo-600 transition h-16 inline-flex items-center">Accueil</a>          
+            class="text-gray-700 hover:text-indigo-600 transition h-16 inline-flex items-center">Accueil</a>
           <!-- Menu Mentions Légales Desktop -->
-          <div class="relative" (mouseenter)="showMentionsLegalesSubMenu = true" (mouseleave)="showMentionsLegalesSubMenu = false">
-            <button #menuLink routerLinkActive="text-indigo-600" routerLink="/mentions" (mouseenter)="onLinkHover($event)"
+          <div class="relative">
+            <button #menuLink routerLinkActive="text-indigo-600"
+              (click)="showMentionsLegalesSubMenu = !showMentionsLegalesSubMenu" (mouseenter)="onLinkHover($event)"
+              aria-haspopup="true" [attr.aria-expanded]="showMentionsLegalesSubMenu"
+              aria-controls="mentions-legales-submenu"
               class="text-gray-700 hover:text-indigo-600 transition inline-flex items-center h-16">
               Mentions légales
               <svg class="ml-1 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -27,13 +30,23 @@
                   clip-rule="evenodd" />
               </svg>
             </button>
-            <div [ngClass]="{'opacity-100 visible': showMentionsLegalesSubMenu, 'opacity-0 invisible': !showMentionsLegalesSubMenu}"
+            <div *ngIf="showMentionsLegalesSubMenu" id="mentions-legales-submenu"
               class="absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 transition-all duration-200 ease-in-out">
-              <a routerLink="/mentions/a-propos" routerLinkActive="bg-indigo-50" class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50">À propos de nous</a>
-              <a routerLink="/mentions/mifid" routerLinkActive="bg-indigo-50" class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50">Mifid</a>
-              <a routerLink="/mentions/politique-confidentialite" routerLinkActive="bg-indigo-50" class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50">Politique de confidentialité</a>
-              <a routerLink="/mentions/politique-utilisation" routerLinkActive="bg-indigo-50" class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50">Politique d'utilisation du site</a>
-              <a routerLink="/mentions/conditions-generales" routerLinkActive="bg-indigo-50" class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50">Conditions générales de vente</a>
+              <a routerLink="/mentions" routerLinkActive="bg-indigo-50" [routerLinkActiveOptions]="{exact: true}"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50">Vue d'ensemble</a>
+              <a routerLink="/mentions/a-propos" routerLinkActive="bg-indigo-50" [attr.aria-current]="'page'"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50">À propos de nous</a>
+              <a routerLink="/mentions/mifid" routerLinkActive="bg-indigo-50" [attr.aria-current]="'page'"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50">Mifid</a>
+              <a routerLink="/mentions/politique-confidentialite" routerLinkActive="bg-indigo-50"
+                [attr.aria-current]="'page'" class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50">Politique
+                de confidentialité</a>
+              <a routerLink="/mentions/politique-utilisation" routerLinkActive="bg-indigo-50"
+                [attr.aria-current]="'page'" class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50">Politique
+                d'utilisation du site</a>
+              <a routerLink="/mentions/conditions-generales" routerLinkActive="bg-indigo-50"
+                [attr.aria-current]="'page'" class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50">Conditions
+                générales de vente</a>
             </div>
           </div>
           <!-- Menu Particulier Desktop -->
@@ -42,7 +55,8 @@
             <button #menuLink routerLinkActive="text-indigo-600" routerLink="/particulier"
               (mouseenter)="onLinkHover($event)"
               class="text-gray-700 hover:text-indigo-600 transition inline-flex items-center h-16">
-              Particulier
+              <a routerLink="/particulier"
+                class="text-gray-700 hover:text-indigo-600 transition inline-flex items-center h-16">Particulier</a>
               <svg class="ml-1 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd"
                   d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
@@ -51,23 +65,26 @@
             </button>
             <div
               [ngClass]="{'opacity-100 visible': showParticulierSubMenu, 'opacity-0 invisible': !showParticulierSubMenu}"
-              class="absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 transition-all duration-200 ease-in-out">
-              <a routerLink="/particulier/auto" routerLinkActive="bg-indigo-50"
-                class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50">Auto</a>
-              <a routerLink="/particulier/habitation" routerLinkActive="bg-indigo-50"
-                class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50">Habitation</a>
-              <a routerLink="/particulier/rc-familale" routerLinkActive="bg-indigo-50"
-                class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50">RC familiale</a>
+              class="absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 transition-all duration-200 ease-in-out"
+              role="menu">
+              <a routerLink="/particulier/auto" routerLinkActive="bg-indigo-50" [attr.aria-current]="'page'"
+                role="menuitem" class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50">Auto</a>
+              <a routerLink="/particulier/habitation" routerLinkActive="bg-indigo-50" [attr.aria-current]="'page'"
+                role="menuitem" class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50">Habitation</a>
+              <a routerLink="/particulier/rc-familale" routerLinkActive="bg-indigo-50" [attr.aria-current]="'page'"
+                role="menuitem" class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50">RC familiale</a>
               <a routerLink="/particulier/annulation-voyage" routerLinkActive="bg-indigo-50"
+                [attr.aria-current]="'page'" role="menuitem"
                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50">Annulation-voyage</a>
               <a routerLink="/particulier/protection-juridique" routerLinkActive="bg-indigo-50"
+                [attr.aria-current]="'page'" role="menuitem"
                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50">Protection juridique</a>
-              <a routerLink="/particulier/vie-sante" routerLinkActive="bg-indigo-50"
-                class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50">Vie et santé</a>
-              <a routerLink="/particulier/obseques" routerLinkActive="bg-indigo-50"
-                class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50">Obsèques</a>
-              <a routerLink="/particulier/solde-restant-du" routerLinkActive="bg-indigo-50"
-                class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50">Solde restant dû</a>
+              <a routerLink="/particulier/vie-sante" routerLinkActive="bg-indigo-50" [attr.aria-current]="'page'"
+                role="menuitem" class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50">Vie et santé</a>
+              <a routerLink="/particulier/obseques" routerLinkActive="bg-indigo-50" [attr.aria-current]="'page'"
+                role="menuitem" class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50">Obsèques</a>
+              <a routerLink="/particulier/solde-restant-du" routerLinkActive="bg-indigo-50" [attr.aria-current]="'page'"
+                role="menuitem" class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50">Solde restant dû</a>
             </div>
           </div>
           <!-- Menu Professionel Desktop -->
@@ -76,7 +93,8 @@
             <button #menuLink routerLinkActive="text-indigo-600" routerLink="/professionel"
               (mouseenter)="onLinkHover($event)"
               class="text-gray-700 hover:text-indigo-600 transition inline-flex items-center h-16">
-              Professionel
+              <a routerLink="/professionel"
+                class="text-gray-700 hover:text-indigo-600 transition inline-flex items-center h-16">Professionel</a>
               <svg class="ml-1 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd"
                   d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
@@ -85,24 +103,27 @@
             </button>
             <div
               [ngClass]="{'opacity-100 visible': showProfessionelSubMenu, 'opacity-0 invisible': !showProfessionelSubMenu}"
-              class="absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 transition-all duration-200 ease-in-out">
-              <a routerLink="/professionel/auto" routerLinkActive="bg-indigo-50"
-                class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50">Auto</a>
-              <a routerLink="/professionel/incendie" routerLinkActive="bg-indigo-50"
-                class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50">Incendie</a>
+              class="absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 transition-all duration-200 ease-in-out"
+              role="menu">
+              <a routerLink="/professionel/auto" routerLinkActive="bg-indigo-50" [attr.aria-current]="'page'"
+                role="menuitem" class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50">Auto</a>
+              <a routerLink="/professionel/incendie" routerLinkActive="bg-indigo-50" [attr.aria-current]="'page'"
+                role="menuitem" class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50">Incendie</a>
               <a routerLink="/professionel/responsabilite-civile" routerLinkActive="bg-indigo-50"
+                [attr.aria-current]="'page'" role="menuitem"
                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50">Responsabilité civile</a>
             </div>
           </div>
-          <a #menuLink routerLink="/news" routerLinkActive="text-indigo-600" (mouseenter)="onLinkHover($event)"
+          <a #menuLink routerLink="/news" routerLinkActive="text-indigo-600" [attr.aria-current]="'page'"
+            (mouseenter)="onLinkHover($event)"
             class="text-gray-700 hover:text-indigo-600 transition h-16 inline-flex items-center">News</a>
-          <a #menuLink routerLink="/contact" routerLinkActive="text-indigo-600" (mouseenter)="onLinkHover($event)"
+          <a #menuLink routerLink="/contact" routerLinkActive="text-indigo-600" [attr.aria-current]="'page'"
+            (mouseenter)="onLinkHover($event)"
             class="text-gray-700 hover:text-indigo-600 transition h-16 inline-flex items-center">Contact</a>
           <div #underline class="absolute bottom-0 h-0.5 bg-indigo-600 transition-all duration-300 ease-in-out"></div>
         </div>
-        <div>
-          <a href="tel:+3228876435"
-            class="inline-flex items-center text-gray-700 hover:text-indigo-600 transition mr-4">
+        <div class="flex items-center space-x-4">
+          <a href="tel:+3228876435" class="inline-flex items-center text-gray-700 hover:text-indigo-600 transition">
             <svg class="h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
               stroke-width="1.5" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round"
@@ -110,22 +131,32 @@
             </svg>
             +32 (0)2 887 64 35
           </a>
-          <a routerLink="/account" class="inline-flex items-center bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-semibold hover:bg-indigo-700 transition">
-            <svg class="h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-              stroke-width="1.5" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round"
-                d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-            </svg>
-            <span *ngIf="isLoggedIn$ | async; else notLoggedIn">
-              Mes données
-            </span>
-            <ng-template #notLoggedIn>Votre compte</ng-template>
-          </a>
+          <div class="flex items-center space-x-2">
+            <a routerLink="/account"
+              class="inline-flex items-center bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-semibold hover:bg-indigo-700 transition">
+              <svg class="h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+              </svg>
+              Client
+            </a>
+            <a routerLink="/corporate"
+              class="inline-flex items-center bg-gray-800 text-white px-4 py-2 rounded-md text-sm font-semibold hover:bg-gray-900 transition">
+              <svg class="h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M20.25 14.15v4.07a2.25 2.25 0 0 1-2.25 2.25H5.998a2.25 2.25 0 0 1-2.25-2.25v-4.07a2.25 2.25 0 0 1 .52-1.435l3.67-4.112a2.25 2.25 0 0 1 2.816 0l3.67 4.112a2.25 2.25 0 0 1 .52 1.435ZM16.5 8.25V4.5a2.25 2.25 0 0 0-2.25-2.25H9.75A2.25 2.25 0 0 0 7.5 4.5v3.75" />
+              </svg>
+              Corporate
+            </a>
+          </div>
         </div>
       </div>
 
       <!-- Bouton Mobile -->
-      <button (click)="toggleMenu()" class="md:hidden text-gray-700 focus:outline-none">
+      <button (click)="toggleMenu()" class="md:hidden text-gray-700 focus:outline-none" aria-controls="mobile-menu"
+        [attr.aria-expanded]="menuOpen">
         <svg *ngIf="!menuOpen" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
           stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -139,10 +170,10 @@
   </div>
 
   <!-- Menu Mobile -->
-  <div *ngIf="menuOpen" class="md:hidden bg-white border-t border-gray-200">
-    <a routerLink="/home" routerLinkActive="bg-indigo-50 text-indigo-600" [routerLinkActiveOptions]="{exact: true}"
-      class="block px-4 py-2 text-gray-700 hover:bg-indigo-50">Accueil</a>
-    <a routerLink="/mentions-legales" routerLinkActive="bg-indigo-50 text-indigo-600"
+  <div *ngIf="menuOpen" id="mobile-menu" class="md:hidden bg-white border-t border-gray-200">
+    <a routerLink="/accueil" routerLinkActive="bg-indigo-50 text-indigo-600" [attr.aria-current]="'page'"
+      [routerLinkActiveOptions]="{exact: true}" class="block px-4 py-2 text-gray-700 hover:bg-indigo-50">Accueil</a>
+    <a routerLink="/mentions" routerLinkActive="bg-indigo-50 text-indigo-600" [attr.aria-current]="'page'"
       class="block px-4 py-2 text-gray-700 hover:bg-indigo-50">Mentions légales</a>
     <!-- Menu Particulier Mobile -->
     <div>
@@ -157,28 +188,29 @@
         </svg>
       </button>
       <div *ngIf="particulierSubMenuOpen" class="pl-4">
-        <a routerLink="/particulier/auto" routerLinkActive="bg-indigo-50"
+        <a routerLink="/particulier/auto" routerLinkActive="bg-indigo-50" [attr.aria-current]="'page'"
           class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50">Auto</a>
-        <a routerLink="/particulier/habitation" routerLinkActive="bg-indigo-50"
+        <a routerLink="/particulier/habitation" routerLinkActive="bg-indigo-50" [attr.aria-current]="'page'"
           class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50">Habitation</a>
-        <a routerLink="/particulier/rc-familiale" routerLinkActive="bg-indigo-50"
+        <a routerLink="/particulier/rc-familiale" routerLinkActive="bg-indigo-50" [attr.aria-current]="'page'"
           class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50">RC familiale</a>
-        <a routerLink="/particulier/annulation-voyage" routerLinkActive="bg-indigo-50"
+        <a routerLink="/particulier/annulation-voyage" routerLinkActive="bg-indigo-50" [attr.aria-current]="'page'"
           class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50">Annulation-voyage</a>
-        <a routerLink="/particulier/protection-juridique" routerLinkActive="bg-indigo-50"
+        <a routerLink="/particulier/protection-juridique" routerLinkActive="bg-indigo-50" [attr.aria-current]="'page'"
           class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50">Protection juridique</a>
-        <a routerLink="/particulier/vie-sante" routerLinkActive="bg-indigo-50"
+        <a routerLink="/particulier/vie-sante" routerLinkActive="bg-indigo-50" [attr.aria-current]="'page'"
           class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50">Vie et santé</a>
-        <a routerLink="/particulier/obseques" routerLinkActive="bg-indigo-50"
+        <a routerLink="/particulier/obseques" routerLinkActive="bg-indigo-50" [attr.aria-current]="'page'"
           class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50">Obsèques</a>
-        <a routerLink="/particulier/solde-restant-du" routerLinkActive="bg-indigo-50"
+        <a routerLink="/particulier/solde-restant-du" routerLinkActive="bg-indigo-50" [attr.aria-current]="'page'"
           class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50">Solde restant dû</a>
       </div>
     </div>
     <!-- Menu Professionel Mobile -->
     <div>
       <button (click)="professionelSubMenuOpen = !professionelSubMenuOpen"
-        class="w-full text-left block px-4 py-2 text-gray-700 hover:bg-indigo-50 flex justify-between items-center">
+        class="w-full text-left block px-4 py-2 text-gray-700 hover:bg-indigo-50 flex justify-between items-center"
+        aria-haspopup="true" [attr.aria-expanded]="professionelSubMenuOpen">
         Professionel
         <svg class="h-5 w-5 transform" [ngClass]="{'rotate-180': professionelSubMenuOpen}"
           xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -188,17 +220,17 @@
         </svg>
       </button>
       <div *ngIf="professionelSubMenuOpen" class="pl-4">
-        <a routerLink="/professionel/auto" routerLinkActive="bg-indigo-50"
+        <a routerLink="/professionel/auto" routerLinkActive="bg-indigo-50" [attr.aria-current]="'page'"
           class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50">Auto</a>
-        <a routerLink="/professionel/incendie" routerLinkActive="bg-indigo-50"
+        <a routerLink="/professionel/incendie" routerLinkActive="bg-indigo-50" [attr.aria-current]="'page'"
           class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50">Incendie</a>
-        <a routerLink="/professionel/responsabilite-civile" routerLinkActive="bg-indigo-50"
+        <a routerLink="/professionel/responsabilite-civile" routerLinkActive="bg-indigo-50" [attr.aria-current]="'page'"
           class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50">Responsabilité civile</a>
       </div>
     </div>
-    <a routerLink="/news" routerLinkActive="bg-indigo-50 text-indigo-600"
+    <a routerLink="/news" routerLinkActive="bg-indigo-50 text-indigo-600" [attr.aria-current]="'page'"
       class="block px-4 py-2 text-gray-700 hover:bg-indigo-50">News</a>
-    <a routerLink="/contact" routerLinkActive="bg-indigo-50 text-indigo-600"
+    <a routerLink="/contact" routerLinkActive="bg-indigo-50 text-indigo-600" [attr.aria-current]="'page'"
       class="block px-4 py-2 text-gray-700 hover:bg-indigo-50">Contact</a>
     <a href="tel:+3228876435" class="flex items-center px-4 py-2 text-gray-700 hover:bg-indigo-50">
       <svg class="h-5 w-5 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -209,16 +241,23 @@
       +32 (0)2 887 64 35
     </a>
     <div class="p-2">
-      <a routerLink="/account" class="flex items-center justify-center bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-semibold hover:bg-indigo-700 transition w-full">
+      <a routerLink="/account"
+        class="flex items-center justify-center bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-semibold hover:bg-indigo-700 transition w-full">
         <svg class="h-5 w-5 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
           stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round"
             d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
         </svg>
-        <span *ngIf="isLoggedIn$ | async; else notLoggedInMobile">
-          Mes données
-        </span>
-        <ng-template #notLoggedInMobile>Votre compte</ng-template>
+        Client
+      </a>
+      <a routerLink="/corporate"
+        class="mt-2 flex items-center justify-center bg-gray-800 text-white px-4 py-2 rounded-md text-sm font-semibold hover:bg-gray-900 transition w-full">
+        <svg class="h-5 w-5 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+          stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M20.25 14.15v4.07a2.25 2.25 0 0 1-2.25 2.25H5.998a2.25 2.25 0 0 1-2.25-2.25v-4.07a2.25 2.25 0 0 1 .52-1.435l3.67-4.112a2.25 2.25 0 0 1 2.816 0l3.67 4.112a2.25 2.25 0 0 1 .52 1.435ZM16.5 8.25V4.5a2.25 2.25 0 0 0-2.25-2.25H9.75A2.25 2.25 0 0 0 7.5 4.5v3.75" />
+        </svg>
+        Corporate
       </a>
     </div>
   </div>

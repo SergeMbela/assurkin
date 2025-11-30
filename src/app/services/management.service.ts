@@ -135,7 +135,14 @@ export class ManagementService {
           error: null
         })),
         startWith({ data: null, loading: true, error: null }),
-        catchError(error => of({ data: null, loading: false, error }))
+        catchError(error => {
+          console.warn(
+            `[ManagementService] Erreur 500 probable dans 'getRcQuotesState'.`,
+            'Erreur API:',
+            error
+          );
+          return of({ data: null, loading: false, error });
+        })
       );
     } else {
       return of({ data: { quotes: [], totalItems: 0 }, loading: false, error: null });

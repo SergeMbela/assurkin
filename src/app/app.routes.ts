@@ -24,6 +24,7 @@ import { AutoManagementComponent } from './pages/intranet/dashboard/auto-managem
 import { ManagementComponent } from './pages/management/management.component';
 import { AssurancesDetailsComponent } from './pages/assurances-details/assurances-details.component';
 import { ManagementDetailComponent } from './pages/management/management-detail.component';
+import { CorporateComponent } from './pages/corporate/corporate.component';
 
 export const routes: Routes = [
 
@@ -37,6 +38,7 @@ export const routes: Routes = [
     { path: 'particulier/protection-juridique', component: AssuranceJuridiqueComponent },
     { path: 'particulier/annulation-voyage', component: AssuranceVoyageComponent },
     { path: 'mentions-legales', component: MentionsLegalesComponent },
+    { path: 'corporate', component: CorporateComponent },
 
     // Nouvelles routes pour l'authentification
     { path: 'account', component: AccountComponent },
@@ -58,8 +60,8 @@ export const routes: Routes = [
     { path: 'management/:type/:id', component: ManagementDetailComponent }, // Route pour l'édition détaillée
     { path: 'management/upload/:type/:id', loadComponent: () => import('./pages/uploader/uploader.component').then(m => m.UploaderComponent) },
     // La navigation vers les détails se fait par programmation depuis management.component.ts
-    { path: 'assurance-details/:type/:id', component: AssurancesDetailsComponent }, // Nouvelle route pour les détails depuis la gestion
-     { path: 'management/assurance-details/:type/:id', loadComponent: () => import('./pages/assurances-details/assurances-details.component').then(m => m.AssurancesDetailsComponent) },
+    { path: 'assurance-details/:type/:id', component: AssurancesDetailsComponent }, // Route pour les détails depuis la gestion
+    { path: 'management/assurance-details/:type/:id', loadComponent: () => import('./pages/assurances-details/assurances-details.component').then(m => m.AssurancesDetailsComponent) },
 
     // Redirections
     { path: '', redirectTo: 'accueil', pathMatch: 'full' }, // Redirige la racine vers l'accueil

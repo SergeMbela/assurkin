@@ -286,19 +286,23 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
 
     // Logique d'auto-complétion pour la marque du véhicule
     this.filteredMarques$ = this.marqueCtrl.valueChanges.pipe(
+      startWith(''), // Déclenche le pipe immédiatement et lors des réinitialisations
       debounceTime(300),
       distinctUntilChanged(),
       tap((value) => {
-        // Chaque fois que l'utilisateur tape dans le champ marque, on réinitialise le modèle.
-        this.quoteUpdateForm.get('Véhicule.model')?.setValue('');
-        this.modelesForSelectedMarque = [];
-        this.selectedMarqueId = null;
-        // On active le loader si l'utilisateur a tapé assez de caractères
-        this.isMarqueLoading = (value || '').length >= 2;
+        const searchTerm = typeof value === 'string' ? value : (value as unknown as Marque)?.nom || '';
+        // Si le champ est vidé ou si on tape, on réinitialise le modèle.
+        if (!value || typeof value === 'string') {
+          this.quoteUpdateForm.get('Véhicule.model')?.setValue('');
+          this.modelesForSelectedMarque = [];
+          this.selectedMarqueId = null;
+        }
+        this.isMarqueLoading = searchTerm.length >= 2;
       }),
       switchMap(value => {
-        if (value && value.length >= 2) { // Seuil abaissé à 2 caractères
-          return this.dbService.searchMarques(value).pipe(
+        const searchTerm = typeof value === 'string' ? value : (value as unknown as Marque)?.nom || '';
+        if (searchTerm.length >= 2) {
+          return this.dbService.searchMarques(searchTerm).pipe(
             finalize(() => this.isMarqueLoading = false)
           );
         }
@@ -306,6 +310,11 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
         return of([]); // Retourne une liste vide si pas assez de caractères
       })
     );
+
+    // Synchroniser le FormControl de recherche avec le formulaire principal
+    this.marqueCtrl.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(value => {
+      this.quoteUpdateForm.get('Véhicule.make')?.setValue(value, { emitEvent: false });
+    });
 
     this.quoteDetails$ = this.getQuoteDetailsFromRoute();
 
@@ -385,7 +394,7 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
           year: details.vehicule.annee,
           licensePlate: details.vehicule.plaque
         });
-        // Initialise le champ d'auto-complétion de la marque
+        // Initialise le champ d'auto-complétion de la marque pour que la logique reste synchronisée
         this.marqueCtrl.setValue(details.vehicule.marque || '', { emitEvent: false });
       }
 
@@ -511,7 +520,10 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
               this.isModeleLoading = true;
               return this.dbService.searchModeles(this.selectedMarqueId).pipe(
                 tap(modeles => {
+                  // 1. On charge la liste des modèles
                   this.modelesForSelectedMarque = modeles;
+                  // 2. ENSUITE, on patch la valeur du modèle dans le formulaire pour que la sélection se fasse.
+                  this.quoteUpdateForm.get('Véhicule.model')?.patchValue(details.vehicule.modele, { emitEvent: false });
                 }),
                 finalize(() => this.isModeleLoading = false)
               );
@@ -579,11 +591,13 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
 
   selectMarque(marque: any) {
     this.selectedMarqueId = marque.marque_id;
-    this.quoteUpdateForm.get('Véhicule.make')?.setValue(marque.nom);
-    this.marqueCtrl.setValue(marque.nom, { emitEvent: false });
+    // Mettre à jour le formulaire principal avec le nom de la marque
+    this.quoteUpdateForm.get('Véhicule.make')?.setValue(marque.nom, { emitEvent: false });
+    // Mettre à jour le contrôle de l'autocomplete avec le nom (string), et non l'objet
+    this.marqueCtrl.setValue(marque.nom);
 
     // Réinitialise le champ modèle et charge la nouvelle liste
-    this.quoteUpdateForm.get('Véhicule.model')?.setValue('');
+    this.quoteUpdateForm.get('Véhicule.model')?.reset(''); // Utiliser reset pour vider et marquer comme pristine
     this.modelesForSelectedMarque = [];
     this.isModeleLoading = true; // Active le loader
     if (this.selectedMarqueId !== null) {

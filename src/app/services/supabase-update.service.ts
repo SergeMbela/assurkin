@@ -126,6 +126,11 @@ export class SupabaseUpdateService {
       .rpc('update_obseques_quote_details', rpcPayload)
       .then(({ data, error }) => {
         if (error) {
+          console.warn(
+            `[SupabaseUpdateService] Erreur 500 probable dans 'updateObsequesQuote' pour l'ID ${quoteId}.`,
+            'Erreur RPC Supabase:',
+            error
+          );
           console.error('Erreur RPC update_obseques_quote_details:', error);
           return { success: false, error };
         }
