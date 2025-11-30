@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { DbConnectService } from '../../services/db-connect.service';
+import { environment } from '../../../environments/environment';
 
 export function passwordsMatchValidator(control: AbstractControl): ValidationErrors | null {
   const password = control.get('password');
@@ -42,12 +43,16 @@ export class CorporateComponent implements OnInit {
       password: ['', Validators.required]
     });
 
+    // On échappe les points dans le nom de domaine pour le regex
+    const domain = environment.domain_name.replace(/\./g, '\\.');
+    const emailPattern = new RegExp(`^[A-Za-z0-9._%+-]+@${domain}$`, 'i');
+
     this.registerForm = this.fb.group({
       nom: ['', Validators.required],
       prenom: ['', Validators.required],
       fonction: [''],
       // La contrainte de domaine est gérée par la DB, mais on peut l'ajouter ici aussi
-      email: ['', [Validators.required, Validators.email, Validators.pattern(/^[A-Za-z0-9._%+-]+@assurkin\.be$/i)]],
+      email: ['', [Validators.required, Validators.email, Validators.pattern(emailPattern)]],
       password: ['', [Validators.required, Validators.minLength(6)]],
       passwordConfirm: ['', Validators.required]
     }, { validators: passwordsMatchValidator });
