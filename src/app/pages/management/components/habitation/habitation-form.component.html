@@ -1,0 +1,117 @@
+<div [formGroup]="parentForm">
+    <!-- Section Preneur d'Assurance -->
+    <fieldset formGroupName="preneurAssurance">
+      <legend class="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">Informations sur le preneur</legend>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+        <div>
+          <label for="preneur-firstName" class="block text-sm font-medium text-gray-700">Prénom</label>
+          <input type="text" id="preneur-firstName" formControlName="firstName" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'border-red-500 ring-red-500': parentForm.get('preneurAssurance.firstName')?.invalid && parentForm.get('preneurAssurance.firstName')?.touched}">
+        </div>
+        <div>
+          <label for="preneur-lastName" class="block text-sm font-medium text-gray-700">Nom</label>
+          <input type="text" id="preneur-lastName" formControlName="lastName" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'border-red-500 ring-red-500': parentForm.get('preneurAssurance.lastName')?.invalid && parentForm.get('preneurAssurance.lastName')?.touched}">
+        </div>
+        <div>
+          <label for="preneur-dateNaissance" class="block text-sm font-medium text-gray-700">Date de naissance</label>
+          <input type="date" id="preneur-dateNaissance" formControlName="dateNaissance" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'border-red-500 ring-red-500': parentForm.get('preneurAssurance.dateNaissance')?.invalid && parentForm.get('preneurAssurance.dateNaissance')?.touched}">
+        </div>
+        <div>
+          <label for="preneur-email" class="block text-sm font-medium text-gray-700">Email</label>
+          <input type="email" id="preneur-email" formControlName="email" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'border-red-500 ring-red-500': parentForm.get('preneurAssurance.email')?.invalid && parentForm.get('preneurAssurance.email')?.touched}">
+        </div>
+        <div>
+          <label for="preneur-phone" class="block text-sm font-medium text-gray-700">Téléphone</label>
+          <input type="tel" id="preneur-phone" formControlName="phone" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'border-red-500 ring-red-500': parentForm.get('preneurAssurance.phone')?.invalid && parentForm.get('preneurAssurance.phone')?.touched}">
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- Section Bâtiment -->
+    <fieldset formGroupName="batiment" class="mt-6">
+      <legend class="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">Bâtiment à assurer</legend>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+        <div class="md:col-span-2">
+          <label for="adresse" class="block text-sm font-medium text-gray-700">Rue et numéro</label>
+          <input type="text" id="adresse" formControlName="adresse" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'border-red-500 ring-red-500': parentForm.get('batiment.adresse')?.invalid && parentForm.get('batiment.adresse')?.touched}">
+        </div>
+        <div>
+          <div class="relative">
+            <label for="code-postal" class="block text-sm font-medium text-gray-700">Code Postal</label>
+            <input type="text" id="code-postal" formControlName="codePostal" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'border-red-500 ring-red-500': parentForm.get('batiment.codePostal')?.invalid && parentForm.get('batiment.codePostal')?.touched}">
+          </div>
+        </div>
+        <div>
+          <label for="ville" class="block text-sm font-medium text-gray-700">Ville</label>
+          <select id="ville" formControlName="ville" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+            <option *ngFor="let city of batimentCities$ | async" [value]="city">
+              {{ city }}
+            </option>
+          </select>
+        </div>
+        <div>
+          <label for="type-maison" class="block text-sm font-medium text-gray-700">Type de maison</label>
+          <select id="type-maison" formControlName="typeMaison" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+            <option>Maison 2 façades</option>
+            <option>Maison 3 façades</option>
+            <option>Maison 4 façades (villa)</option>
+            <option>Appartement</option>
+            <option>Studio</option>
+            <option>Autre</option>
+          </select>
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- Section Évaluation -->
+    <fieldset formGroupName="evaluation" class="mt-6">
+      <legend class="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">Évaluation des biens</legend>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
+        <div>
+          <label for="superficie" class="block text-sm font-medium text-gray-700">Superficie (m²)</label>
+          <input type="number" id="superficie" formControlName="superficie" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+        </div>
+        <div>
+          <label for="nombre-pieces" class="block text-sm font-medium text-gray-700">Nombre de pièces</label>
+          <input type="number" id="nombre-pieces" formControlName="nombrePieces" placeholder="Salon + Cuisine = 1 pièce" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+        </div>
+        <div>
+          <label for="loyer" class="block text-sm font-medium text-gray-700">Loyer mensuel (charges comprises)</label>
+          <input type="number" id="loyer" formControlName="loyerMensuel" placeholder="€" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- Section Garanties -->
+    <fieldset formGroupName="garantiesHabitation" class="mt-6">
+      <legend class="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">Garanties et contrat</legend>
+      <div class="space-y-4 pt-4">
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div class="flex items-start"><div class="flex h-5 items-center"><input id="garantie-contenu" formControlName="contenu" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"></div><div class="ml-3 text-sm"><label for="garantie-contenu" class="font-medium text-gray-700">Contenu</label></div></div>
+            <div class="flex items-start"><div class="flex h-5 items-center"><input id="garantie-vol" formControlName="vol" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"></div><div class="ml-3 text-sm"><label for="garantie-vol" class="font-medium text-gray-700">Vol</label></div></div>
+            <div class="flex items-start"><div class="flex h-5 items-center"><input id="garantie-pertes" formControlName="pertesIndirectes" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"></div><div class="ml-3 text-sm"><label for="garantie-pertes" class="font-medium text-gray-700">Pertes indirectes</label></div></div>
+            <div class="flex items-start"><div class="flex h-5 items-center"><input id="garantie-pj" formControlName="protectionJuridique" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"></div><div class="ml-3 text-sm"><label for="garantie-pj" class="font-medium text-gray-700">Protection Juridique</label></div></div>
+            <div class="flex items-start"><div class="flex h-5 items-center"><input id="garantie-assistance" formControlName="assistance" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"></div><div class="ml-3 text-sm"><label for="garantie-assistance" class="font-medium text-gray-700">Assistance</label></div></div>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
+        <div>
+          <label for="garantie-dateEffet" class="block text-sm font-medium text-gray-700">Date d'effet</label>
+          <input type="date" id="garantie-dateEffet" formControlName="dateEffet" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+        </div>
+        <div>
+          <label for="garantie-insuranceCompany" class="block text-sm font-medium text-gray-700">Compagnie</label>
+          <select id="garantie-insuranceCompany" formControlName="insuranceCompany" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+            <option [ngValue]="null">-- Sélectionner --</option>
+            <option *ngFor="let company of insuranceCompanies$ | async" [value]="company.id">{{ company.nom }}</option>
+          </select>
+        </div>
+        <div>
+          <label for="garantie-statut" class="block text-sm font-medium text-gray-700">Statut</label>
+          <select id="garantie-statut" formControlName="statut" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+            <option [ngValue]="null">-- Sélectionner --</option>
+            <option *ngFor="let statut of statuts$ | async" [value]="statut.statut">{{ statut.statut }}</option>
+          </select>
+        </div>
+      </div>
+    </fieldset>
+</div>

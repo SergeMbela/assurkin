@@ -5,19 +5,17 @@ import { AbstractControl, FormBuilder, FormControl, ReactiveFormsModule, Validat
 import { DbConnectService, Assureur, Marque, AutoQuoteUpdatePayload, ObsequesQuoteUpdatePayload, HabitationQuoteUpdatePayload, Statut } from '../../services/db-connect.service';
 import { Observable, of, BehaviorSubject, Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, map, switchMap, tap, finalize, catchError, toArray, startWith, takeUntil } from 'rxjs/operators';
-import { IdCardFormatDirective } from '../../services/id-card-format.directive';
 // import { NationalNumberFormatDirective } from '../../directives/national-number-format.directive';
-import { LicensePlateFormatDirective } from '../../directives/license-plate-format.directive';
 import { UploaderService, UploadResult } from '../../services/uploader.service';
 import { ContractService, ContractPayload } from '../../services/contract.service';
- 
 import { SendsmsService } from '../../services/sendsms.service';
-import { NationalNumberFormatDirective } from '../../directives/national-number-format.directive';
-import { OmniumLevelPipe } from '../../pipes/omnium-level.pipe';
-import { AutoFormComponent } from '../management/auto-form.component';
-import { AutoDetailsComponent } from '../management/auto-details.component';
-import { HabitationFormComponent } from '../management//habitation-form.component';
-import { HabitationDetailsComponent } from '../management/habitation-details.component';
+import { AutoFormComponent } from '../../pages/management/components/auto/auto-form.component';
+import { AutoDetailsComponent } from './components/auto/auto-details.component';
+import { HabitationFormComponent } from './components/habitation/habitation-form.component';
+import { HabitationDetailsComponent } from './components/habitation/habitation-details.component';
+import { getCompanyName, getStatutClass } from './display-helpers'; // Import des fonctions utilitaires
+import { ObsequesFormComponent } from './components/obseques/obseques-form.component';
+import { ObsequesDetailsComponent } from './components/obseques/obseques-details.component';
 
 @Component({
   selector: 'app-management-detail',
@@ -27,14 +25,12 @@ import { HabitationDetailsComponent } from '../management/habitation-details.com
     ReactiveFormsModule,
     RouterLink,
     FormsModule,
-    IdCardFormatDirective, 
-    NationalNumberFormatDirective,
-    LicensePlateFormatDirective,
-    OmniumLevelPipe,
     AutoFormComponent,
     AutoDetailsComponent,
     HabitationFormComponent,
-    HabitationDetailsComponent
+    HabitationDetailsComponent,
+    ObsequesFormComponent,
+    ObsequesDetailsComponent
   ],
   templateUrl: './management-detail.component.html',
   styleUrls: []
@@ -60,7 +56,6 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
   conducteurCities$ = new BehaviorSubject<string[]>([]);
   batimentCities$ = new BehaviorSubject<string[]>([]);
   obsequesCities$ = new BehaviorSubject<string[]>([]);
-
   // FormControls pour l'auto-complétion de la marque
   marqueCtrl = new FormControl('');
   filteredMarques$!: Observable<any[]>;
@@ -69,7 +64,7 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
 
   // Liste complète des compagnies pour le select
   insuranceCompanies$!: Observable<Assureur[]>;
-  private insuranceCompanies: Assureur[] = [];
+  public insuranceCompanies: Assureur[] = [];
   private destroy$ = new Subject<void>();
 
   // Tableau pour la liste des modèles
@@ -196,7 +191,7 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
       assures: this.fb.group({
         preneurEstAssure: [false],
         assures: this.fb.array([]),
-        statut: [''],
+        statut: [''], // Ce champ est partagé pour le contrat obsèques
         insuranceCompany: [null],
       }),
       detailsVoyage: this.fb.group({ // Ajout du groupe manquant
@@ -259,6 +254,12 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
         });
       }
 
+      const obsequesPostalCodeControl = this.quoteUpdateForm.get('preneurObseques.postalCode');
+      if (obsequesPostalCodeControl) {
+        obsequesPostalCodeControl.valueChanges.pipe(
+          debounceTime(300), distinctUntilChanged(), switchMap(pc => pc && pc.length >= 4 ? this.dbService.getCitiesByPostalCode(pc) : of([]))
+        ).subscribe(cities => this.obsequesCities$.next(cities));
+      }
     }
 
     // Logique d'auto-complétion pour la marque du véhicule
@@ -475,11 +476,18 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
     this.quoteUpdateForm.get('assures.statut')?.setValue(details.statut);
     this.quoteUpdateForm.get('assures.insuranceCompany')?.setValue(details.compagnie_id);
     const assuresData = (details.assures || []) as any[];
-    this.assures.clear();
-    assuresData.forEach(assure => this.assures.push(this.createAssureFormGroup({ ...assure, dateNaissance: formatDate(assure.dateNaissance) })));
+    const assuresFormArray = this.quoteUpdateForm.get('assures.assures') as FormArray;
+    assuresFormArray.clear();
+    assuresData.forEach(assure => {
+      assuresFormArray.push(this.fb.group({
+        nom: [assure.nom],
+        prenom: [assure.prenom],
+        dateNaissance: [formatDate(assure.dateNaissance)],
+        capital: [assure.capital]
+      }));
+    });
   }
 
-  // Remplacez l'ancienne méthode getQuoteDetailsFromRoute par celle-ci
   private getQuoteDetailsFromRoute(): Observable<any> {
     return this.route.paramMap.pipe(
       switchMap(params => {
@@ -527,26 +535,6 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
         return of(null);
       })
     );
-  }
-
-  // Getter pour un accès facile au FormArray des assurés
-  get assures(): FormArray {
-    return this.quoteUpdateForm.get('assures.assures') as FormArray;
-  }
-
-  // Crée un FormGroup pour un assuré
-  createAssureFormGroup(assure: any = {}): FormGroup {
-    return this.fb.group({
-      nom: [assure.nom || '', Validators.required],
-      prenom: [assure.prenom || '', Validators.required],
-      dateNaissance: [assure.dateNaissance || '', Validators.required],
-      capital: [assure.capital || 0, [Validators.required, Validators.min(1)]]
-    });
-  }
-
-  // Ajoute un nouvel assuré au FormArray
-  addAssure(): void {
-    this.assures.push(this.createAssureFormGroup());
   }
 
   selectMarque(marque: any) {
@@ -739,7 +727,7 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
       this.executeUpdate(this.dbService.updateAutoQuote(this.quoteId!, payload));
 
     } else if (this.quoteType === 'obseques') {
-      const assuresValue = this.assures.value.map((assure: any) => ({
+      const assuresValue = (this.quoteUpdateForm.get('assures.assures') as FormArray).value.map((assure: any) => ({
         ...assure,
         dateNaissance: assure.dateNaissance ? this.formatDateForInput(assure.dateNaissance) : null
       }));
@@ -940,34 +928,9 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
     });
   }
 
-  getCompanyName(companyId: number): string {
-    if (!companyId || !this.insuranceCompanies || this.insuranceCompanies.length === 0) {
-      return 'N/A';
-    }
-    const company = this.insuranceCompanies.find(c => c.id === companyId);
-    return company ? company.nom : `Inconnue (ID: ${companyId})`;
-  }
-
-  public getStatutClass(statut: string | null | undefined): { [key: string]: boolean } {
-    if (!statut) {
-      return { 'bg-gray-100': true, 'text-gray-800': true };
-    }
-    switch (statut) {
-      case 'Nouveau':
-      case 'En cours de traitement':
-        return { 'bg-blue-100': true, 'text-blue-800': true };
-      case 'En attente':
-      case 'En cours':
-        return { 'bg-yellow-100': true, 'text-yellow-800': true };
-      case 'Terminé':
-        return { 'bg-green-100': true, 'text-green-800': true };
-      case 'Refusé':
-      case 'Inactif':
-        return { 'bg-red-100': true, 'text-red-800': true };
-      default:
-        return { 'bg-gray-100': true, 'text-gray-800': true }; // Classe par défaut
-    }
-  }
+  // Expose les fonctions utilitaires importées pour le template si nécessaire
+  public getCompanyName = getCompanyName;
+  public getStatutClass = getStatutClass;
 
   // Fonctions utilitaires pour l'affichage des données CSV
   getObjectKeys(obj: any): string[] {

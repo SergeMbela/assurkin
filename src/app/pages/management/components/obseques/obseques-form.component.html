@@ -1,0 +1,98 @@
+<div [formGroup]="parentForm">
+    <!-- Section Preneur d'Assurance Obsèques -->
+    <div formGroupName="preneurObseques">
+        <h3 class="text-lg font-semibold text-gray-800 bg-gray-100 -mx-6 px-6 py-2 mb-4 border-y">Informations sur le preneur</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+            <div>
+                <label for="obs-firstName" class="block text-sm font-medium text-gray-700">Prénom</label>
+                <input type="text" id="obs-firstName" formControlName="firstName" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'border-red-500 ring-red-500': parentForm.get('preneurObseques.firstName')?.invalid && parentForm.get('preneurObseques.firstName')?.touched}">
+            </div>
+            <div>
+                <label for="obs-lastName" class="block text-sm font-medium text-gray-700">Nom</label>
+                <input type="text" id="obs-lastName" formControlName="lastName" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'border-red-500 ring-red-500': parentForm.get('preneurObseques.lastName')?.invalid && parentForm.get('preneurObseques.lastName')?.touched}">
+            </div>
+            <div>
+                <label for="obs-dateNaissance" class="block text-sm font-medium text-gray-700">Date de naissance</label>
+                <input type="date" id="obs-dateNaissance" formControlName="dateNaissance" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'border-red-500 ring-red-500': parentForm.get('preneurObseques.dateNaissance')?.invalid && parentForm.get('preneurObseques.dateNaissance')?.touched}">
+            </div>
+            <div>
+                <label for="obs-email" class="block text-sm font-medium text-gray-700">Email</label>
+                <input type="email" id="obs-email" formControlName="email" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'border-red-500 ring-red-500': parentForm.get('preneurObseques.email')?.invalid && parentForm.get('preneurObseques.email')?.touched}">
+            </div>
+            <div>
+                <label for="obs-phone" class="block text-sm font-medium text-gray-700">Téléphone</label>
+                <input type="tel" id="obs-phone" formControlName="phone" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'border-red-500 ring-red-500': parentForm.get('preneurObseques.phone')?.invalid && parentForm.get('preneurObseques.phone')?.touched}">
+            </div>
+            <div class="md:col-span-2">
+                <label for="obs-address" class="block text-sm font-medium text-gray-700">Adresse</label>
+                <input type="text" id="obs-address" formControlName="address" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'border-red-500 ring-red-500': parentForm.get('preneurObseques.address')?.invalid && parentForm.get('preneurObseques.address')?.touched}">
+            </div>
+            <div>
+                <label for="obs-postalCode" class="block text-sm font-medium text-gray-700">Code Postal</label>
+                <input type="text" id="obs-postalCode" formControlName="postalCode" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'border-red-500 ring-red-500': parentForm.get('preneurObseques.postalCode')?.invalid && parentForm.get('preneurObseques.postalCode')?.touched}">
+            </div>
+            <div>
+                <label for="obs-city" class="block text-sm font-medium text-gray-700">Ville</label>
+                <select id="obs-city" formControlName="city" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                    <option *ngFor="let city of obsequesCities$ | async" [value]="city">{{ city }}</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section Assurés et Contrat -->
+    <div formGroupName="assures" class="mt-6">
+        <h3 class="text-lg font-semibold text-gray-800 bg-gray-100 -mx-6 px-6 py-2 mb-4 border-y">Assurés et contrat</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+            <div class="flex items-center">
+                <input id="preneurEstAssure" type="checkbox" formControlName="preneurEstAssure" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                <label for="preneurEstAssure" class="ml-2 block text-sm text-gray-900">Le preneur est aussi l'assuré</label>
+            </div>
+
+            <!-- Liste des assurés -->
+            <div formArrayName="assures">
+                <h4 class="text-md font-semibold text-gray-600">Liste des assurés</h4>
+                <div *ngFor="let assure of assures.controls; let i=index" [formGroupName]="i" class="p-4 border rounded-md mt-2 space-y-3 bg-gray-50 relative">
+                    <button type="button" (click)="removeAssure(i)" class="absolute top-2 right-2 text-red-500 hover:text-red-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg>
+                    </button>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label [for]="'assure-nom-' + i" class="block text-sm font-medium text-gray-700">Nom</label>
+                            <input type="text" [id]="'assure-nom-' + i" formControlName="nom" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'border-red-500 ring-red-500': assure.get('nom')?.invalid && assure.get('nom')?.touched}">
+                        </div>
+                        <div>
+                            <label [for]="'assure-prenom-' + i" class="block text-sm font-medium text-gray-700">Prénom</label>
+                            <input type="text" [id]="'assure-prenom-' + i" formControlName="prenom" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'border-red-500 ring-red-500': assure.get('prenom')?.invalid && assure.get('prenom')?.touched}">
+                        </div>
+                        <div>
+                            <label [for]="'assure-dateNaissance-' + i" class="block text-sm font-medium text-gray-700">Date de naissance</label>
+                            <input type="date" [id]="'assure-dateNaissance-' + i" formControlName="dateNaissance" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'border-red-500 ring-red-500': assure.get('dateNaissance')?.invalid && assure.get('dateNaissance')?.touched}">
+                        </div>
+                        <div>
+                            <label [for]="'assure-capital-' + i" class="block text-sm font-medium text-gray-700">Capital assuré (€)</label>
+                            <input type="number" [id]="'assure-capital-' + i" formControlName="capital" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'border-red-500 ring-red-500': assure.get('capital')?.invalid && assure.get('capital')?.touched}">
+                        </div>
+                    </div>
+                </div>
+                <button type="button" (click)="addAssure()" class="mt-4 text-sm font-medium text-indigo-600 hover:text-indigo-500">+ Ajouter un assuré</button>
+            </div>
+
+            <!-- Champs Contrat -->
+            <div>
+                <label for="obs-insuranceCompany" class="block text-sm font-medium text-gray-700">Compagnie</label>
+                <select id="obs-insuranceCompany" formControlName="insuranceCompany" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                    <option [ngValue]="null">-- Sélectionner --</option>
+                    <option *ngFor="let company of insuranceCompanies$ | async" [value]="company.id">{{ company.nom }}</option>
+                </select>
+            </div>
+            <div>
+                <label for="obs-statut" class="block text-sm font-medium text-gray-700">Statut</label>
+                <select id="obs-statut" formControlName="statut" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                    <option [ngValue]="null">-- Sélectionner --</option>
+                    <option *ngFor="let statut of statuts$ | async" [value]="statut.statut">{{ statut.statut }}</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>

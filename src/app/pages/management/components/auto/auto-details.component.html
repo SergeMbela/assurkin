@@ -1,0 +1,127 @@
+<table class="min-w-full divide-y divide-gray-200">
+  <!-- Preneur d'assurance -->
+  <tbody *ngIf="formValue?.preneurAssurance as preneur" class="bg-white divide-y divide-gray-200">
+    <tr class="bg-gray-100">
+      <th colspan="2" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+        Preneur d'assurance
+      </th>
+    </tr>
+    <tr>
+      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50 w-1/3">Prénom & Nom</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        {{ preneur.firstName | titlecase }} {{ preneur.lastName | uppercase }}
+      </td>
+    </tr>
+    <tr>
+      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Date de naissance</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        {{ preneur.dateNaissance | date:'dd/MM/yyyy' }}
+      </td>
+    </tr>
+    <tr>
+      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Contact</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        <div><span class="font-medium">Email:</span> {{ preneur.email }}</div>
+        <div><span class="font-medium">Tél:</span> {{ preneur.phone }}</div>
+      </td>
+    </tr>
+    <tr>
+      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Adresse</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        {{ preneur.address }}<br>
+        {{ preneur.postalCode }} {{ preneur.city }}
+      </td>
+    </tr>
+    <tr>
+      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Permis de conduire</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        N° {{ preneur.driverLicenseNumber }} (Obtenu le {{ preneur.driverLicenseDate | date:'dd/MM/yyyy' }})
+      </td>
+    </tr>
+    <tr>
+      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Identité nationale</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        <div><span class="font-medium">RN:</span> {{ preneur.nationalRegistryNumber }}</div>
+        <div><span class="font-medium">Carte Id:</span> {{ preneur.idCardNumber }} (Validité: {{ preneur.idCardValidityDate | date:'dd/MM/yyyy' }})</div>
+      </td>
+    </tr>
+    <tr>
+      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Infos persos</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        {{ preneur.nationality }} — {{ preneur.maritalStatus }}
+      </td>
+    </tr>
+  </tbody>
+
+  <!-- Conducteur Principal -->
+  <tbody *ngIf="formValue?.conducteurPrincipal as driver" class="bg-white divide-y divide-gray-200 border-t-8 border-gray-50">
+    <tr class="bg-gray-100">
+      <th colspan="2" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+        Conducteur Principal
+      </th>
+    </tr>
+    <!-- ... (détails du conducteur principal, similaire au preneur) ... -->
+  </tbody>
+
+  <!-- Véhicule -->
+  <tbody *ngIf="formValue?.vehicule as vehicule" class="bg-white divide-y divide-gray-200 border-t-8 border-gray-50">
+    <tr class="bg-gray-100">
+      <th colspan="2" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+        Véhicule
+      </th>
+    </tr>
+    <tr>
+      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Véhicule</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        <span class="font-bold">{{ vehicule.make }}</span> {{ vehicule.model }}
+      </td>
+    </tr>
+    <tr>
+      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Détails</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        Année: {{ vehicule.year }}<br>
+        Plaque: <span class="uppercase font-mono bg-gray-100 px-2 py-1 rounded">{{ vehicule.licensePlate }}</span>
+      </td>
+    </tr>
+  </tbody>
+
+  <!-- Garanties -->
+  <tbody *ngIf="formValue?.garantie as garantie" class="bg-white divide-y divide-gray-200 border-t-8 border-gray-50">
+    <tr class="bg-gray-100">
+      <th colspan="2" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+        Garanties
+      </th>
+    </tr>
+    <tr>
+      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Statut</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-medium" [ngClass]="getStatutClass(garantie.statut)">{{ garantie.statut }}</span>
+      </td>
+    </tr>
+    <tr>
+      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Général</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        <div><span class="font-medium">Date d'effet:</span> {{ garantie.effectiveDate | date:'dd/MM/yyyy' }}</div>
+        <div><span class="font-medium">Compagnie:</span> {{ getCompanyName(garantie.insuranceCompany) }}</div>
+      </td>
+    </tr>
+    <tr>
+      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Niveau d'omnium</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+          {{ garantie.omniumLevel | uppercase }}
+        </span>
+      </td>
+    </tr>
+    <tr>
+      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Options souscrites</td>
+      <td class="px-6 py-4 text-sm text-gray-900">
+        <ul class="list-disc list-inside">
+          <li>RC de base: <strong>{{ garantie.baseRC ? 'Oui' : 'Non' }}</strong></li>
+          <li>Garantie Conducteur: <strong>{{ garantie.driverCoverage ? 'Oui' : 'Non' }}</strong></li>
+          <li>Assistance: <strong>{{ garantie.assistance ? 'Oui' : 'Non' }}</strong></li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>

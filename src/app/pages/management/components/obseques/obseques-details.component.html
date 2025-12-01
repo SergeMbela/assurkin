@@ -1,0 +1,58 @@
+<div *ngIf="formValue; else noData">
+    <table class="min-w-full divide-y divide-gray-200">
+        <!-- Preneur d'assurance -->
+        <tbody *ngIf="formValue.preneurObseques as preneur" class="bg-white divide-y divide-gray-200">
+            <tr class="bg-gray-50">
+                <th colspan="2" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Preneur d'assurance</th>
+            </tr>
+            <tr>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50 w-1/3">Nom</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ preneur.lastName | uppercase }} {{ preneur.firstName | titlecase }}</td>
+            </tr>
+            <tr>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Date de naissance</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ preneur.dateNaissance | date:'dd/MM/yyyy' }}</td>
+            </tr>
+            <tr>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Contact</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ preneur.email }} | {{ preneur.phone }}</td>
+            </tr>
+            <tr>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Adresse</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ preneur.address }}, {{ preneur.postalCode }} {{ preneur.city }}</td>
+            </tr>
+        </tbody>
+
+        <!-- Assurés et contrat -->
+        <tbody *ngIf="formValue.assures as contrat" class="bg-white divide-y divide-gray-200 border-t-8 border-transparent">
+            <tr class="bg-gray-50">
+                <th colspan="2" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Assurés et contrat</th>
+            </tr>
+            <tr>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Détails contrat</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <p>Le preneur est assuré: <strong>{{ contrat.preneurEstAssure ? 'Oui' : 'Non' }}</strong></p>
+                    <p>Compagnie: {{ getCompanyName(contrat.insuranceCompany) || 'Non spécifiée' }}</p>
+                    <p>Statut: <span class="font-medium px-2.5 py-0.5 rounded-full text-xs" [ngClass]="getStatutClass(contrat.statut)">{{ contrat.statut || 'N/A' }}</span></p>
+                </td>
+            </tr>
+            <tr *ngIf="contrat.assures?.length > 0">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50 align-top">Liste des assurés</td>
+                <td class="px-6 py-4 text-sm text-gray-900">
+                    <ul class="list-disc list-inside space-y-1">
+                        <li *ngFor="let assure of contrat.assures">
+                            {{ assure.prenom | titlecase }} {{ assure.nom | uppercase }} ({{ assure.dateNaissance | date:'dd/MM/yyyy' }}) - Capital: <strong>{{ assure.capital | currency:'EUR' }}</strong>
+                        </li>
+                    </ul>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- Template pour le cas où il n'y a pas de données -->
+<ng-template #noData>
+    <div class="text-center py-8 text-gray-500">
+        <p>Les informations du devis ne sont pas disponibles.</p>
+    </div>
+</ng-template>
