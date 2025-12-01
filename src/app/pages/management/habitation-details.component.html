@@ -1,0 +1,84 @@
+<table class="min-w-full divide-y divide-gray-200">
+  <!-- Preneur d'assurance -->
+  <tbody *ngIf="formValue?.preneurAssurance as preneur" class="bg-white divide-y divide-gray-200">
+    <tr class="bg-gray-100">
+      <th colspan="2" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Preneur d'assurance</th>
+    </tr>
+    <tr>
+      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50 w-1/3">Prénom & Nom</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ preneur.firstName | titlecase }} {{ preneur.lastName | uppercase }}</td>
+    </tr>
+    <tr>
+      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Date de naissance</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ preneur.dateNaissance | date:'dd/MM/yyyy' }}</td>
+    </tr>
+    <tr>
+      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Contact & Adresse</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        <div>{{ preneur.email }} | {{ preneur.phone }}</div>
+        <div>{{ preneur.address }}, {{ preneur.postalCode }} {{ preneur.city }}</div>
+      </td>
+    </tr>
+  </tbody>
+
+  <!-- Bâtiment -->
+  <tbody *ngIf="formValue?.batiment as batiment" class="bg-white divide-y divide-gray-200 border-t-8 border-gray-50">
+    <tr class="bg-gray-100">
+      <th colspan="2" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Bâtiment</th>
+    </tr>
+    <tr>
+      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Adresse assurée</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        {{ batiment.adresse }}<br>
+        {{ batiment.codePostal }} {{ batiment.ville }}
+      </td>
+    </tr>
+    <tr>
+      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Type</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ batiment.typeMaison }}</td>
+    </tr>
+  </tbody>
+
+  <!-- Évaluation -->
+  <tbody *ngIf="formValue?.evaluation as eval" class="bg-white divide-y divide-gray-200 border-t-8 border-gray-50">
+    <tr class="bg-gray-100">
+      <th colspan="2" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Évaluation</th>
+    </tr>
+    <tr>
+      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Détails</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        <div>Superficie: {{ eval.superficie }} m²</div>
+        <div>Pièces: {{ eval.nombrePieces }}</div>
+        <div>Loyer: {{ eval.loyerMensuel | currency:'EUR' }}</div>
+      </td>
+    </tr>
+  </tbody>
+
+  <!-- Garanties Habitation -->
+  <tbody *ngIf="formValue?.garantiesHabitation as garHab" class="bg-white divide-y divide-gray-200 border-t-8 border-gray-50">
+    <tr class="bg-gray-100">
+      <th colspan="2" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Garanties Habitation</th>
+    </tr>
+    <tr>
+      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Statut</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-medium" [ngClass]="getStatutClass(garHab.statut)">{{ garHab.statut }}</span>
+      </td>
+    </tr>
+    <tr>
+      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Compagnie</td>
+      <td class="px-6 py-4 text-sm text-gray-900">{{ getCompanyName(garHab.insuranceCompany) }}</td>
+    </tr>
+    <tr>
+      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Inclusions</td>
+      <td class="px-6 py-4 text-sm text-gray-900">
+        <div class="grid grid-cols-2 gap-2">
+          <div>Contenu: <strong>{{ garHab.contenu ? 'Oui' : 'Non' }}</strong></div>
+          <div>Vol: <strong>{{ garHab.vol ? 'Oui' : 'Non' }}</strong></div>
+          <div>Pertes Ind.: <strong>{{ garHab.pertesIndirectes ? 'Oui' : 'Non' }}</strong></div>
+          <div>Protection Jur.: <strong>{{ garHab.protectionJuridique ? 'Oui' : 'Non' }}</strong></div>
+        </div>
+      </td>
+    </tr>
+  </tbody>
+</table>

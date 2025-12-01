@@ -1,0 +1,125 @@
+<ng-container [formGroup]="parentForm">
+  <!-- Section Preneur d'assurance -->
+  <div formGroupName="preneurAssurance">
+    <h3 class="text-lg font-semibold text-gray-800 bg-gray-100 -mx-6 px-6 py-2 mb-4 border-y">Preneur d'assurance</h3>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+      <div>
+        <label for="hab-firstName" class="block text-sm font-medium text-gray-700">Prénom</label>
+        <input type="text" id="hab-firstName" formControlName="firstName" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+      </div>
+      <div>
+        <label for="hab-lastName" class="block text-sm font-medium text-gray-700">Nom</label>
+        <input type="text" id="hab-lastName" formControlName="lastName" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+      </div>
+      <div>
+        <label for="hab-dateNaissance" class="block text-sm font-medium text-gray-700">Date de naissance</label>
+        <input type="date" id="hab-dateNaissance" formControlName="dateNaissance" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+      </div>
+      <div class="sm:col-span-2">
+        <label for="hab-email" class="block text-sm font-medium text-gray-700">Email</label>
+        <input type="email" id="hab-email" formControlName="email" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+      </div>
+      <div class="sm:col-span-2">
+        <label for="hab-phone" class="block text-sm font-medium text-gray-700">Téléphone</label>
+        <input type="tel" id="hab-phone" formControlName="phone" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" appPhoneFormat placeholder="+32 4XX XX XX XX" maxlength="18">
+      </div>
+      <div class="sm:col-span-2">
+        <label for="hab-address" class="block text-sm font-medium text-gray-700">Adresse</label>
+        <input type="text" id="hab-address" formControlName="address" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+      </div>
+      <div>
+        <label for="hab-postalCode" class="block text-sm font-medium text-gray-700">Code Postal</label>
+        <input type="text" id="hab-postalCode" formControlName="postalCode" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+      </div>
+      <div>
+        <label for="hab-city" class="block text-sm font-medium text-gray-700">Ville</label>
+        <select id="hab-city" formControlName="city" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm disabled:bg-gray-100" [disabled]="(preneurCities$ | async)?.length === 0">
+          <option [ngValue]="null" disabled>Sélectionnez une ville</option>
+          <option *ngFor="let city of (preneurCities$ | async)" [value]="city">{{ city }}</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section Bâtiment -->
+  <div formGroupName="batiment" *ngIf="parentForm.get('batiment')">
+    <h3 class="text-lg font-semibold text-gray-800 bg-gray-100 -mx-6 px-6 py-2 mb-4 border-y">Bâtiment</h3>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+      <div class="sm:col-span-2">
+        <label for="batiment_adresse" class="block text-sm font-medium text-gray-700">Adresse du bâtiment</label>
+        <input type="text" id="batiment_adresse" formControlName="adresse" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+      </div>
+      <div>
+        <label for="batiment_code_postal" class="block text-sm font-medium text-gray-700">Code Postal</label>
+        <input type="text" id="batiment_code_postal" formControlName="codePostal" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+      </div>
+      <div>
+        <label for="batiment_ville" class="block text-sm font-medium text-gray-700">Ville</label>
+        <select id="batiment_ville" formControlName="ville" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm disabled:bg-gray-100" [disabled]="(batimentCities$ | async)?.length === 0">
+          <option [ngValue]="null" disabled>Sélectionnez une ville</option>
+          <option *ngFor="let city of (batimentCities$ | async)" [value]="city">{{ city }}</option>
+        </select>
+      </div>
+      <div class="sm:col-span-2">
+        <label for="batiment_type_maison" class="block text-sm font-medium text-gray-700">Type de maison</label>
+        <input type="text" id="batiment_type_maison" formControlName="typeMaison" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+      </div>
+    </div>
+  </div>
+
+  <!-- Section Évaluation -->
+  <div formGroupName="evaluation" *ngIf="parentForm.get('evaluation')">
+    <h3 class="text-lg font-semibold text-gray-800 bg-gray-100 -mx-6 px-6 py-2 mb-4 border-y">Évaluation</h3>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+      <div>
+        <label for="evaluation_superficie" class="block text-sm font-medium text-gray-700">Superficie (m²)</label>
+        <input type="number" id="evaluation_superficie" formControlName="superficie" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+      </div>
+      <div>
+        <label for="evaluation_nombre_pieces" class="block text-sm font-medium text-gray-700">Nombre de pièces</label>
+        <input type="number" id="evaluation_nombre_pieces" formControlName="nombrePieces" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+      </div>
+      <div>
+        <label for="evaluation_loyer_mensuel" class="block text-sm font-medium text-gray-700">Loyer mensuel (€)</label>
+        <input type="number" id="evaluation_loyer_mensuel" formControlName="loyerMensuel" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+      </div>
+    </div>
+  </div>
+
+  <!-- Section Garanties Habitation -->
+  <div formGroupName="garantiesHabitation" *ngIf="parentForm.get('garantiesHabitation')">
+    <h3 class="text-lg font-semibold text-gray-800 bg-gray-100 -mx-6 px-6 py-2 mb-4 border-y">Garanties Habitation</h3>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+      <div class="flex items-center">
+        <input id="garantie_contenu" type="checkbox" formControlName="contenu" class="form-checkbox h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+        <label for="garantie_contenu" class="ml-2 block text-sm text-gray-900">Garantie Contenu</label>
+      </div>
+      <div class="flex items-center">
+        <input id="garantie_vol" type="checkbox" formControlName="vol" class="form-checkbox h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+        <label for="garantie_vol" class="ml-2 block text-sm text-gray-900">Garantie Vol</label>
+      </div>
+      <div class="flex items-center">
+        <input id="garantie_pertes_indirectes" type="checkbox" formControlName="pertesIndirectes" class="form-checkbox h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+        <label for="garantie_pertes_indirectes" class="ml-2 block text-sm text-gray-900">Pertes Indirectes</label>
+      </div>
+      <div class="flex items-center">
+        <input id="garantie_protection_juridique" type="checkbox" formControlName="protectionJuridique" class="form-checkbox h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+        <label for="garantie_protection_juridique" class="ml-2 block text-sm text-gray-900">Protection Juridique</label>
+      </div>
+      <div class="sm:col-span-2">
+        <label for="habitationInsuranceCompany" class="block text-sm font-medium text-gray-700">Compagnie d'assurance</label>
+        <select id="habitationInsuranceCompany" formControlName="insuranceCompany" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          <option [ngValue]="null" disabled>Sélectionnez une compagnie</option>
+          <option *ngFor="let company of (insuranceCompanies$ | async)" [value]="company.id">{{ company.nom }}</option>
+        </select>
+      </div>
+      <div class="sm:col-span-2">
+        <label for="habitationStatut" class="block text-sm font-medium text-gray-700">Statut de l'offre</label>
+        <select id="habitationStatut" formControlName="statut" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          <option [ngValue]="null" disabled>Sélectionnez un statut</option>
+          <option *ngFor="let stat of statuts$ | async" [value]="stat.statut">{{ stat.statut }}</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</ng-container>

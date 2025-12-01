@@ -69,7 +69,7 @@
             <!-- Les composants spécifiques au type de devis seront injectés ici -->
             <ng-container [ngSwitch]="quoteType">
               <app-auto-form *ngSwitchCase="'auto'" [parentForm]="quoteUpdateForm"></app-auto-form>
-              <!-- <app-habitation-form *ngSwitchCase="'habitation'" [parentForm]="quoteUpdateForm"></app-habitation-form> -->
+              <app-habitation-form *ngSwitchCase="'habitation'" [parentForm]="quoteUpdateForm"></app-habitation-form>
               <!-- <app-obseques-form *ngSwitchCase="'obseques'" [parentForm]="quoteUpdateForm"></app-obseques-form> -->
               <!-- <app-rc-form *ngSwitchCase="'rc'" [parentForm]="quoteUpdateForm"></app-rc-form> -->
               <!-- <app-voyage-form *ngSwitchCase="'voyage'" [parentForm]="quoteUpdateForm"></app-voyage-form> -->
@@ -104,7 +104,7 @@
           <div id="printable-section" class="p-4">
             <ng-container [ngSwitch]="quoteType">
               <app-auto-details *ngSwitchCase="'auto'" [formValue]="quoteUpdateForm.value"></app-auto-details>
-              <!-- <app-habitation-details *ngSwitchCase="'habitation'" [formValue]="quoteUpdateForm.value"></app-habitation-details> -->
+              <app-habitation-details *ngSwitchCase="'habitation'" [formValue]="quoteUpdateForm.value"></app-habitation-details>
               <!-- <app-obseques-details *ngSwitchCase="'obseques'" [formValue]="quoteUpdateForm.value"></app-obseques-details> -->
               <!-- <app-rc-details *ngSwitchCase="'rc'" [formValue]="quoteUpdateForm.value"></app-rc-details> -->
               <!-- <app-voyage-details *ngSwitchCase="'voyage'" [formValue]="quoteUpdateForm.value"></app-voyage-details> -->

@@ -16,6 +16,8 @@ import { NationalNumberFormatDirective } from '../../directives/national-number-
 import { OmniumLevelPipe } from '../../pipes/omnium-level.pipe';
 import { AutoFormComponent } from '../management/auto-form.component';
 import { AutoDetailsComponent } from '../management/auto-details.component';
+import { HabitationFormComponent } from '../management//habitation-form.component';
+import { HabitationDetailsComponent } from '../management/habitation-details.component';
 
 @Component({
   selector: 'app-management-detail',
@@ -30,7 +32,9 @@ import { AutoDetailsComponent } from '../management/auto-details.component';
     LicensePlateFormatDirective,
     OmniumLevelPipe,
     AutoFormComponent,
-    AutoDetailsComponent
+    AutoDetailsComponent,
+    HabitationFormComponent,
+    HabitationDetailsComponent
   ],
   templateUrl: './management-detail.component.html',
   styleUrls: []
@@ -255,37 +259,6 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
         });
       }
 
-      const batimentPostalCodeControl = this.quoteUpdateForm.get('batiment.codePostal');
-      if (batimentPostalCodeControl) {
-        batimentPostalCodeControl.valueChanges.pipe(
-          debounceTime(300),
-          distinctUntilChanged(),
-          switchMap(pc => pc && pc.length >= 4 ? this.dbService.getCitiesByPostalCode(pc) : of([]))
-        ).subscribe(cities => {
-          this.batimentCities$.next(cities);
-          const cityControl = this.quoteUpdateForm.get('batiment.ville');
-          const currentCity = cityControl?.value;
-          if (currentCity && !cities.includes(currentCity)) {
-            cityControl.reset();
-          }          
-        });
-      }
-
-      const obsequesPostalCodeControl = this.quoteUpdateForm.get('preneurObseques.postalCode');
-      if (obsequesPostalCodeControl) {
-        obsequesPostalCodeControl.valueChanges.pipe(
-          debounceTime(300),
-          distinctUntilChanged(),
-          switchMap(pc => pc && pc.length >= 4 ? this.dbService.getCitiesByPostalCode(pc) : of([]))
-        ).subscribe(cities => {
-          this.obsequesCities$.next(cities);
-          const cityControl = this.quoteUpdateForm.get('preneurObseques.city');
-          const currentCity = cityControl?.value;
-          if (currentCity && !cities.includes(currentCity)) {
-            cityControl.reset();
-          }          
-        });
-      }
     }
 
     // Logique d'auto-complétion pour la marque du véhicule
