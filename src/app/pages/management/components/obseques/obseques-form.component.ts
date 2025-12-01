@@ -31,12 +31,23 @@ export class ObsequesFormComponent implements OnInit, OnDestroy {
     this.insuranceCompanies$ = this.dbService.getAllAssureurs();
 
     if (isPlatformBrowser(this.platformId)) {
-      this.parentForm.get('preneurObseques.postalCode')?.valueChanges.pipe(
+      const preneurForm = this.parentForm.get('preneurObseques');
+      if (!preneurForm) return;
+
+      preneurForm.get('postalCode')?.valueChanges.pipe(
         debounceTime(300),
         distinctUntilChanged(),
         switchMap(pc => pc && pc.length >= 4 ? this.dbService.getCitiesByPostalCode(pc) : of([])),
         takeUntil(this.destroy$)
-      ).subscribe(cities => this.obsequesCities$.next(cities));
+      ).subscribe(cities => {
+        this.obsequesCities$.next(cities);
+        const cityControl = preneurForm.get('city');
+        if (cities.length === 1) {
+          cityControl?.setValue(cities[0]);
+        } else {
+          cityControl?.setValue(null);
+        }
+      });
     }
   }
 

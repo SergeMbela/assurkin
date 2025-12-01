@@ -33,7 +33,8 @@
             </div>
             <div>
                 <label for="obs-city" class="block text-sm font-medium text-gray-700">Ville</label>
-                <select id="obs-city" formControlName="city" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                <select id="obs-city" formControlName="city" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm disabled:bg-gray-100" [disabled]="!parentForm.get('preneurObseques.postalCode')?.value">
+                    <option [ngValue]="null" disabled>-- Sélectionner une ville --</option>
                     <option *ngFor="let city of obsequesCities$ | async" [value]="city">{{ city }}</option>
                 </select>
             </div>

@@ -3,7 +3,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { DbConnectService, Assureur, Statut } from '../../../../services/db-connect.service'; // Assurez-vous que le chemin est correct
 import { Observable, Subject, BehaviorSubject, of } from 'rxjs';
-import { debounceTime, distinctUntilChanged, switchMap, takeUntil } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, switchMap, takeUntil, startWith, catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-habitation-form',
@@ -19,7 +19,7 @@ export class HabitationFormComponent implements OnInit, OnDestroy {
 
   statuts$!: Observable<Statut[]>;
   insuranceCompanies$!: Observable<Assureur[]>;
-  batimentCities$ = new BehaviorSubject<string[]>([]);
+  batimentCities$: Observable<string[]>;
   preneurCities$!: Observable<string[]>;
 
   private destroy$ = new Subject<void>();
@@ -27,7 +27,9 @@ export class HabitationFormComponent implements OnInit, OnDestroy {
   constructor(
     private dbService: DbConnectService,
     @Inject(PLATFORM_ID) private platformId: object
-  ) {}
+  ) {
+    this.batimentCities$ = of([]); // Initialisation
+  }
 
   ngOnInit(): void {
     this.statuts$ = this.dbService.getAllStatuts();
@@ -36,19 +38,21 @@ export class HabitationFormComponent implements OnInit, OnDestroy {
     if (isPlatformBrowser(this.platformId)) {
       const batimentPostalCodeControl = this.parentForm.get('batiment.codePostal');
       if (batimentPostalCodeControl) {
-        batimentPostalCodeControl.valueChanges.pipe(
+        this.batimentCities$ = batimentPostalCodeControl.valueChanges.pipe(
+          startWith(batimentPostalCodeControl.value || ''),
           debounceTime(300),
           distinctUntilChanged(),
-          switchMap(pc => (pc && pc.length >= 4) ? this.dbService.getCitiesByPostalCode(pc) : of([])),
+          switchMap(pc => {
+            if (pc && pc.length >= 4) {
+              return this.dbService.getCitiesByPostalCode(pc).pipe(
+                catchError(() => of([])), // En cas d'erreur, retourne un tableau vide
+                takeUntil(this.destroy$)
+              );
+            }
+            return of([]);
+          }),
           takeUntil(this.destroy$)
-        ).subscribe(cities => {
-          this.batimentCities$.next(cities);
-          const cityControl = this.parentForm.get('batiment.ville');
-          const currentCity = cityControl?.value;
-          if (currentCity && !cities.includes(currentCity)) {
-            cityControl.reset();
-          }
-        });
+        );
       }
 
       // Logique pour les villes du preneur d'assurance
@@ -59,7 +63,10 @@ export class HabitationFormComponent implements OnInit, OnDestroy {
           distinctUntilChanged(),
           switchMap(pc => {
             if (pc && pc.length >= 4) {
-              return this.dbService.getCitiesByPostalCode(pc);
+              return this.dbService.getCitiesByPostalCode(pc).pipe(
+                catchError(() => of([])), // En cas d'erreur, retourne un tableau vide
+                takeUntil(this.destroy$)
+              );
             }
             return of([]);
           }),

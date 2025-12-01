@@ -1,38 +1,35 @@
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { createClient, SupabaseClient, AuthChangeEvent, Session } from '@supabase/supabase-js';
+import { createClient, SupabaseClient, AuthChangeEvent, Session, User } from '@supabase/supabase-js';
 import { environment } from '../../environments/environment';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SupabaseService {
   public supabase: SupabaseClient;
-  private _session$ = new BehaviorSubject<Session | null>(null);
-  public session$ = this._session$.asObservable();
+  private sessionSubject = new BehaviorSubject<Session | null>(null);
+
+  /** Un observable de la session actuelle. Émet `null` si l'utilisateur n'est pas connecté. */
+  public session$: Observable<Session | null> = this.sessionSubject.asObservable();
+
+  /** Un observable de l'utilisateur actuel. Émet `null` si l'utilisateur n'est pas connecté. */
+  public currentUser$: Observable<User | null> = this.session$.pipe(
+    map(session => session?.user ?? null)
+  );
 
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {
     this.supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
 
     if (isPlatformBrowser(this.platformId)) {
-      // Écoute les changements d'état d'authentification (connexion, déconnexion, etc.)
+      // Écoute les changements d'état d'authentification et met à jour le sujet de session.
+      // C'est la seule source de vérité pour l'état de la session.
       this.supabase.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null) => {
-        // On met à jour la session uniquement si elle n'est pas null.
-        // Si la session est null (déconnexion), le client Supabase le gère déjà.
-        // Cette vérification corrige l'erreur de typage.
-        if (session) this.supabase.auth.setSession(session);
-        this._session$.next(session);
+        this.sessionSubject.next(session);
       });
-
-      // Vérifie s'il y a une session active au démarrage de l'application
-      this.getSessionOnStart();
     }
-  }
-
-  private async getSessionOnStart() {
-    const { data } = await this.supabase.auth.getSession();
-    this._session$.next(data.session);
   }
 
   async insertData(table: string, data: any) {

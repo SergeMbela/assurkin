@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { from, Observable, defer, of } from 'rxjs';
+import { from, Observable, defer, of, BehaviorSubject } from 'rxjs';
 import { map, switchMap, catchError } from 'rxjs/operators';
 import { PostgrestError, User } from '@supabase/supabase-js';
 import { SupabaseService } from './supabase.service';
@@ -298,8 +298,8 @@ export interface SupabaseResponse<T> {
   providedIn: 'root'
 })
 export class DbConnectService {
+  constructor(private supabase: SupabaseService) {}
 
-  constructor(private supabase: SupabaseService) { }
 
   /**
    * Enregistre les données du formulaire de contact général.
@@ -591,7 +591,7 @@ export class DbConnectService {
    * @param namePrefix Le préfixe du nom de la ville à rechercher.
    * @returns Un Observable avec la liste des villes et leurs codes postaux.
    */
- getVilles(namePrefix: string): Observable<PostalCode[]> {
+  getVilles(namePrefix: string): Observable<PostalCode[]> {
     const query = this.supabase.supabase
       .from('code_postal_belge')
       .select('postal, name')
@@ -615,28 +615,28 @@ export class DbConnectService {
    * @param postalCode Le code postal exact à rechercher.
    * @returns Un Observable avec la liste des noms de villes.
    */
-getCitiesByPostalCode(postalCode: string): Observable<string[]> {
-  return from(
-    this.supabase.supabase // Accès au client natif
-      .from('code_postal_belge')
-      .select('name')
-      .eq('postal', postalCode)
-  ).pipe(
-    map(response => {
-      // Il est recommandé de vérifier l'erreur Supabase ici
-      if (response.error) {
-        throw response.error;
-      }
-      
-      const data = response.data as { name: string; }[] | null;
-      return (data || []).map(item => item.name);
-    }),
-    catchError(error => {
-      console.error('Erreur lors de la récupération des villes par code postal:', error);
-      return of([]); // Retourne un tableau vide en cas d'erreur pour ne pas casser l'UI
-    })
-  );
-}
+  getCitiesByPostalCode(postalCode: string): Observable<string[]> {
+    return from(
+      this.supabase.supabase // Accès au client natif
+        .from('code_postal_belge')
+        .select('name')
+        .eq('postal', postalCode)
+    ).pipe(
+      map(response => {
+        // Il est recommandé de vérifier l'erreur Supabase ici
+        if (response.error) {
+          throw response.error;
+        }
+
+        const data = response.data as { name: string; }[] | null;
+        return (data || []).map(item => item.name);
+      }),
+      catchError(error => {
+        console.error('Erreur lors de la récupération des villes par code postal:', error);
+        return of([]); // Retourne un tableau vide en cas d'erreur pour ne pas casser l'UI
+      })
+    );
+  }
 
   /**
    * Recherche les marques de véhicules correspondant à un préfixe.
@@ -781,14 +781,6 @@ getCitiesByPostalCode(postalCode: string): Observable<string[]> {
         return (response.data as Statut[]) || [];
       })
     );
-  }
-
-  /**
-   * Récupère l'utilisateur actuellement authentifié.
-   * @returns Un Observable avec les informations de l'utilisateur ou null.
-   */
-  getCurrentUser(): Observable<User | null> {
-    return from(this.supabase.supabase.auth.getUser()).pipe(map(response => response.data.user));
   }
 
   /**
@@ -1363,7 +1355,7 @@ getCitiesByPostalCode(postalCode: string): Observable<string[]> {
           prenom,
           description
         `)
-        .order('date_created', { ascending: false })
+      .order('date_created', { ascending: false })
     return from(query).pipe(
       map(response => {
         if (response.error) throw response.error;
@@ -1598,29 +1590,29 @@ getCitiesByPostalCode(postalCode: string): Observable<string[]> {
    */
   updateObsequesQuote(quoteId: number, payload: ObsequesQuoteUpdatePayload): Observable<{ success: boolean, error?: any, data?: any }> {
     const rpcPayload = {
-      p_quote_id: quoteId,
-      p_preneur_data: this.mapPersonDataForRpc(payload.preneur, {
-        includeDrivingLicense: false, includeNationalRegistry: false
-      }),
-      p_devis_data: payload.devis
+      p_quote_id: quoteId, // L'ID du devis
+      p_preneur_data: payload.preneur, // Les données du preneur (nom, prénom, etc.)
+      p_devis_data: {
+        nombre_assures: payload.devis.nombre_assures,
+        preneur_est_assure: payload.devis.preneur_est_assure,
+        assures: payload.devis.assures, // Le tableau des assurés
+        statut: payload.devis.statut,
+        compagnie_id: payload.devis.compagnie_id
+      }
     };
+    console.log('[DbConnectService] updateObsequesQuote payload:', rpcPayload);
 
-    const promise = this.supabase.supabase
-      .rpc('update_obseques_quote_details', rpcPayload)
-      .then(({ data, error }) => {
-        if (error) {
-          console.warn(
-            `[DbConnectService] Erreur 500 probable dans 'updateObsequesQuote' pour l'ID ${quoteId}.`,
-            'Erreur RPC Supabase:',
-            error
-          );
-          return { success: false, error };
-        }
-        return { success: true, data };
-      });
-
+    const promise = this.supabase.supabase.rpc('update_obseques_quote', rpcPayload).then(({ data, error }) => {
+      if (error) {
+        console.error(`[DbConnectService] Erreur RPC dans 'updateObsequesQuote' pour l'ID ${quoteId}.`, error);
+        console.log('[DbConnectService] updateObsequesQuote payload:', rpcPayload);
+        return { success: false, error };
+      }
+      return { success: true, data };
+    });
     return from(promise);
   }
+
 
   /**
    * Met à jour un devis d'assurance habitation complet.
@@ -1894,9 +1886,9 @@ getCitiesByPostalCode(postalCode: string): Observable<string[]> {
       })
     );
   }
-/**
-   * Récupère les données CSV via la procédure stockée
-   */
+  /**
+     * Récupère les données CSV via la procédure stockée
+     */
   getCsvData(quoteId: number, quoteType: string): Observable<any[]> {
     // 1. On prépare la requête (Promesse) sans modifier sa chaîne d'erreur ici
     const request = this.supabase.supabase
@@ -1917,7 +1909,7 @@ getCitiesByPostalCode(postalCode: string): Observable<string[]> {
           );
           throw response.error;
         }
-        
+
         // Cast explicite et sécurisation du retour
         return (response.data as any[]) || [];
       }),
@@ -1926,7 +1918,7 @@ getCitiesByPostalCode(postalCode: string): Observable<string[]> {
         console.error(`[DbConnectService] Erreur dans getCsvData pour quoteId ${quoteId}:`, error);
         // Retourne un tableau vide pour éviter de casser l'interface utilisateur
         // Si vous préférez bloquer l'UI, remplacez par : return throwError(() => error);
-        return of([]); 
+        return of([]);
       })
     );
   }
@@ -1980,5 +1972,15 @@ getCitiesByPostalCode(postalCode: string): Observable<string[]> {
     return this.supabase.supabase.storage
       .from(bucketName)
       .getPublicUrl(filePath);
+  }
+
+  /**
+   * Récupère l'utilisateur actuellement authentifié à partir d'un flux observable.
+   * Cet observable émet la valeur actuelle de l'utilisateur et se met à jour
+   * automatiquement lors de la connexion ou de la déconnexion.
+   * @returns Un Observable qui émet l'objet User ou null.
+   */
+  getCurrentUser(): Observable<User | null> {
+    return this.supabase.currentUser$;
   }
 }
