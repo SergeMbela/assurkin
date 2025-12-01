@@ -1,0 +1,32 @@
+/* Styles pour l'impression de la fiche de détail */
+@media print {
+
+  /* Masquer par défaut tous les éléments qui ne sont pas dans la section imprimable */
+  body * {
+    visibility: hidden;
+  }
+
+  /* Rendre visible la section imprimable et ses enfants */
+  #printable-section, #printable-section * {
+    visibility: visible;
+  }
+
+  /* Positionner la section imprimable en haut de la page */
+  #printable-section {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+
+  /* Supprimer les couleurs de fond, les ombres et les bordures inutiles */
+  .bg-white, .bg-gray-50, .bg-gray-100, .shadow-md, .hover\:bg-gray-50 {
+    background-color: transparent !important;
+    box-shadow: none !important;
+  }
+
+  table, tr, td, th {
+    border-color: #ccc !important;
+    color: #000 !important;
+  }
+}

@@ -1256,7 +1256,7 @@ getCitiesByPostalCode(postalCode: string): Observable<string[]> {
           created_at,
           statut,
           preneur:personnes!devis_assurance_preneur_id_fkey ( nom, prenom ),
-          vehicules ( type, marque, modele )
+          vehicules ( type, marque, modele, annee )
         `, { count: 'exact' }) // On demande le compte total
       .order('created_at', { ascending: false })
       .range(rangeFrom, rangeTo); // On applique la pagination
@@ -1264,11 +1264,10 @@ getCitiesByPostalCode(postalCode: string): Observable<string[]> {
     // On applique le filtre si un terme de recherche est fourni
     if (searchTerm) {
       const searchPattern = `%${searchTerm}%`;
-      // Utilisation d'une syntaxe plus sûre pour le filtre .or()
+      // Recherche uniquement sur le nom et prénom du preneur
       query = query.or(
-        `marque.ilike.${searchPattern},modele.ilike.${searchPattern}`,
-        { foreignTable: 'vehicules' }
-      ).or(`nom.ilike.${searchPattern},prenom.ilike.${searchPattern}`, { foreignTable: 'personnes' });
+        `nom.ilike.${searchPattern},prenom.ilike.${searchPattern}`, { foreignTable: 'preneur' }
+      );
     }
 
     return from(query).pipe(
@@ -1305,10 +1304,10 @@ getCitiesByPostalCode(postalCode: string): Observable<string[]> {
 
     if (searchTerm) {
       const searchPattern = `%${searchTerm}%`;
-      // Utilisation d'une syntaxe plus sûre pour le filtre .or()
+      // Recherche uniquement sur le nom et prénom du preneur
       query = query.or(
-        `batiment_adresse.ilike.${searchPattern}`
-      ).or(`nom.ilike.${searchPattern},prenom.ilike.${searchPattern}`, { foreignTable: 'personnes' });
+        `nom.ilike.${searchPattern},prenom.ilike.${searchPattern}`, { foreignTable: 'preneur' }
+      );
     }
 
     return from(query).pipe(
@@ -1335,9 +1334,9 @@ getCitiesByPostalCode(postalCode: string): Observable<string[]> {
 
     if (searchTerm) {
       const searchPattern = `%${searchTerm}%`;
-      // Utilisation d'une syntaxe plus sûre pour le filtre .or()
+      // Recherche uniquement sur le nom et prénom du preneur
       query = query.or(
-        `nom.ilike.${searchPattern},prenom.ilike.${searchPattern}`, { foreignTable: 'personnes' }
+        `nom.ilike.${searchPattern},prenom.ilike.${searchPattern}`, { foreignTable: 'preneur' }
       );
     }
 

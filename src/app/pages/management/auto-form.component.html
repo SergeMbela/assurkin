@@ -1,0 +1,143 @@
+<ng-container [formGroup]="parentForm">
+  <!-- Section Preneur d'assurance -->
+  <div formGroupName="preneurAssurance" *ngIf="parentForm.get('preneurAssurance')">
+    <h3 class="text-lg font-semibold text-gray-800 bg-gray-100 -mx-6 px-6 py-2 mb-4 border-y">Preneur d'assurance</h3>
+    <!-- Ici, on pourrait même utiliser un composant partagé pour le preneur -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+      <!-- ... tous les champs du preneur d'assurance ... -->
+    </div>
+  </div>
+
+  <!-- Section Conducteur principal (conditionnelle) -->
+  <div formGroupName="conducteurPrincipal" *ngIf="showMainDriverSection && parentForm.get('conducteurPrincipal')">
+    <h3 class="text-lg font-semibold text-gray-800 bg-gray-100 -mx-6 px-6 py-2 mb-4 border-y">Conducteur principal</h3>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+      <!-- ... tous les champs du conducteur principal ... -->
+    </div>
+  </div>
+
+  <!-- Section Véhicule -->
+  <div formGroupName="vehicule" *ngIf="parentForm.get('vehicule')">
+    <h3 class="text-lg font-semibold text-gray-800 bg-gray-100 -mx-6 px-6 py-2 mb-4 border-y">Véhicule</h3>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+      <div class="relative">
+        <label for="make" class="block text-sm font-medium text-gray-700">Marque</label>
+        <input type="text" id="make" formControlName="make" placeholder="Rechercher une marque..."
+          class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+        <div *ngIf="isMarqueLoading" class="absolute inset-y-0 right-0 flex items-center pr-3 top-6">
+          <svg class="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none"
+            viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+            </path>
+          </svg>
+        </div>
+        <ul *ngIf="(filteredMarques$ | async)?.length && (marqueCtrl.value || '').length >= 2"
+          class="absolute z-20 w-full bg-white border border-gray-300 rounded-md mt-1 max-h-40 overflow-y-auto">
+          <li *ngFor="let marque of filteredMarques$ | async" (click)="selectMarque(marque)"
+            class="px-3 py-2 cursor-pointer hover:bg-gray-100">
+            {{ marque.nom }}
+          </li>
+        </ul>
+      </div>
+      <div>
+        <div class="relative">
+          <label for="model" class="block text-sm font-medium text-gray-700">Modèle</label>
+          <select id="model" formControlName="model"
+            class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm disabled:bg-gray-100"
+            [disabled]="!parentForm.get('vehicule.make')?.value || isModeleLoading">
+            <option value="" disabled>Sélectionnez un modèle</option>
+            <option
+              *ngIf="!isModeleLoading && modelesForSelectedMarque.length === 0 && parentForm.get('vehicule.make')?.value"
+              [disabled]="true">
+              Aucun modèle trouvé
+            </option>
+            <option *ngFor="let modele of modelesForSelectedMarque" [value]="modele.nom">{{ modele.nom }}
+            </option>
+          </select>
+          <div *ngIf="isModeleLoading" class="absolute inset-y-0 right-0 flex items-center pr-3 top-6">
+            <svg class="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none"
+              viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+              </circle>
+              <path class="opacity-75" fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+              </path>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <div>
+        <label for="year" class="block text-sm font-medium text-gray-700">Année</label>
+        <select id="year" formControlName="year"
+          class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          <option [ngValue]="null" disabled>Sélectionnez une année</option>
+          <option *ngFor="let year of vehicleYears" [value]="year">
+            {{ year }}
+          </option>
+        </select>
+      </div>
+      <div>
+        <label for="licensePlate" class="block text-sm font-medium text-gray-700">Plaque</label>
+        <input type="text" id="licensePlate" formControlName="licensePlate"
+          class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm"
+          appLicensePlateFormat placeholder="1 ABC 123" maxlength="9">
+      </div>
+    </div>
+  </div>
+
+  <!-- Section Garantie -->
+  <div formGroupName="garantie" *ngIf="parentForm.get('garantie')">
+    <h3 class="text-lg font-semibold text-gray-800 bg-gray-100 -mx-6 px-6 py-2 mb-4 border-y">Garanties</h3>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+      <div class="sm:col-span-2">
+        <label for="effectiveDate" class="block text-sm font-medium text-gray-700">Date d'effet</label>
+        <input type="date" id="effectiveDate" formControlName="effectiveDate"
+          class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+      </div>
+      <div class="sm:col-span-2">
+        <label for="omniumLevel" class="block text-sm font-medium text-gray-700">Niveau d'omnium</label>
+        <select id="omniumLevel" formControlName="omniumLevel"
+          class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          <option value="non">Aucune</option>
+          <option value="partiel">Mini Omnium</option>
+          <option value="total">Omnium Complète</option>
+        </select>
+      </div>
+      <div class="sm:col-span-2">
+        <label for="statut" class="block text-sm font-medium text-gray-700">Statut de l'offre</label>
+        <select id="statut" formControlName="statut"
+          class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          <option [ngValue]="null" disabled>Sélectionnez un statut</option>
+          <option *ngFor="let stat of statuts$ | async" [value]="stat.statut">{{ stat.statut }}</option>
+        </select>
+      </div>
+      <div class="sm:col-span-2">
+        <label for="insuranceCompany" class="block text-sm font-medium text-gray-700">Compagnie d'assurance</label>
+        <select id="insuranceCompany" formControlName="insuranceCompany"
+          class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          <option [ngValue]="null" disabled>Sélectionnez une compagnie</option>
+          <option *ngFor="let company of (insuranceCompanies$ | async)" [value]="company.id">
+            {{ company.nom }}
+          </option>
+        </select>
+      </div>
+      <div class="flex items-center">
+        <input id="baseRC" type="checkbox" formControlName="baseRC"
+          class="form-checkbox h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+        <label for="baseRC" class="ml-2 block text-sm text-gray-900">Garantie RC de base</label>
+      </div>
+      <div class="flex items-center">
+        <input id="driverCoverage" type="checkbox" formControlName="driverCoverage"
+          class="form-checkbox h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+        <label for="driverCoverage" class="ml-2 block text-sm text-gray-900">Garantie Conducteur</label>
+      </div>
+      <div class="flex items-center">
+        <input id="assistance" type="checkbox" formControlName="assistance"
+          class="form-checkbox h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+        <label for="assistance" class="ml-2 block text-sm text-gray-900">Assistance</label>
+      </div>
+    </div>
+  </div>
+</ng-container>

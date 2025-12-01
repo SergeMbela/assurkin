@@ -124,8 +124,8 @@ export class ManagementService {
           data: { // Assuming response is an array of quote items
             quotes: response.map((item: any) => ({
               id: item.id,
-              nom: item.preneur_nom,
-              prenom: item.preneur_prenom,
+              nom: item.preneur_nom ?? '',
+              prenom: item.preneur_prenom ?? '',
               dateDemande: item.created_at,
               statut: item.statut || 'Nouveau', // 'statut' n'est pas dans la table, on met une valeur par défaut
               description: `Risque: ${item.risque}`
@@ -157,8 +157,8 @@ export class ManagementService {
   private fetchAndMapVoyageData(apiCall$: Observable<{ data: any[], count: number | null }>): Observable<DataState<{ quotes: VoyageQuoteSummary[], totalItems: number }>> {
     return apiCall$.pipe(
       map(response => ({
-        data: {
-          quotes: response.data.map(item => ({ id: item.id, nom: item.nom ?? 'N/A', prenom: item.prenom ?? '', dateDemande: item.date_created, statut: item.statut || 'Nouveau', description: item.description || 'Aucun message' })),
+        data: { // Correction pour éviter 'N/A'
+          quotes: response.data.map(item => ({ id: item.id, nom: item.nom ?? '', prenom: item.prenom ?? '', dateDemande: item.date_created, statut: item.statut || 'Nouveau', description: item.description || 'Aucun message' })),
           totalItems: response.count ?? 0
         },
         loading: false,
@@ -173,9 +173,9 @@ export class ManagementService {
     return apiCall$.pipe(
       map(response => ({
         data: {
-          quotes: response.data.map((item: any) => ({
+          quotes: response.data.map((item: any) => ({ // Correction pour éviter 'N/A'
             id: item.id,
-            nom: item.preneur?.nom ?? 'N/A',
+            nom: item.preneur?.nom ?? '',
             prenom: item.preneur?.prenom ?? '',
             dateDemande: item.created_at,
             statut: item.statut || 'Nouveau',
@@ -198,14 +198,14 @@ export class ManagementService {
         return {
           data: {
             quotes: response.data.map(item => ({
-              id: item.id,
-              nom: item.preneur?.nom ?? 'N/A',
+              id: item.id, // Correction pour éviter 'N/A'
+              nom: item.preneur?.nom ?? '',
               prenom: item.preneur?.prenom ?? '',
               dateDemande: item.created_at,
               statut: item.statut || 'Nouveau',
-              typeVehicule: item.vehicules?.type ?? 'N/A',
-              marqueVehicule: item.vehicules?.marque ?? 'N/A',
-              modeleVehicule: item.vehicules?.modele ?? 'N/A'
+              typeVehicule: item.vehicules?.type ?? '',
+              marqueVehicule: item.vehicules?.marque ?? '',
+              modeleVehicule: `${item.vehicules?.modele ?? ''} ${item.vehicules?.annee ?? ''}`.trim()
             })),
             totalItems: response.count ?? 0
           },
@@ -226,9 +226,9 @@ export class ManagementService {
     return apiCall$.pipe(
       map(response => ({
         data: {
-          quotes: response.data.map((item: any) => ({
+          quotes: response.data.map((item: any) => ({ // Correction pour éviter 'N/A'
             id: item.id,
-            nom: item.preneur?.nom ?? 'N/A',
+            nom: item.preneur?.nom ?? '',
             prenom: item.preneur?.prenom ?? '',
             dateDemande: item.created_at,
             statut: item.statut || 'Nouveau',

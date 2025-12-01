@@ -94,11 +94,15 @@ export class ManagementComponent implements OnInit {
               if (state.loading || state.error || !state.data) {
                 return { state, pagination: null };
               }
+
+              // La recherche est maintenant gérée par le backend, on utilise directement les données.
               const totalItems = state.data.totalItems;
               const totalPages = Math.ceil(totalItems / this.itemsPerPage);
               return {
-                state: { ...state, data: { quotes: state.data.quotes, totalItems: state.data.totalItems } },
-                pagination: { // On passe les statuts au vm$
+                // On retourne l'état tel quel, car le filtrage est déjà fait par le backend.
+                // Le filtrage côté client a été supprimé pour éviter les conflits.
+                state: state,
+                pagination: {
                   currentPage,
                   totalPages,
                   totalItems
