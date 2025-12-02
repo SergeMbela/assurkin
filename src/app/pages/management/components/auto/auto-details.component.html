@@ -15,7 +15,7 @@
     <tr>
       <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Date de naissance</td>
       <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-        {{ preneur.dateNaissance | date:'dd/MM/yyyy' }}
+        {{ preneur.date_naissance | date:'dd/MM/yyyy' }}
       </td>
     </tr>
     <tr>
@@ -29,13 +29,13 @@
       <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Adresse</td>
       <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
         {{ preneur.address }}<br>
-        {{ preneur.postalCode }} {{ preneur.city }}
+        {{ preneur.code_postal }} {{ preneur.city | titlecase }}
       </td>
     </tr>
     <tr>
       <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Permis de conduire</td>
       <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-        N° {{ preneur.driverLicenseNumber }} (Obtenu le {{ preneur.driverLicenseDate | date:'dd/MM/yyyy' }})
+        N° {{ preneur.permis_numero }} (Obtenu le {{ preneur.permis_date | date:'dd/MM/yyyy' }})
       </td>
     </tr>
     <tr>

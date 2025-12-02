@@ -6,7 +6,6 @@ import { ManagementService, DataState, AutoQuoteSummary, HabitationQuoteSummary,
 import { Observable, combineLatest, BehaviorSubject, of, Subject } from 'rxjs';
 import { map, startWith, shareReplay, tap, switchMap, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import { StateContainerComponent } from '../../state-container.component';
-import { EcheanceStatusPipe } from '../../pipes/echeance-status.pipe';
 
 type QuoteType = 'auto' | 'habitation' | 'obseques' | 'rc' | 'voyage';
 // Un type d'union pour représenter n'importe quel résumé de devis.
@@ -14,7 +13,7 @@ type AnyQuoteSummary = AutoQuoteSummary | HabitationQuoteSummary | ObsequesQuote
 @Component({
   selector: 'app-management',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule, StateContainerComponent, EcheanceStatusPipe],
+  imports: [CommonModule, RouterLink, ReactiveFormsModule, StateContainerComponent],
   templateUrl: './management.component.html',
   styleUrl: './management.component.css'
 })

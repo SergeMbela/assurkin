@@ -1,7 +1,7 @@
 import { Injectable, PLATFORM_ID, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { DbConnectService, EcheanceStatus } from './db-connect.service'; // Correction du chemin si nécessaire
-import { tap } from 'rxjs/operators';
+import { DbConnectService } from './db-connect.service';
+import { tap, take } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -20,6 +20,7 @@ export class EcheanceStatusService {
 
   private loadStatuses(): void {
     this.dbService.getAllEcheanceStatuts().pipe(
+      take(1), // Se désabonne automatiquement après la première émission.
       tap(statuses => {
         console.log(`[EcheanceStatusService] Loaded ${statuses.length} statuses.`);
         statuses.forEach(status => this.statusMap.set(status.id_echeance, status.label));

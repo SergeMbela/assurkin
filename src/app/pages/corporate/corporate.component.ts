@@ -1,6 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { AuthService } from '../../services/auth.service';
 import { DbConnectService } from '../../services/db-connect.service';
 import { environment } from '../../../environments/environment';
 
@@ -25,27 +27,36 @@ export function passwordsMatchValidator(control: AbstractControl): ValidationErr
 export class CorporateComponent implements OnInit {
   registerForm!: FormGroup;
   loginForm!: FormGroup;
+  resetPasswordForm!: FormGroup;
+  isResettingPassword = false;
 
   // Propriétés pour la popup de notification
   showPopup = false;
   popupMessage = '';
   popupType: 'success' | 'error' = 'success';
   private popupTimeout: any;
+  
+  private fb = inject(FormBuilder);
+  private dbConnectService = inject(DbConnectService);
+  private authService = inject(AuthService);
+  private router = inject(Router);
 
-  constructor(
-    private fb: FormBuilder,
-    private dbConnectService: DbConnectService,
-  ) {}
+  constructor() {}
 
   ngOnInit(): void {
-    this.loginForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', Validators.required]
-    });
-
     // On échappe les points dans le nom de domaine pour le regex
     const domain = environment.domain_name.replace(/\./g, '\\.');
     const emailPattern = new RegExp(`^[A-Za-z0-9._%+-]+@${domain}$`, 'i');
+
+    this.loginForm = this.fb.group({
+      // Ajout du validateur de pattern pour le domaine
+      email: ['', [Validators.required, Validators.email, Validators.pattern(emailPattern)]],
+      password: ['', Validators.required]
+    });
+
+    this.resetPasswordForm = this.fb.group({
+      email: ['', [Validators.required, Validators.email, Validators.pattern(emailPattern)]]
+    });
 
     this.registerForm = this.fb.group({
       nom: ['', Validators.required],
@@ -60,8 +71,24 @@ export class CorporateComponent implements OnInit {
 
   onLoginSubmit(): void {
     if (this.loginForm.invalid) {
-      return; // Ne devrait pas arriver si le bouton est désactivé
+      this.loginForm.markAllAsTouched();
+      return;
     }
+
+    this.authService.signIn(this.loginForm.value).subscribe({
+      next: (response) => {
+        if (response.error) {
+          // Gérer les erreurs d'authentification renvoyées par Supabase
+          this.showNotification(response.error.message, 'error');
+        } else {
+          // Redirection vers la page de management en cas de succès
+          this.router.navigate(['/management']);
+        }
+      },
+      error: (err) => {
+        this.showNotification(`Erreur d'authentification: ${err.message}`, 'error');
+      }
+    });
   }
   onRegisterSubmit(): void {
     if (this.registerForm.invalid) {
@@ -87,6 +114,32 @@ export class CorporateComponent implements OnInit {
         this.showNotification(errorMessage, 'error');
       }
     });
+  }
+
+  onResetPasswordSubmit(): void {
+    if (this.resetPasswordForm.invalid) {
+      this.resetPasswordForm.markAllAsTouched();
+      return;
+    }
+    const email = this.resetPasswordForm.value.email;
+    this.authService.sendPasswordResetEmail(email).subscribe({
+      next: ({ error }) => {
+        if (error) {
+          this.showNotification(`Erreur : ${error.message}`, 'error');
+        } else {
+          // Pour des raisons de sécurité, on affiche un message générique.
+          this.showNotification('Si un compte existe pour cet e-mail, un lien de réinitialisation a été envoyé.', 'success');
+          this.toggleResetPasswordView(false);
+        }
+      },
+      error: (err) => {
+        this.showNotification(`Une erreur est survenue : ${err.message}`, 'error');
+      }
+    });
+  }
+
+  toggleResetPasswordView(show: boolean): void {
+    this.isResettingPassword = show;
   }
 
   private showNotification(message: string, type: 'success' | 'error') {

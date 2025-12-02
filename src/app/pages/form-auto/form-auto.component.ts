@@ -51,6 +51,28 @@ export class FormAutoComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Validateur de groupe pour vérifier que la date d'obtention du permis est au moins 14 ans après la date de naissance.
+   */
+  datePermisApresNaissanceValidator(): ValidatorFn {
+    return (group: AbstractControl): ValidationErrors | null => {
+      const dateNaissanceControl = group.get('date_naissance');
+      const datePermisControl = group.get('permis_date');
+
+      // Ne pas valider si les champs ne sont pas remplis (laissé à 'required')
+      if (!dateNaissanceControl || !datePermisControl || !dateNaissanceControl.value || !datePermisControl.value) {
+        return null;
+      }
+
+      const dateNaissance = new Date(dateNaissanceControl.value);
+      const datePermis = new Date(datePermisControl.value);
+
+      // Calcule la date minimale pour l'obtention du permis (date de naissance + 14 ans)
+      const minPermisDate = new Date(dateNaissance.getFullYear() + 14, dateNaissance.getMonth(), dateNaissance.getDate());
+
+      return datePermis >= minPermisDate ? null : { datePermisTropTot: true };
+    };
+  }
+  /**
    * Validateur asynchrone pour vérifier si un numéro de permis existe déjà.
    */
   permisExistsValidator(): AsyncValidatorFn {
@@ -100,7 +122,6 @@ export class FormAutoComponent implements OnInit, OnDestroy {
     };
   }
 
-
   // --- Preneur d'assurance ---
   preneurPostalCode = '';
 
@@ -135,6 +156,7 @@ export class FormAutoComponent implements OnInit, OnDestroy {
   isMarqueLoading = false;
   isModeleLoading = false;
   showModeleList = false;
+  isSubmitting = false; // Pour le loader
 
   // --- Sujets pour la recherche avec debounce ---
   private marque$!: Subject<string>;
@@ -166,27 +188,29 @@ export class FormAutoComponent implements OnInit, OnDestroy {
         genre: [null, Validators.required],
         nom: ['', Validators.required],
         prenom: ['', Validators.required],
-        dateNaissance: ['', [Validators.required, this.ageValidator(14)]],
+        date_naissance: ['', [Validators.required, this.ageValidator(14)]],
         telephone: ['', Validators.required],
         email: ['', [Validators.required, Validators.email]], // Le validateur asynchrone sera ajouté côté client
         adresse: ['', Validators.required],
-        codePostal: ['', [Validators.required, Validators.pattern('^[0-9]{4}$')]],
+        code_postal: ['', [Validators.required, Validators.pattern('^[0-9]{4}$')]],
         ville: ['', Validators.required],
-        permis: ['', Validators.required],
-        datePermis: ['', [Validators.required, this.dateInPastValidator()]],
+        permis_numero: ['', Validators.required],
+        permis_date: ['', [Validators.required, this.dateInPastValidator()]],
+      }, {
+        validators: this.datePermisApresNaissanceValidator()
       }),
       conducteurDifferent: [false],
       conducteur: this.fb.group({
         genre: [null],
         nom: [''],
         prenom: [''],
-        dateNaissance: ['', this.ageValidator(14)],
+        date_naissance: ['', this.ageValidator(14)],
         adresse: [''],
-        codePostal: ['', Validators.pattern('^[0-9]{4}$')],
+        code_postal: ['', Validators.pattern('^[0-9]{4}$')],
         ville: [''],
-        permis: [''],
-        datePermis: ['', this.dateInPastValidator()],
-      }),
+        permis_numero: [''],
+        permis_date: ['', this.dateInPastValidator()],
+      }, { validators: this.datePermisApresNaissanceValidator() }),
       vehicule: this.fb.group({
         type: ['', Validators.required],
         marque: ['', Validators.required],
@@ -209,7 +233,7 @@ export class FormAutoComponent implements OnInit, OnDestroy {
     // à l'intérieur de la condition.
     if (isPlatformBrowser(this.platformId)) {
        // Ajouter le validateur asynchrone uniquement côté client
-      const permisControl = this.autoForm.get('preneur.permis');
+      const permisControl = this.autoForm.get('preneur.permis_numero');
       if (permisControl) {
         permisControl.setAsyncValidators(this.permisExistsValidator());
       }
@@ -302,7 +326,7 @@ export class FormAutoComponent implements OnInit, OnDestroy {
    */
   selectPostalCode(selectedCity: PostalCode, type: 'preneur' | 'conducteur'): void {
     const formGroup = this.autoForm.get(type) as FormGroup;
-    formGroup.get('codePostal')?.setValue(selectedCity.postalCode, { emitEvent: false });
+    formGroup.get('code_postal')?.setValue(selectedCity.postalCode, { emitEvent: false });
     this.dbConnectService.getCitiesByPostalCode(selectedCity.postalCode).pipe(first()).subscribe(cities => {
       if (type === 'preneur') {
         this.preneurCities = cities;
@@ -312,16 +336,12 @@ export class FormAutoComponent implements OnInit, OnDestroy {
         this.filteredConducteurPostalCodes = []; // Vide la liste d'autocomplétion
       }
 
-      if (cities.length === 1) {
-        formGroup.get('ville')?.setValue(cities[0]);
-      } else {
-        formGroup.get('ville')?.setValue(''); // Laisse l'utilisateur choisir
-      }
+      formGroup.get('ville')?.setValue(selectedCity.city);
     });
   }
 
   private setupPostalCodeListener(type: 'preneur' | 'conducteur'): void {
-    const codePostalControl = this.autoForm.get(`${type}.codePostal`);
+    const codePostalControl = this.autoForm.get(`${type}.code_postal`);
     const villeControl = this.autoForm.get(`${type}.ville`);
 
     if (!codePostalControl || !villeControl) return;
@@ -394,43 +414,76 @@ export class FormAutoComponent implements OnInit, OnDestroy {
     if (!isPlatformBrowser(this.platformId)) return;
 
     if (this.autoForm.valid) {
-      this.submissionStatus = null; // Réinitialise le statut
+        this.isSubmitting = true;
+        this.submissionStatus = null;
 
-      // Le numéro de permis n'existe pas (validé par l'async validator), on insère directement le devis en DB.
-      this.dbConnectService.createFullDevis(this.autoForm.value).subscribe({
+        const preneurGroup = this.autoForm.get('preneur') as FormGroup;
+        const emailControl = preneurGroup.get('email');
+
+        // Si l'email est connu, on vérifie la correspondance avant de soumettre
+        if (emailControl?.hasError('emailExists')) {
+            this.dbConnectService.getPersonByEmail(emailControl.value).subscribe(person => {
+                const permisControl = preneurGroup.get('permis_numero');
+                const dateNaissanceControl = preneurGroup.get('date_naissance');
+
+                if (person && (person.permis_numero !== permisControl?.value || person.date_naissance !== dateNaissanceControl?.value)) {
+                    this.isSubmitting = false;
+                    this.submissionStatus = { success: false, message: 'Les informations saisies (numéro de permis ou date de naissance) ne correspondent pas à celles enregistrées pour cet email. Veuillez vérifier vos données.' };
+                } else {
+                    // Les données correspondent, on peut soumettre
+                    this.proceedToSubmit();
+                }
+            });
+        } else {
+            // L'email n'est pas connu, on soumet directement
+            this.proceedToSubmit();
+        }
+    } else {
+        this.markAllAsTouched(this.autoForm);
+        const invalidFields = this.getInvalidFields(this.autoForm);
+        let errorMessage = 'Veuillez remplir tous les champs obligatoires avant de soumettre.';
+        if (invalidFields.length > 0) {
+            errorMessage += '<br><br><strong>Champs manquants ou invalides :</strong><ul class="list-disc list-inside mt-2">';
+            invalidFields.forEach(field => {
+                errorMessage += `<li>${field}</li>`;
+            });
+            errorMessage += '</ul>';
+        }
+        this.submissionStatus = { success: false, message: errorMessage };
+    }
+}
+
+private proceedToSubmit(): void {
+    this.dbConnectService.createFullDevis(this.autoForm.value).subscribe({
         next: (response) => {
-          console.log('Devis enregistré avec succès', response);
-          // Sauvegarder l'email et le téléphone dans le localStorage 'Ifoundyou'
-          const preneurData = this.autoForm.get('preneur')?.value;
-          if (preneurData && preneurData.email && preneurData.telephone) {
-            const contactInfo = { email: preneurData.email, telephone: preneurData.telephone };
-            localStorage.setItem('Ifoundyou', JSON.stringify(contactInfo));
-            console.log('Informations de contact sauvegardées dans Ifoundyou:', contactInfo);
-          }
-
-          localStorage.removeItem('autoFormData'); // Nettoyer le localStorage
-          this.submissionStatus = { success: true, message: 'Votre demande de devis a bien été enregistrée !' };
-          // Optionnel : rediriger l'utilisateur ou réinitialiser le formulaire
-          // this.autoForm.reset();
+            this.isSubmitting = false;
+            console.log('Devis enregistré avec succès', response);
+            const preneurData = this.autoForm.get('preneur')?.value;
+            if (preneurData && preneurData.email && preneurData.telephone) {
+                const contactInfo = { email: preneurData.email, telephone: preneurData.telephone };
+                localStorage.setItem('Ifoundyou', JSON.stringify(contactInfo));
+                console.log('Informations de contact sauvegardées dans Ifoundyou:', contactInfo);
+            }
+            localStorage.removeItem('autoFormData');
+            this.submissionStatus = { success: true, message: 'Votre demande de devis a bien été enregistrée !' };
         },
         error: (err) => {
-          console.error("Erreur lors de l'enregistrement du devis", err);
-          this.submissionStatus = { success: false, message: "Une erreur est survenue lors de l'enregistrement de votre devis." };
+            this.isSubmitting = false;
+            console.error("Erreur lors de l'enregistrement du devis", err);
+            this.submissionStatus = { success: false, message: "Une erreur est survenue lors de l'enregistrement de votre devis." };
         }
-      });
-    } else {
-      this.markAllAsTouched(this.autoForm);
-      const invalidFields = this.getInvalidFields(this.autoForm);
-      let errorMessage = 'Veuillez remplir tous les champs obligatoires avant de soumettre.';
-      if (invalidFields.length > 0) {
-        errorMessage += '<br><br><strong>Champs manquants ou invalides :</strong><ul class="list-disc list-inside mt-2">';
-        invalidFields.forEach(field => {
-          errorMessage += `<li>${field}</li>`;
-        });
-        errorMessage += '</ul>';
-      }
-      this.submissionStatus = { success: false, message: errorMessage };
+    });
+}
+
+  /**
+   * Ferme la popup de statut en réinitialisant l'objet submissionStatus.
+   */
+  closePopup(): void {
+    // Si la soumission a été un succès, réinitialise le formulaire
+    if (this.submissionStatus?.success) {
+      this.autoForm.reset();
     }
+    this.submissionStatus = null;
   }
 
   private getInvalidFields(formGroup: FormGroup, parentPath = ''): string[] {
@@ -440,24 +493,24 @@ export class FormAutoComponent implements OnInit, OnDestroy {
       'preneur.genre': 'Genre (Preneur)',
       'preneur.nom': 'Nom (Preneur)',
       'preneur.prenom': 'Prénom (Preneur)',
-      'preneur.dateNaissance': 'Date de naissance (Preneur)',
+      'preneur.date_naissance': 'Date de naissance (Preneur)',
       'preneur.telephone': 'Numéro de téléphone (Preneur)',
       'preneur.email': 'Email (Preneur)',
       'preneur.adresse': 'Rue et numéro (Preneur)',
-      'preneur.codePostal': 'Code Postal (Preneur)',
+      'preneur.code_postal': 'Code Postal (Preneur)',
       'preneur.ville': 'Ville (Preneur)',
-      'preneur.permis': 'Numéro de permis (Preneur)',
-      'preneur.datePermis': 'Date d\'obtention du permis (Preneur)',
+      'preneur.permis_numero': 'Numéro de permis (Preneur)',
+      'preneur.permis_date': 'Date d\'obtention du permis (Preneur)',
       // Conducteur (seulement si différent)
       'conducteur.genre': 'Genre (Conducteur)',
       'conducteur.nom': 'Nom (Conducteur)',
       'conducteur.prenom': 'Prénom (Conducteur)',
-      'conducteur.dateNaissance': 'Date de naissance (Conducteur)',
+      'conducteur.date_naissance': 'Date de naissance (Conducteur)',
       'conducteur.adresse': 'Rue et numéro (Conducteur)',
-      'conducteur.codePostal': 'Code Postal (Conducteur)',
+      'conducteur.code_postal': 'Code Postal (Conducteur)',
       'conducteur.ville': 'Ville (Conducteur)',
-      'conducteur.permis': 'Numéro de permis (Conducteur)',
-      'conducteur.datePermis': 'Date d\'obtention du permis (Conducteur)',
+      'conducteur.permis_numero': 'Numéro de permis (Conducteur)',
+      'conducteur.permis_date': 'Date d\'obtention du permis (Conducteur)',
       // Véhicule
       'vehicule.type': 'Type de véhicule',
       'vehicule.marque': 'Marque',
@@ -498,20 +551,22 @@ export class FormAutoComponent implements OnInit, OnDestroy {
       conducteurGroup.get('genre')?.setValidators(Validators.required);
       conducteurGroup.get('nom')?.setValidators(Validators.required);
       conducteurGroup.get('prenom')?.setValidators(Validators.required);
-      conducteurGroup.get('dateNaissance')?.setValidators([Validators.required, this.ageValidator(14)]);
+      conducteurGroup.get('date_naissance')?.setValidators([Validators.required, this.ageValidator(14)]);
       conducteurGroup.get('adresse')?.setValidators(Validators.required);
-      conducteurGroup.get('codePostal')?.setValidators([Validators.required, Validators.pattern('^[0-9]{4}$')]);
+      conducteurGroup.get('code_postal')?.setValidators([Validators.required, Validators.pattern('^[0-9]{4}$')]);
       conducteurGroup.get('ville')?.setValidators(Validators.required);
       // On ajoute le validateur requis ET le validateur asynchrone pour le permis du conducteur
-      conducteurGroup.get('permis')?.setValidators([Validators.required]);
-      conducteurGroup.get('permis')?.setAsyncValidators(this.permisExistsValidator());
-      conducteurGroup.get('datePermis')?.setValidators([Validators.required, this.dateInPastValidator()]);
+      conducteurGroup.get('permis_numero')?.setValidators([Validators.required]);
+      conducteurGroup.get('permis_numero')?.setAsyncValidators(this.permisExistsValidator());
+      conducteurGroup.setValidators(this.datePermisApresNaissanceValidator());
+      conducteurGroup.get('permis_date')?.setValidators([Validators.required, this.dateInPastValidator()]);
     } else {
       // On vide les champs et on retire TOUS les validateurs pour s'assurer que le groupe est valide.
       conducteurGroup.reset();
       Object.keys(conducteurGroup.controls).forEach(key => {
         conducteurGroup.get(key)?.clearValidators();
         conducteurGroup.get(key)?.clearAsyncValidators();
+        conducteurGroup.clearValidators();
       });
     }
     Object.keys(conducteurGroup.controls).forEach(key => {

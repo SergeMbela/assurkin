@@ -21,14 +21,17 @@ export class SupabaseService {
   );
 
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {
-    this.supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
-
     if (isPlatformBrowser(this.platformId)) {
+      // Initialisez le client Supabase uniquement dans le navigateur.
+      this.supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
       // Écoute les changements d'état d'authentification et met à jour le sujet de session.
       // C'est la seule source de vérité pour l'état de la session.
       this.supabase.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null) => {
         this.sessionSubject.next(session);
       });
+    } else {
+      // Côté serveur, créez un client "factice" ou non initialisé pour éviter les erreurs.
+      this.supabase = {} as SupabaseClient;
     }
   }
 

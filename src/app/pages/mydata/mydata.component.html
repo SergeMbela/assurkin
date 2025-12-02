@@ -41,6 +41,12 @@
               <span class="ml-3">Annulation Voyage</span>
             </a>
           </li>
+          <li>
+            <a (click)="setView('documents')" class="flex items-center p-3 text-base font-bold text-gray-900 rounded-lg cursor-pointer group hover:shadow" [ngClass]="{'bg-gray-100 hover:bg-gray-200': activeView === 'documents', 'hover:bg-gray-100': activeView !== 'documents'}">
+              <i class="fas fa-folder w-6 h-6 text-gray-500"></i>
+              <span class="ml-3">Mes Documents</span>
+            </a>
+          </li>
           <!-- Bouton de déconnexion -->
           <li class="border-t pt-2 mt-2">
             <a (click)="logout()" class="flex items-center p-3 text-base font-bold text-red-600 rounded-lg cursor-pointer hover:bg-red-50 group hover:shadow">
@@ -109,6 +115,12 @@
             </table>
           </div>
           <div *ngIf="!contractsLoading && contracts.length === 0" class="text-center text-gray-500"><p>Aucun contrat trouvé pour cette catégorie.</p></div>
+        </div>
+
+        <!-- Section Mes Documents -->
+        <div *ngIf="activeView === 'documents'">
+          <h2 class="text-2xl font-bold mb-6 text-gray-800">Mes Documents</h2>
+          <div class="text-center text-gray-500"><p>La section des documents est en cours de construction.</p></div>
         </div>
       </div>
     </div>

@@ -9,7 +9,7 @@
                 ? 'border-blue-500 text-blue-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
               class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
-        {{ tab.label }}
+        {{ tab.label | titlecase }}
       </button>
     </nav>
   </div>
@@ -40,7 +40,7 @@
               <th scope="col" class="px-6 py-3">ID Devis</th>
               <th scope="col" class="px-6 py-3">Preneur</th>
               <!-- Colonne dynamique -->
-              <th scope="col" class="px-6 py-3">{{ (activeTab$ | async) === 'auto' ? 'Véhicule' : 'Description' }}</th>
+              <th scope="col" class="px-6 py-3">{{ ((activeTab$ | async) === 'auto' ? 'Véhicule' : 'Description') | titlecase }}</th>
               <th scope="col" class="px-6 py-3">Date de la demande</th>
               <th scope="col" class="px-6 py-3">Statut</th>
               <th scope="col" class="px-6 py-3 no-print">Offre</th>
@@ -51,10 +51,10 @@
           <tbody>
             <tr *ngFor="let quote of vm.state.data.quotes" class="bg-white border-b hover:bg-gray-50 transition-colors duration-200">
               <td class="px-6 py-4 font-semibold text-gray-900 whitespace-nowrap">#{{ quote.id }}</td>
-              <td class="px-6 py-4">{{ quote.prenom || '' }} {{ quote.nom || '' }}</td>
+              <td class="px-6 py-4">{{ quote.prenom || ''| titlecase  }} {{ quote.nom || '' | titlecase }}</td>
               <td class="px-6 py-4 truncate max-w-xs">
                 <ng-container *ngIf="isAutoQuote(quote)">
-                  {{ quote.typeVehicule }} {{ quote.marqueVehicule }} {{ quote.modeleVehicule }}
+                  {{ quote.typeVehicule | titlecase  }} {{ quote.marqueVehicule | titlecase  }} {{ quote.modeleVehicule | titlecase  }}
                 </ng-container>
                 <ng-container *ngIf="isDescriptionQuote(quote)">
                   {{ quote.description }}

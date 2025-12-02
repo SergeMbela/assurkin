@@ -87,26 +87,26 @@ export interface AutoFormData {
     genre: string;
     nom: string;
     prenom: string;
-    dateNaissance: string;
+    date_naissance: string;
     telephone: string;
     email: string;
     adresse: string;
-    codePostal: string;
+    code_postal: string;
     ville: string;
-    permis: string;
-    datePermis: string;
+    permis_numero: string;
+    permis_date: string;
   };
   conducteurDifferent: boolean;
   conducteur: {
     genre: string;
     nom: string;
     prenom: string;
-    dateNaissance: string;
+    date_naissance: string;
     adresse: string;
-    codePostal: string;
+    code_postal: string;
     ville: string;
-    permis: string;
-    datePermis: string;
+    permis_numero: string;
+    permis_date: string;
   };
   vehicule: {
     type: string;
@@ -316,49 +316,44 @@ export class DbConnectService {
    * @returns Un Observable du devis créé.
    */
   createFullDevis(formData: AutoFormData): Observable<any> {
+    console.log('[createFullDevis] Données du formulaire reçues :', formData);
     // Use defer to wrap the async logic in an Observable
     return defer(async () => {
       // -----------------------------------------------------------------
       // ÉTAPE 1: Chercher ou créer le Preneur.
       // -----------------------------------------------------------------
-      const preneur = await this.findOrCreatePerson({
-        ...formData.preneur,
-        code_postal: formData.preneur.codePostal,
-        permis_numero: formData.preneur.permis,
-        permis_date: formData.preneur.datePermis
-      });
+      console.log('[createFullDevis] Étape 1: Recherche ou création du preneur...');
+      const preneur = await this.findOrCreatePerson(formData.preneur);
+      console.log('[createFullDevis] Résultat pour le preneur :', preneur);
 
       // -----------------------------------------------------------------
       // ÉTAPE 2: Insérer le Conducteur
       // -----------------------------------------------------------------
+      console.log('[createFullDevis] Étape 2: Traitement du conducteur...');
       let conducteur = null;
       if (formData.conducteurDifferent) {
         const { data: conducteurData, error: conducteurError } = await this.supabase.supabase
           .from('personnes')
-          .insert({
-            genre: formData.conducteur.genre,
-            nom: formData.conducteur.nom,
-            prenom: formData.conducteur.prenom,
-            date_naissance: formData.conducteur.dateNaissance,
-            adresse: formData.conducteur.adresse,
-            code_postal: formData.conducteur.codePostal,
-            ville: formData.conducteur.ville,
-            permis_numero: formData.conducteur.permis,
-            permis_date: formData.conducteur.datePermis
-          })
+          .insert(formData.conducteur)
           .select()
           .single();
 
-        if (conducteurError) throw conducteurError;
+        if (conducteurError) {
+          console.error('[createFullDevis] Erreur lors de l\'insertion du conducteur :', conducteurError);
+          throw conducteurError;
+        }
         conducteur = conducteurData;
       } else {
         // If the driver is the same as the policyholder, use the policyholder's data
+        console.log('[createFullDevis] Le conducteur est le même que le preneur.');
         conducteur = preneur;
       }
+      console.log('[createFullDevis] Résultat pour le conducteur :', conducteur);
 
       // -----------------------------------------------------------------
       // ÉTAPE 3: Insérer le Véhicule
       // -----------------------------------------------------------------
+      console.log('[createFullDevis] Étape 3: Insertion du véhicule...');
       const { data: vehicule, error: vehiculeError } = await this.supabase.supabase
         .from('vehicules')
         .insert({
@@ -373,13 +368,18 @@ export class DbConnectService {
         .select()
         .single();
 
-      if (vehiculeError) throw vehiculeError;
+      if (vehiculeError) {
+        console.error('[createFullDevis] Erreur lors de l\'insertion du véhicule :', vehiculeError);
+        throw vehiculeError;
+      }
+      console.log('[createFullDevis] Véhicule inséré :', vehicule);
 
       if (!conducteur || !vehicule) throw new Error('Could not create driver or vehicle.');
 
       // -----------------------------------------------------------------
       // ÉTAPE 4: Lier le tout dans le Devis
       // -----------------------------------------------------------------
+      console.log('[createFullDevis] Étape 4: Insertion du devis...');
       const { data: devis, error: devisError } = await this.supabase.supabase
         .from('devis_assurance')
         .insert({
@@ -395,7 +395,10 @@ export class DbConnectService {
         .select()
         .single();
 
-      if (devisError) throw devisError;
+      if (devisError) {
+        console.error('[createFullDevis] Erreur lors de l\'insertion du devis :', devisError);
+        throw devisError;
+      }
 
       console.log('Devis créé avec succès:', devis);
       return devis; // Return the final created quote
@@ -1671,7 +1674,7 @@ export class DbConnectService {
    */
   private async findOrCreatePerson(personData: {
     email: string;
-    genre?: string;
+    genre: string;
     nom?: string;
     prenom?: string;
     date_naissance?: string;
@@ -1682,6 +1685,7 @@ export class DbConnectService {
     permis_numero?: string;
     permis_date?: string;
   }): Promise<Person> {
+    console.log('[findOrCreatePerson] Données de la personne reçues :', personData);
     // 1. Chercher la personne par email
     const { data: existingPerson } = await this.supabase.supabase
       .from('personnes')
@@ -1690,19 +1694,23 @@ export class DbConnectService {
       .single();
 
     if (existingPerson) {
-      console.log('Personne existante trouvée:', existingPerson);
+      console.log('[findOrCreatePerson] Personne existante trouvée:', existingPerson);
       return existingPerson;
     }
 
     // 2. Si elle n'existe pas, la créer
-    console.log('Aucune personne existante, création en cours...');
+    console.log('[findOrCreatePerson] Aucune personne existante, création en cours...');
     const { data: newPerson, error: insertError } = await this.supabase.supabase
       .from('personnes')
-      .insert(personData)
+      .insert(personData) // Utilise l'objet complet
       .select()
       .single();
 
-    if (insertError) throw insertError;
+    if (insertError) {
+      console.error('[findOrCreatePerson] Erreur lors de l\'insertion de la nouvelle personne :', insertError);
+      throw insertError;
+    }
+    console.log('[findOrCreatePerson] Nouvelle personne créée :', newPerson);
     return newPerson;
   }
 

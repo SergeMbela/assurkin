@@ -1,6 +1,7 @@
 import { Injectable, OnDestroy, inject, PLATFORM_ID } from '@angular/core';
 import { from, Observable, BehaviorSubject, map } from 'rxjs';
 import { isPlatformBrowser } from '@angular/common';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { SignInWithPasswordCredentials, AuthChangeEvent, Session, User, Subscription as SupabaseSubscription } from '@supabase/auth-js';
 import { SupabaseService } from './supabase.service';
 
@@ -11,6 +12,7 @@ export class AuthService implements OnDestroy {
   private platformId = inject(PLATFORM_ID);
   private _currentUser$ = new BehaviorSubject<User | null>(null);
   public currentUser$ = this._currentUser$.asObservable();
+  public isAuthenticated = toSignal(this.currentUser$.pipe(map(user => !!user)), { initialValue: false });
   private authSubscription: SupabaseSubscription | null = null;
 
   constructor(private supabaseService: SupabaseService) {
