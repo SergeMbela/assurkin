@@ -4,6 +4,7 @@ import { map, switchMap, catchError } from 'rxjs/operators';
 import { PostgrestError, User } from '@supabase/supabase-js';
 import { SupabaseService } from './supabase.service';
 import { DevisAuto } from '../pages/mydata/mydata.component';
+import { environment } from '../../environments/environment';
 
 export interface Person {
   id: number;
@@ -283,6 +284,21 @@ export interface DocumentType {
   created_at: string;
   Label: string;
   view: string | null;
+}
+
+// Correspond au schéma de la table `uploaded_files`
+export interface UploadedFile {
+  id: number;
+  file_name: string;
+  path: string; // Renommé de file_path à path
+  id_quote?: number;
+  id_type?: number;
+  date_created: string; // Renommé de created_at à date_created
+  raisons?: string;
+  user_id: number; // Type integer, correspond à personnes.id
+  status?: string;
+  docusign_envelope_id?: number;
+  signed_pdf_url?: string;
 }
 
 export interface InfoRequestFormData {
@@ -788,11 +804,11 @@ export class DbConnectService {
 
   /**
    * Récupère les contrats d'un utilisateur pour une catégorie donnée.
-   * @param userId L'ID de l'utilisateur.
+   * @param personneId L'ID de la personne (preneur).
    * @param category La catégorie de contrat à récupérer.
    * @returns Un Observable avec la liste des contrats.
    */
-  getContracts(userId: string, category: string): Observable<Contrat[]> {
+  getContracts(personneId: number, category: string): Observable<Contrat[]> {
     if (category === 'auto') {
       // Pour la catégorie 'auto', on va chercher dans les devis
       return from(
@@ -802,10 +818,9 @@ export class DbConnectService {
             id,
             date_effet,
             statut,
-            vehicules ( marque, modele ),
-            personnes!devis_assurance_preneur_id_fkey!inner ( user_id )
+            vehicules ( marque, modele )
           `)
-          .eq('personnes.user_id', userId) // Filtre sur l'ID de l'utilisateur lié à la personne (preneur)
+          .eq('preneur_id', personneId)
       ).pipe(
         map(response => {
           if (response.error) throw response.error;
@@ -822,7 +837,6 @@ export class DbConnectService {
         })
       );
     } else if (category === 'habitation') {
-      console.log('Récupération des devis habitation pour l\'utilisateur ID:', userId);
       // Pour la catégorie 'habitation', on va chercher dans les devis habitation
       return from(
         this.supabase.supabase
@@ -831,11 +845,10 @@ export class DbConnectService {
             id,
             date_effet,
             statut,
-            batiment_type_maison,
-            batiment_adresse,
-            personnes!habitation_quotes_preneur_id_fkey!inner ( user_id )
+            batiment_type_maison, 
+            batiment_adresse
           `)
-          .eq('personnes.user_id', userId)
+          .eq('preneur_id', personneId)
       ).pipe(
         map(response => {
           if (response.error) throw response.error;
@@ -859,10 +872,9 @@ export class DbConnectService {
           .select(`
             id,
             created_at,
-            nombre_assures,
-            personnes!obseques_quotes_preneur_id_fkey!inner ( user_id )
+            nombre_assures
           `)
-          .eq('personnes.user_id', userId)
+          .eq('preneur_id', personneId)
       ).pipe(
         map(response => {
           if (response.error) throw response.error;
@@ -880,11 +892,34 @@ export class DbConnectService {
     } else {
       // Logique existante pour les autres types de contrats
       return from(
-        this.supabase.supabase.from('contracts').select('*').eq('user_id', userId).eq('categorie', category)
+        this.supabase.supabase.from('contracts').select('*').eq('preneur_id', personneId).eq('categorie', category)
       ).pipe(
         map(response => (response.data as Contrat[]) || [])
       );
     }
+  }
+
+  /**
+   * Récupère les documents téléversés pour une personne donnée.
+   * @param personneId L'ID de la personne (de la table `personnes`).
+   * @returns Un Observable avec la liste des documents.
+   */
+  getUploadedFiles(personneId: number): Observable<UploadedFile[]> {
+    return from(
+      this.supabase.supabase
+        .from('uploaded_files')
+        .select('*')
+        .eq('user_id', personneId)
+        .order('date_created', { ascending: false })
+    ).pipe(
+      map(response => {
+        if (response.error) {
+          console.error('Erreur lors de la récupération des documents :', response.error);
+          throw response.error;
+        }
+        return (response.data as UploadedFile[]) || [];
+      })
+    );
   }
 
   /**
@@ -980,6 +1015,24 @@ export class DbConnectService {
     );
   }
 
+  /**
+   * Récupère les données d'une personne par son user_id (de l'authentification).
+   * @param userId L'ID de l'utilisateur (UUID).
+   * @returns Un Observable avec les données de la personne ou null.
+   */
+  getPersonByUserId(userId: string): Observable<Person | null> {
+    return from(
+      this.supabase.supabase
+        .from('personnes')
+        .select('*')
+        .eq('user_id', userId)
+        .single()
+    ).pipe(
+      map(response => {
+        return response.data;
+      })
+    );
+  }
   /**
    * Récupère les devis d'assurance auto pour un utilisateur donné.
    * @param userId L'ID de l'utilisateur connecté.
@@ -1210,7 +1263,7 @@ export class DbConnectService {
    */
   createUserStorageFolder(userId: string): Observable<any> {
     const folderName = userId.substring(0, 8);
-    const bucketName = 'documents_assurances'; // Assurez-vous que ce bucket existe dans votre projet Supabase.
+    const bucketName = environment.storageBucketPrefix; // Nom du bucket depuis l'environnement
     const placeholderFileName = '.emptyFolderPlaceholder';
     const filePath = `${folderName}/${placeholderFileName}`;
 
@@ -1249,6 +1302,7 @@ export class DbConnectService {
       .select(`
           id,
           created_at,
+          preneur_id,
           statut,
           preneur:personnes!devis_assurance_preneur_id_fkey ( nom, prenom ),
           vehicules ( type, marque, modele, annee )
@@ -1289,6 +1343,7 @@ export class DbConnectService {
       .select(`
           id,
           created_at,
+          preneur_id,
           statut,
           batiment_adresse,
           batiment_type_maison,
@@ -1323,7 +1378,7 @@ export class DbConnectService {
 
     let query = this.supabase.supabase
       .from('obseques_quotes')
-      .select(`id, created_at, statut, nombre_assures, preneur:personnes!obseques_quotes_preneur_id_fkey ( nom, prenom )`, { count: 'exact' })
+      .select(`id, created_at, statut, nombre_assures, preneur_id, preneur:personnes!obseques_quotes_preneur_id_fkey ( nom, prenom )`, { count: 'exact' })
       .order('created_at', { ascending: false })
       .range(rangeFrom, rangeTo);
 
@@ -1353,6 +1408,7 @@ export class DbConnectService {
       .select(`
           id,
           date_created,
+          preneur_id,
           statut,
           nom,
           prenom,
@@ -1377,6 +1433,7 @@ export class DbConnectService {
       .select(`
           id,
           created_at,
+          preneur_id,
           preneur_nom,
           preneur_prenom,
           risque
@@ -1402,6 +1459,7 @@ export class DbConnectService {
       .select(`
           id,
           created_at,
+          preneur_id,
           statut,
           preneur:personnes!devis_assurance_preneur_id_fkey ( nom, prenom )
         `)
@@ -1427,6 +1485,7 @@ export class DbConnectService {
       .select(`
           id,
           created_at,
+          preneur_id,
           statut,
           preneur:personnes!habitation_quotes_preneur_id_fkey ( nom, prenom )
         `)

@@ -6,6 +6,7 @@ import { DbConnectService } from './db-connect.service';
 
 // Interfaces partagées pour la Gestion des offres.
 export interface AutoQuoteSummary {
+  preneur_id: number;
   id: number;
   nom: string;
   prenom: string;
@@ -17,6 +18,7 @@ export interface AutoQuoteSummary {
 }
 
 export interface HabitationQuoteSummary {
+  preneur_id: number;
   id: number;
   nom: string;
   prenom: string;
@@ -26,6 +28,7 @@ export interface HabitationQuoteSummary {
 }
 
 export interface ObsequesQuoteSummary {
+  preneur_id: number;
   id: number;
   nom: string;
   prenom: string;
@@ -35,6 +38,7 @@ export interface ObsequesQuoteSummary {
 }
 
 export interface VoyageQuoteSummary {
+  preneur_id: number;
   id: number;
   nom: string;
   prenom: string;
@@ -44,6 +48,7 @@ export interface VoyageQuoteSummary {
 }
 
 export interface RcQuoteSummary {
+  preneur_id: number;
   id: number;
   nom: string;
   prenom: string;
@@ -123,6 +128,7 @@ export class ManagementService {
         map(response => ({
           data: { // Assuming response is an array of quote items
             quotes: response.map((item: any) => ({
+              preneur_id: item.preneur_id,
               id: item.id,
               nom: item.preneur_nom ?? '',
               prenom: item.preneur_prenom ?? '',
@@ -157,8 +163,16 @@ export class ManagementService {
   private fetchAndMapVoyageData(apiCall$: Observable<{ data: any[], count: number | null }>): Observable<DataState<{ quotes: VoyageQuoteSummary[], totalItems: number }>> {
     return apiCall$.pipe(
       map(response => ({
-        data: { // Correction pour éviter 'N/A'
-          quotes: response.data.map(item => ({ id: item.id, nom: item.nom ?? '', prenom: item.prenom ?? '', dateDemande: item.date_created, statut: item.statut || 'Nouveau', description: item.description || 'Aucun message' })),
+        data: {
+          quotes: response.data.map(item => ({
+            preneur_id: item.preneur_id,
+            id: item.id,
+            nom: item.nom ?? '',
+            prenom: item.prenom ?? '',
+            dateDemande: item.date_created,
+            statut: item.statut || 'Nouveau',
+            description: item.description || 'Aucun message'
+          })),
           totalItems: response.count ?? 0
         },
         loading: false,
@@ -174,6 +188,7 @@ export class ManagementService {
       map(response => ({
         data: {
           quotes: response.data.map((item: any) => ({ // Correction pour éviter 'N/A'
+            preneur_id: item.preneur_id,
             id: item.id,
             nom: item.preneur?.nom ?? '',
             prenom: item.preneur?.prenom ?? '',
@@ -199,6 +214,7 @@ export class ManagementService {
           data: {
             quotes: response.data.map(item => ({
               id: item.id, // Correction pour éviter 'N/A'
+              preneur_id: item.preneur_id,
               nom: item.preneur?.nom ?? '',
               prenom: item.preneur?.prenom ?? '',
               dateDemande: item.created_at,
@@ -227,6 +243,7 @@ export class ManagementService {
       map(response => ({
         data: {
           quotes: response.data.map((item: any) => ({ // Correction pour éviter 'N/A'
+            preneur_id: item.preneur_id,
             id: item.id,
             nom: item.preneur?.nom ?? '',
             prenom: item.preneur?.prenom ?? '',

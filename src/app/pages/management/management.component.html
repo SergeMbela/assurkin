@@ -73,7 +73,7 @@
                 <a [routerLink]="['/management', (activeTab$ | async), quote.id]" class="text-blue-600 hover:text-blue-800 font-medium">Gérer</a>
               </td>
               <td class="px-6 py-4 no-print">
-                <a [routerLink]="['/management/upload', (activeTab$ | async), quote.id]" class="text-blue-600 hover:text-blue-800 font-medium">Gérer</a>
+                <a [routerLink]="['/management/upload', (activeTab$ | async), quote.id, quote.preneur_id]" class="text-blue-600 hover:text-blue-800 font-medium">Gérer</a>
               </td>
               <td class="px-6 py-4 no-print">
                 <a [routerLink]="['/management/assurance-details', (activeTab$ | async), quote.id]" class="text-blue-600 hover:text-blue-800 font-medium">Voir statistique</a>

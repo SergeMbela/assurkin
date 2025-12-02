@@ -84,12 +84,14 @@ export class ContractService {
    * @param filePath Le chemin du fichier stocké dans Supabase Storage.
    * @param fileName Le nom original du fichier.
    * @param raison La raison du téléversement (sujet du contrat).
+   * @param preneurId L'ID du preneur d'assurance.
    * @returns Un Observable qui se complète lorsque l'opération est terminée.
    */
-  addContractFile(quoteId: number, quoteType: string, filePath: string, fileName: string, raison: string): Observable<void> {
+  addContractFile(quoteId: number, quoteType: string, filePath: string, fileName: string, raison: string, preneurId: number): Observable<void> {
     const newFilePayload = {
       id_quote: quoteId,
       id_type: this.getQuoteTypeId(quoteType),
+      user_id: preneurId, // Enregistrement de l'ID du preneur
       path: filePath,
       file_name: fileName,
       raisons: raison, // Ajout de la raison

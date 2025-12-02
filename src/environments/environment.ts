@@ -6,6 +6,8 @@ export const environment = {
     maishapay_payment_url: 'https://api-maishapay.prod.aksantinet.com',
     website: 'hhtps://www.assurkin.be',
     supabaseFunctionUrl: 'https://fqopliwvpuiprdegxytz.supabase.co/functions/v1/send-sms',
-    domain_name: 'assurkin.be'
+    domain_name: 'assurkin.be',
+    storage_bucket: 'https://fqopliwvpuiprdegxytz.supabase.co/functions/v1/storage-upload',
+    storageBucketPrefix: 'https://fqopliwvpuiprdegxytz.supabase.co/functions/v1/storage-upload',
 };
 

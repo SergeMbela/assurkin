@@ -51,10 +51,12 @@ export class UploaderComponent implements OnInit {
   // Component State
   quoteId!: number;
   quoteType!: string;
-  
+  preneurId!: number;
+
   // File Upload State
   uploadStates: UploadState[] = [];
   isUploading = false;
+  globalUploadProgress = 0; // Pour la barre de progression globale
   uploadSuccess = false;
   errorMessage: string | null = null;
   documentTypes: DocumentType[] = [];
@@ -63,6 +65,7 @@ export class UploaderComponent implements OnInit {
   private clientInfo: any = null; // Pour stocker les infos du client (preneur)
   // CSV State
   isSavingCsvData = false;
+  isParsingCsv = false; // Pour l'indicateur de chargement lors de la lecture du fichier
   csvSaveSuccess = false;
   csvSaveError: string | null = null;
   csvData: CsvRow[] = [];
@@ -71,10 +74,11 @@ export class UploaderComponent implements OnInit {
     const params = this.route.snapshot.paramMap;
     this.quoteId = Number(params.get('id'));
     this.quoteType = params.get('type') || '';
+    this.preneurId = Number(params.get('preneurId'));
 
-    if (!this.quoteId || !this.quoteType) {
-      this.errorMessage = "Les informations du devis sont manquantes.";
-      console.error('Quote ID or Type is missing.');
+    if (!this.quoteId || !this.quoteType || !this.preneurId) {
+      this.errorMessage = "Les informations du devis ou du preneur sont manquantes.";
+      console.error('Quote ID, Type or Preneur ID is missing.');
       return;
     }
 
@@ -83,22 +87,8 @@ export class UploaderComponent implements OnInit {
 
   private initData(): void {
     // Charger les fichiers existants et générer les URLs de téléchargement signées
-    this.existingFiles$ = this.contractService.getContractFiles(this.quoteId, this.quoteType).pipe(
-      switchMap(files => {
-        if (!files || files.length === 0) {
-          return of([]); // Retourne un observable avec un tableau vide s'il n'y a pas de fichiers
-        }
-        // Pour chaque fichier, on crée une promesse qui génère l'URL signée
-        const filesWithUrlPromises = files.map(file => {
-          const downloadUrl = this.getPublicDownloadUrl(file.path);
-          return Promise.resolve({ ...file, downloadUrl } as (ExistingFileWithDate & { downloadUrl: string | null })); // On retourne un nouvel objet fichier avec l'URL
-        });
-        // On attend que toutes les promesses soient résolues et on retourne le résultat comme un observable
-        return from(Promise.all(filesWithUrlPromises));
-      }),
-      catchError(err => { console.error("Erreur lors de la génération des URLs signées:", err); return of([]); })
-    );
-    
+    this.refreshExistingFiles$();
+
     // Load Doc types
     this.loadDocumentTypes();
 
@@ -144,12 +134,12 @@ export class UploaderComponent implements OnInit {
 
       // Append new files instead of overwriting
       this.uploadStates = [...this.uploadStates, ...newFiles];
-      
+
       this.uploadSuccess = false;
       this.errorMessage = null;
-      
+
       // Reset input value to allow selecting the same file again if needed (after deleting)
-      input.value = ''; 
+      input.value = '';
     }
   }
 
@@ -159,7 +149,7 @@ export class UploaderComponent implements OnInit {
 
   onUpload(): void {
     const filesToUpload = this.uploadStates.filter(s => s.status === 'pending');
-    
+
     if (filesToUpload.length === 0) {
       this.errorMessage = "Aucun nouveau fichier à envoyer.";
       return;
@@ -167,6 +157,7 @@ export class UploaderComponent implements OnInit {
 
     this.isUploading = true;
     this.errorMessage = null;
+    this.globalUploadProgress = 0; // Réinitialiser la progression
 
     // Set status to uploading
     filesToUpload.forEach(s => s.status = 'uploading');
@@ -174,6 +165,11 @@ export class UploaderComponent implements OnInit {
     this.uploaderService.uploadContractFiles(filesToUpload.map(s => s.file), this.quoteId, this.quoteType)
       .subscribe({
         next: (result: UploadResult) => {
+          // Mettre à jour la progression globale
+          if (typeof result.totalProgress === 'number') {
+            this.globalUploadProgress = result.totalProgress;
+          }
+
           const state = this.uploadStates.find(s => s.file.name === result.fileName);
           if (state) {
             state.status = result.status;
@@ -187,6 +183,7 @@ export class UploaderComponent implements OnInit {
         error: (err) => {
           this.errorMessage = "Erreur technique lors de l'envoi.";
           this.isUploading = false;
+          this.globalUploadProgress = 0;
         },
         complete: () => {
           this.isUploading = false;
@@ -195,7 +192,7 @@ export class UploaderComponent implements OnInit {
           if (hasSuccess) {
             this.saveFilesToDbAndRefresh();
           }
-          
+
           this.uploadSuccess = this.uploadStates.every(s => s.status === 'success');
         }
       });
@@ -205,7 +202,7 @@ export class UploaderComponent implements OnInit {
   private isFileSaved(state: UploadState): boolean {
     // Implementation depends on if you want to track this flag, 
     // strictly unnecessary if uploadStates are cleared or ignored after save.
-    return false; 
+    return false;
   }
 
   private saveFilesToDbAndRefresh(): void {
@@ -219,11 +216,12 @@ export class UploaderComponent implements OnInit {
       console.log(`Fichier téléversé : '${s.file.name}', Type : '${s.raison}'`);
 
       return this.contractService.addContractFile(
-        this.quoteId, 
-        this.quoteType, 
-        s.filePath!, 
-        s.file.name, 
-        s.raison
+        this.quoteId,
+        this.quoteType,
+        s.filePath!,
+        s.file.name,
+        s.raison,
+        this.preneurId // Ajout du preneurId
       ).pipe(
         // Catch individual errors so one failure doesn't stop the others
         catchError(err => {
@@ -238,20 +236,7 @@ export class UploaderComponent implements OnInit {
     forkJoin(tasks$).subscribe({
       next: () => {
         console.log('Synchronisation BDD terminée.');
-        // On rafraîchit la liste des fichiers en appliquant la même logique que dans initData()
-        this.existingFiles$ = this.contractService.getContractFiles(this.quoteId, this.quoteType).pipe(
-          switchMap(files => {
-            if (!files || files.length === 0) {
-              return of([]);
-            }
-            const filesWithUrlPromises = files.map(file => {
-              const downloadUrl = this.getPublicDownloadUrl(file.path);
-              return { ...file, downloadUrl } as (ExistingFileWithDate & { downloadUrl: string | null });
-            });
-            return from(Promise.all(filesWithUrlPromises));
-          }),
-          catchError(err => { console.error("Erreur lors du rafraîchissement des URLs signées:", err); return of([]); })
-        );
+        this.refreshExistingFiles$();
 
         // Clean up successful uploads from the list so user sees they are done
         this.uploadStates = this.uploadStates.filter(s => s.status !== 'success');
@@ -277,16 +262,29 @@ export class UploaderComponent implements OnInit {
   onCsvFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
+      this.resetCsvSaveStatus();
+      this.isParsingCsv = true;
       const file = input.files[0];
       const reader = new FileReader();
 
       reader.onload = (e: any) => {
-        const text = e.target.result;
-        this.csvData = this.csvToJSON(text);
-        this.resetCsvSaveStatus();
+        try {
+          const text = e.target.result;
+          const jsonData = this.csvToJSON(text);
+          if (jsonData.length === 0) {
+            throw new Error("Le fichier CSV est vide ou ne contient pas de données valides.");
+          }
+          this.csvData = jsonData;
+        } catch (error: any) {
+          this.csvSaveError = error.message;
+          this.csvData = []; // Vider les données en cas d'erreur
+        } finally {
+          this.isParsingCsv = false;
+        }
       };
 
       reader.readAsText(file);
+      input.value = ''; // Permet de resélectionner le même fichier
     }
   }
 
@@ -294,12 +292,12 @@ export class UploaderComponent implements OnInit {
     if (!csvText || csvText.trim() === '') return [];
 
     const lines = csvText.trim().split(/\r?\n/);
-    if (lines.length < 2) return [];
+    if (lines.length < 2) throw new Error("Le fichier CSV doit contenir au moins un en-tête et une ligne de données.");
 
     const headers = lines[0].split(';').map(h => h.trim());
-    
+
     // Create translation map
-    const translatedHeaders = headers.map(header => 
+    const translatedHeaders = headers.map(header =>
       this.assuranceMapperService.getFrenchTranslation(header) || header
     );
 
@@ -317,7 +315,7 @@ export class UploaderComponent implements OnInit {
         const value = data[j] ? data[j].trim() : '';
         obj[translatedHeaders[j]] = value;
       }
-      
+
       // Filter out completely empty rows
       if (Object.values(obj).some(val => val !== '')) {
         result.push(obj);
@@ -328,7 +326,7 @@ export class UploaderComponent implements OnInit {
 
   onSaveCsvData(): void {
     if (!this.csvData.length) {
-      this.csvSaveError = "Aucune donnée.";
+      this.csvSaveError = "Aucune donnée à sauvegarder. Veuillez sélectionner un fichier CSV valide.";
       return;
     }
 
@@ -341,10 +339,10 @@ export class UploaderComponent implements OnInit {
         next: () => {
           this.csvSaveSuccess = true;
           // Refresh data from server to be sure
-           this.dbConnectService.getCsvData(this.quoteId, this.quoteType).subscribe(data => this.csvData = data);
+          this.dbConnectService.getCsvData(this.quoteId, this.quoteType).subscribe(data => this.csvData = data);
         },
         error: (err) => {
-          this.csvSaveError = err.message || "Erreur de sauvegarde.";
+          this.csvSaveError = `Erreur lors de la sauvegarde : ${err.message || "Une erreur inconnue est survenue."}`;
         }
       });
   }
@@ -363,9 +361,30 @@ export class UploaderComponent implements OnInit {
   getObjectKeys(obj: any): string[] {
     return obj ? Object.keys(obj) : [];
   }
-  
+
   hasPendingFiles(): boolean {
     return this.uploadStates.some(s => s.status === 'pending');
+  }
+
+  /**
+   * Récupère les fichiers existants pour le devis, génère leurs URLs de téléchargement,
+   * et met à jour l'observable `existingFiles$`.
+   */
+  private refreshExistingFiles$(): void {
+    this.existingFiles$ = this.contractService.getContractFiles(this.quoteId, this.quoteType).pipe(
+      map((files: ExistingFile[]) => {
+        if (!files || files.length === 0) {
+          return [];
+        }
+        // Pour chaque fichier, on génère l'URL de téléchargement
+        return (files as ExistingFileWithDate[]).map(file => {
+          const downloadUrl = this.getPublicDownloadUrl(file.path, this.quoteType);
+          return { ...file, downloadUrl };
+        });
+      }),
+      // Gère les erreurs de manière centralisée
+      catchError(err => { console.error("Erreur lors du rafraîchissement de la liste des fichiers:", err); return of([]); })
+    );
   }
 
   /**
@@ -382,16 +401,36 @@ export class UploaderComponent implements OnInit {
    * @param filePath Le chemin du fichier dans le bucket Supabase Storage.
    * @returns L'URL de téléchargement publique.
    */
-  getPublicDownloadUrl(filePath: string): string | null {
-    const bucketName = 'documents_auto';
-    try {
-      // Utilise la méthode du service pour obtenir l'URL publique
-      const { data } = this.dbConnectService.getPublicUrl(bucketName, filePath);
-      return data.publicUrl;
-    } catch (error) {
-      console.error('Erreur inattendue dans getPublicDownloadUrl:', error);
-      return null;
+  getPublicDownloadUrl(filePath: string, quoteType: string): string | null {
+    if (!filePath || !quoteType) return null;
+
+    // Utilise la méthode centralisée du service pour obtenir le nom du bucket.
+    const bucketName = this.uploaderService.getBucketName(quoteType);
+
+    // S'assure que le chemin ne commence pas par un '/' pour éviter les doubles slashes dans l'URL finale.
+    const cleanedFilePath = filePath.startsWith('/') ? filePath.substring(1) : filePath;
+
+    // Utilise la méthode centralisée du service pour construire l'URL.
+    // Cela garantit que la logique de construction de l'URL est cohérente dans toute l'application.
+    return this.uploaderService.getDownloadUrl(bucketName, cleanedFilePath);
+  }
+
+  /**
+   * Déclenche le téléchargement d'un fichier existant.
+   * @param file L'objet fichier contenant le nom et l'URL de téléchargement.
+   */
+  downloadFile(file: { file_name: string, downloadUrl: string | null }): void {
+    if (!file.downloadUrl) {
+      console.error('URL de téléchargement non disponible pour le fichier:', file.file_name);
+      return;
     }
+    // La logique de création de lien temporaire est la même que dans mydata.component.ts
+    // On utilise le paramètre `?download` de l'URL Supabase pour forcer le téléchargement
+    // et spécifier le nom du fichier. L'attribut `download` de la balise <a> est ignoré
+    // par les navigateurs pour les URL cross-origin.
+    const link = document.createElement('a');
+    link.href = `${file.downloadUrl}?download=${encodeURIComponent(file.file_name)}`;
+    link.click(); // Simuler un clic sur le lien suffit pour démarrer le téléchargement.
   }
 
   /**
@@ -412,8 +451,8 @@ export class UploaderComponent implements OnInit {
   }
 
   goBack(): void {
-    const managementPage = this.quoteType === 'auto' 
-      ? '/intranet/dashboard/auto-management' 
+    const managementPage = this.quoteType === 'auto'
+      ? '/intranet/dashboard/auto-management'
       : '/intranet/dashboard';
     this.router.navigate([managementPage]);
   }
