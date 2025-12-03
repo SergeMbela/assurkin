@@ -1,6 +1,6 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Assureur, DbConnectService } from '../../../../services/db-connect.service';
+import { Assureur, DbConnectService, MaritalStatus } from '../../../../services/db-connect.service';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
@@ -14,6 +14,7 @@ export class AutoDetailsComponent implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
   private insuranceCompanies: Assureur[] = [];
+  private maritalStatuses: MaritalStatus[] = [];
 
   constructor(private dbService: DbConnectService) {}
 
@@ -22,6 +23,12 @@ export class AutoDetailsComponent implements OnInit, OnDestroy {
       takeUntil(this.destroy$)
     ).subscribe(companies => {
       this.insuranceCompanies = companies || [];
+    });
+
+    this.dbService.getAllMaritalStatuses().pipe(
+      takeUntil(this.destroy$)
+    ).subscribe(statuses => {
+      this.maritalStatuses = statuses || [];
     });
   }
 
@@ -36,6 +43,14 @@ export class AutoDetailsComponent implements OnInit, OnDestroy {
     }
     const company = this.insuranceCompanies.find(c => c.id === companyId);
     return company ? company.nom : `Inconnue (ID: ${companyId})`;
+  }
+
+  getMaritalStatusLabel(statusId: number): string {
+    if (!statusId || !this.maritalStatuses || this.maritalStatuses.length === 0) {
+      return 'N/A';
+    }
+    const status = this.maritalStatuses.find(s => s.id === statusId);
+    return status ? status.label : `Inconnu (ID: ${statusId})`;
   }
 
   public getStatutClass(statut: string | null | undefined): { [key: string]: boolean } {

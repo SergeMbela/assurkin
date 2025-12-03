@@ -48,7 +48,7 @@ export class SupabaseUpdateService {
     const mapPersonData = (personForm: any) => ({
       prenom: personForm.firstName,
       nom: personForm.lastName,
-      date_naissance: personForm.dateNaissance,
+      date_naissance: personForm.date_naissance,
       email: personForm.email,
       telephone: personForm.phone,
       adresse: personForm.address,
@@ -100,7 +100,7 @@ export class SupabaseUpdateService {
     const mapPersonData = (personForm: any) => ({
       prenom: personForm.firstName,
       nom: personForm.lastName,
-      date_naissance: personForm.dateNaissance,
+      date_naissance: personForm.date_naissance,
       email: personForm.email,
       telephone: personForm.phone,
       adresse: personForm.address,

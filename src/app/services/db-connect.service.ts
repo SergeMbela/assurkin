@@ -152,6 +152,11 @@ export interface Statut {
   statut: string | null;
 }
 
+export interface MaritalStatus {
+  id: number;
+  label: string;
+}
+
 export interface Contrat {
   id: number;
   categorie: string;
@@ -798,6 +803,28 @@ export class DbConnectService {
         }
         console.log('Statuts récupérés depuis Supabase:', response.data);
         return (response.data as Statut[]) || [];
+      })
+    );
+  }
+
+  /**
+   * Récupère la liste de tous les statuts matrimoniaux.
+   * @returns Un Observable avec la liste des statuts.
+   */
+  getAllMaritalStatuses(): Observable<MaritalStatus[]> {
+    return from(
+      this.supabase.supabase
+        .from('marital_statut')
+        .select('id, label')
+        .order('id', { ascending: true })
+    ).pipe(
+      map(response => {
+        if (response.error) {
+          console.error('Erreur lors de la récupération des statuts matrimoniaux:', response.error);
+          throw response.error;
+        }
+        console.log('Statuts matrimoniaux récupérés depuis Supabase:', response.data);
+        return (response.data as MaritalStatus[]) || [];
       })
     );
   }
@@ -1783,14 +1810,14 @@ export class DbConnectService {
     const mappedData: any = {
       prenom: personForm.firstName,
       nom: personForm.lastName,
-      date_naissance: personForm.dateNaissance,
+      date_naissance: personForm.date_naissance,
       email: personForm.email,
       telephone: personForm.phone,
       adresse: personForm.address,
       code_postal: personForm.postalCode,
       ville: personForm.city,
       nationality: personForm.nationality,
-      marital_status: personForm.maritalStatus
+      marital_status_id: personForm.maritalStatus // Le formulaire enverra l'ID directement
     };
 
     if (options.includeDrivingLicense) {

@@ -1,0 +1,57 @@
+<div class="container mx-auto p-4 py-16 sm:py-24">
+  <!-- État de chargement initial -->
+  <div *ngIf="loading" class="text-center">
+    <p class="text-gray-600">Chargement des détails du contrat...</p>
+  </div>
+
+  <!-- Contenu principal une fois les données chargées -->
+  <div *ngIf="!loading && contract" class="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md">
+    <h2 class="text-2xl font-bold mb-2 text-gray-800">Détails du contrat #{{ contract.id }}</h2>
+    <p class="text-lg text-gray-600 mb-6">{{ contract.denomination }}</p>
+
+    <h3 class="text-xl font-semibold mb-4 text-gray-700">Envoyer une communication</h3>
+    
+    <form [formGroup]="communicationForm" (ngSubmit)="onSubmit()" novalidate>
+      <div class="space-y-6">
+        <!-- Champ de texte -->
+        <div>
+          <label for="message" class="block text-sm font-medium text-gray-700">Votre message</label>
+          <textarea id="message" formControlName="message" rows="4" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="Posez une question ou donnez une précision concernant ce contrat..."></textarea>
+          <div *ngIf="communicationForm.get('message')?.invalid && communicationForm.get('message')?.touched" class="text-red-500 text-sm mt-1">
+            Un message est requis.
+          </div>
+        </div>
+
+        <!-- Champ de téléchargement de fichier -->
+        <div>
+          <label for="file-upload" class="block text-sm font-medium text-gray-700">Joindre un document (PDF, JPG, PNG)</label>
+          <div class="mt-1 flex items-center">
+            <label for="file-upload" class="relative cursor-pointer rounded-md bg-white font-medium text-indigo-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 hover:text-indigo-500">
+              <span>Choisir un fichier</span>
+              <input id="file-upload" name="file-upload" type="file" class="sr-only" (change)="onFileSelected($event)" accept=".pdf,.jpg,.jpeg,.png">
+            </label>
+            <span *ngIf="selectedFile" class="ml-3 text-gray-600 truncate" [title]="selectedFile.name">{{ selectedFile.name }}</span>
+          </div>
+        </div>
+
+        <!-- Barre de progression de l'upload -->
+        <div *ngIf="uploading" class="w-full bg-gray-200 rounded-full h-2.5">
+          <div class="bg-blue-600 h-2.5 rounded-full" [style.width.%]="uploadProgress"></div>
+        </div>
+
+        <!-- Bouton d'envoi -->
+        <div class="text-right">
+          <button type="submit" [disabled]="uploading" class="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed">
+            <span *ngIf="!uploading">Envoyer</span>
+            <span *ngIf="uploading">Envoi en cours...</span>
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- État si le contrat n'est pas trouvé -->
+  <div *ngIf="!loading && !contract" class="text-center text-gray-500">
+    <p>Impossible de trouver le contrat demandé.</p>
+  </div>
+</div>

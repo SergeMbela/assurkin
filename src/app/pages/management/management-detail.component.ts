@@ -106,7 +106,7 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
       preneurAssurance: this.fb.group({
         firstName: [''],
         lastName: [''],
-        dateNaissance: [''],
+        date_naissance: [''],
         email: ['', Validators.email],
         phone: [''],
         address: [''],
@@ -123,7 +123,7 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
       preneurObseques: this.fb.group({
         firstName: [''],
         lastName: [''],
-        dateNaissance: [''],
+        date_naissance: [''],
         email: ['', Validators.email],
         phone: [''],
         address: [''],
@@ -134,7 +134,7 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
         // ... (champs identiques au preneur)
         firstName: [''],
         lastName: [''],
-        dateNaissance: [''],
+        date_naissance: [''],
         email: ['', Validators.email],
         phone: [''],
         address: [''],
@@ -151,8 +151,12 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
       vehicule: this.fb.group({
         make: [''],
         model: [''],
-        year: [''],
-        licensePlate: ['']
+        year: [null],
+        licensePlate: [''],
+        power: [null],
+        value: [null],
+        seats: [null],
+        registrationDate: ['']
       }),
       garantie: this.fb.group({
         baseRC: [false],
@@ -270,7 +274,7 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
       tap((value) => {
         const searchTerm = typeof value === 'string' ? value : (value as unknown as Marque)?.nom || '';
         // Si le champ est vidé ou si on tape, on réinitialise le modèle.
-        if (!value || typeof value === 'string') {
+        if (typeof value === 'string') {
           this.quoteUpdateForm.get('vehicule.model')?.setValue('');
           this.modelesForSelectedMarque = [];
           this.selectedMarqueId = null;
@@ -317,6 +321,7 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
   private patchFormValues(details: any): Observable<any> {    
     // Chaîne d'observables pour les chargements de données asynchrones post-patch
     const preneurPostalCode = this.quoteUpdateForm.get("preneurAssurance.postalCode")?.value;
+    console.warn('[ManagementDetailComponent] patchFormValues - Vehicle brand:', details.vehicule?.marque);
     const batimentPostalCode = this.quoteUpdateForm.get('batiment.codePostal')?.value;
     const obsequesPostalCode = this.quoteUpdateForm.get('preneurObseques.postalCode')?.value;
     const marqueVehicule = details.vehicule?.marque;
@@ -345,6 +350,7 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
                   // 1. On charge la liste des modèles
                   this.modelesForSelectedMarque = modeles;
                   // 2. ENSUITE, on patch la valeur du modèle dans le formulaire pour que la sélection se fasse.
+                  console.warn('[ManagementDetailComponent] patchFormValues - Patching model with value:', details.vehicule.modele);
                   this.quoteUpdateForm.get('vehicule.model')?.patchValue(details.vehicule.modele, { emitEvent: false });
                 }),
                 finalize(() => this.isModeleLoading = false)
@@ -365,10 +371,11 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
   private _patchCommonPreneur(details: any, formatDate: (dateStr: string | null | undefined) => string | null) {
     const preneurData = details.preneur || details;
     if (preneurData) {
+      console.warn('[ManagementDetailComponent] Patching preneur form with date_naissance:', preneurData.date_naissance);
       this.quoteUpdateForm.get('preneurAssurance')?.patchValue({
         firstName: preneurData.prenom,
         lastName: preneurData.nom,
-        dateNaissance: formatDate(preneurData.date_naissance),
+        date_naissance: formatDate(preneurData.date_naissance),
         email: preneurData.email,
         phone: preneurData.telephone,
         address: preneurData.adresse,
@@ -380,7 +387,7 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
         idCardNumber: preneurData.idcard_number,
         idCardValidityDate: formatDate(preneurData.idcard_validity),
         nationality: preneurData.nationality,
-        maritalStatus: preneurData.marital_status
+        maritalStatus: preneurData.marital_status_id
       });
     }
   }
@@ -393,7 +400,7 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
       this.quoteUpdateForm.get('conducteurPrincipal')?.patchValue({
         firstName: details.conducteur.prenom,
         lastName: details.conducteur.nom,
-        dateNaissance: formatDate(details.conducteur.date_naissance),
+        date_naissance: formatDate(details.conducteur.date_naissance),
         email: details.conducteur.email,
         phone: details.conducteur.telephone,
         address: details.conducteur.adresse,
@@ -405,16 +412,22 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
         idCardNumber: details.conducteur.idcard_number,
         idCardValidityDate: formatDate(details.conducteur.idcard_validity),
         nationality: details.conducteur.nationality,
-        maritalStatus: details.conducteur.marital_status
+        maritalStatus: details.conducteur.marital_status_id
       });
     }
 
     if (details.vehicule) {
+      console.warn('[ManagementDetailComponent] Patching vehicle form with:', details);
+      console.warn('[ManagementDetailComponent] Patching vehicle form with:', details.vehicule);
       this.quoteUpdateForm.get('vehicule')?.patchValue({
         make: details.vehicule.marque,
         model: details.vehicule.modele,
         year: details.vehicule.annee,
-        licensePlate: details.vehicule.plaque
+        licensePlate: details.vehicule.plaque,
+        power: details.vehicule.puissance_kw,
+        value: details.vehicule.valeur,
+        seats: details.vehicule.places,
+        registrationDate: formatDate(details.vehicule.date_circulation)
       });
       this.marqueCtrl.setValue(details.vehicule.marque || '', { emitEvent: false });
     }
@@ -502,6 +515,7 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
       switchMap(details => {
         if (details) {
           this.quoteDetails = details; // Stocker les détails
+          console.warn('[ManagementDetailComponent] Received details from DB:', JSON.parse(JSON.stringify(details)));
           const formatDate = (dateStr: string | null | undefined) => dateStr ? this.formatDateForInput(dateStr) : null;
 
           switch (this.quoteType) {
@@ -692,6 +706,7 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
     }
 
     const formValue = this.quoteUpdateForm.value;
+    console.warn('[ManagementDetailComponent] Form value on update:', formValue);
 
     // Logique d'envoi de SMS
     const newStatus = formValue.garantie?.statut;
@@ -708,6 +723,7 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
     // Fin de la logique d'envoi de SMS
 
     if (this.quoteType === 'auto') {
+      console.warn('[ManagementDetailComponent] Preneur data sent to payload:', formValue["preneurAssurance"]);
       const payload: AutoQuoteUpdatePayload = {
         p_preneur: formValue["preneurAssurance"]!,
         p_vehicule: formValue['vehicule']!,
@@ -735,10 +751,10 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
       const payload: ObsequesQuoteUpdatePayload = {
         preneur: {
           ...formValue["preneurObseques"]!,
-          dateNaissance: formValue["preneurObseques"]?.dateNaissance ? this.formatDateForInput(formValue["preneurObseques"].dateNaissance) : null
+          date_naissance: formValue["preneurObseques"]?.date_naissance ? this.formatDateForInput(formValue["preneurObseques"].date_naissance) : null
         },
         devis: {
-          preneur_est_assure: formValue.assures?.preneurEstAssure ?? false,
+          preneur_est_assure: formValue.assures?.preneurEstAssure,
           assures: assuresValue,
           nombre_assures: assuresValue.length,
           statut: formValue.assures?.statut,

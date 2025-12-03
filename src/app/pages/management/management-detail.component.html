@@ -68,7 +68,17 @@
 
             <!-- Les composants spécifiques au type de devis seront injectés ici -->
             <ng-container [ngSwitch]="quoteType">
-              <app-auto-form *ngSwitchCase="'auto'" [parentForm]="quoteUpdateForm"></app-auto-form>
+              <app-auto-form 
+                *ngSwitchCase="'auto'" 
+                [parentForm]="quoteUpdateForm"
+                [marqueCtrl]="marqueCtrl"
+                [filteredMarques$]="filteredMarques$"
+                [isMarqueLoading]="isMarqueLoading"
+                [isModeleLoading]="isModeleLoading"
+                [modelesForSelectedMarque]="modelesForSelectedMarque"
+                [selectMarque]="selectMarque.bind(this)"
+                [preneurCities$]="preneurCities$"
+                [conducteurCities$]="conducteurCities$"></app-auto-form>
               <app-habitation-form *ngSwitchCase="'habitation'" [parentForm]="quoteUpdateForm"></app-habitation-form>
               <app-obseques-form *ngSwitchCase="'obseques'" [parentForm]="quoteUpdateForm"></app-obseques-form>
               <!-- <app-rc-form *ngSwitchCase="'rc'" [parentForm]="quoteUpdateForm"></app-rc-form> -->

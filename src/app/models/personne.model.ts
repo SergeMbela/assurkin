@@ -21,6 +21,6 @@ export interface Personne {
   user_id?: string | null;
   updated_at?: string;
   nationality?: string | null;
-  marital_status?: string | null;
+  marital_status_id?: number | null;
   uid?: string | null; // UUID
 }

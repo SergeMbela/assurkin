@@ -35,7 +35,7 @@
     <tr>
       <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Permis de conduire</td>
       <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-        N° {{ preneur.permis_numero }} (Obtenu le {{ preneur.permis_date | date:'dd/MM/yyyy' }})
+        N° {{ preneur.driverLicenseNumber }} (Obtenu le {{ preneur.driverLicenseDate | date:'dd/MM/yyyy' }})
       </td>
     </tr>
     <tr>
@@ -48,7 +48,7 @@
     <tr>
       <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Infos persos</td>
       <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-        {{ preneur.nationality }} — {{ preneur.maritalStatus }}
+        {{ preneur.nationality }} — {{ getMaritalStatusLabel(preneur.maritalStatus) }}
       </td>
     </tr>
   </tbody>
@@ -73,7 +73,7 @@
     <tr>
       <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Véhicule</td>
       <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-        <span class="font-bold">{{ vehicule.make }}</span> {{ vehicule.model }}
+        <span class="font-bold">{{ vehicule.make }} </span> {{ vehicule.model }}
       </td>
     </tr>
     <tr>
@@ -81,6 +81,15 @@
       <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
         Année: {{ vehicule.year }}<br>
         Plaque: <span class="uppercase font-mono bg-gray-100 px-2 py-1 rounded">{{ vehicule.licensePlate }}</span>
+      </td>
+    </tr>
+    <tr>
+      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Spécifications</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        <div><span class="font-medium">Puissance:</span> {{ vehicule.power }} kW</div>
+        <div><span class="font-medium">Places:</span> {{ vehicule.seats }}</div>
+        <div><span class="font-medium">Valeur:</span> {{ vehicule.value | currency:'EUR' }}</div>
+        <div><span class="font-medium">1ère immat.:</span> {{ vehicule.registrationDate | date:'dd/MM/yyyy' }}</div>
       </td>
     </tr>
   </tbody>
