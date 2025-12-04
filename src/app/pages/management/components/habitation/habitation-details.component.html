@@ -1,86 +1,113 @@
-<div *ngIf="formValue; else noData">
-    <table class="min-w-full divide-y divide-gray-200">
-        <!-- Preneur d'assurance -->
-        <tbody *ngIf="formValue.preneurAssurance as preneur" class="bg-white divide-y divide-gray-200">
-            <tr class="bg-gray-50">
-                <th colspan="2" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Preneur d'assurance</th>
-            </tr>
-            <tr>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50 w-1/3">Nom</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ preneur.lastName | uppercase }} {{ preneur.firstName | titlecase }}</td>
-            </tr>
-            <tr>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Date de naissance</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ preneur.date_naissance | date:'dd/MM/yyyy' }}</td>
-            </tr>
-            <tr>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Contact</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ preneur.email }} | {{ preneur.phone }}</td>
-            </tr>
-        </tbody>
+<table class="min-w-full divide-y divide-gray-200">
+  <!-- Preneur d'assurance -->
+  <tbody *ngIf="formValue?.preneurAssurance as preneur" class="bg-white divide-y divide-gray-200">
+    <tr class="bg-gray-100">
+      <th colspan="2" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+        Preneur d'assurance
+      </th>
+    </tr>
+    <tr>
+      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50 w-1/3">Prénom & Nom</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        {{ preneur.prenom | titlecase }} {{ preneur.nom | uppercase }}
+      </td>
+    </tr>
+    <tr>
+      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Date de naissance</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        {{ preneur.date_naissance | date:'dd/MM/yyyy' }}
+      </td>
+    </tr>
+    <tr>
+      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Contact</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        <div><span class="font-medium">Email:</span> {{ preneur.email }}</div>
+        <div><span class="font-medium">Tél:</span> {{ preneur.telephone }}</div>
+      </td>
+    </tr>
+    <tr>
+      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Identité nationale</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        <div><span class="font-medium">RN:</span> {{ preneur.nationalRegistryNumber }}</div>
+        <div><span class="font-medium">Carte Id:</span> {{ preneur.idCardNumber }} (Validité: {{ preneur.idCardValidityDate | date:'dd/MM/yyyy' }})</div>
+      </td>
+    </tr>
+  </tbody>
 
-        <!-- Bâtiment à assurer -->
-        <tbody *ngIf="formValue.batiment as batiment" class="bg-white divide-y divide-gray-200 border-t-8 border-transparent">
-            <tr class="bg-gray-50">
-                <th colspan="2" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Bâtiment à assurer</th>
-            </tr>
-            <tr>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Adresse</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ batiment.adresse }}, {{ batiment.codePostal }} {{ batiment.ville }}</td>
-            </tr>
-            <tr>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Type de maison</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ batiment.typeMaison }}</td>
-            </tr>
-        </tbody>
+  <!-- Bâtiment -->
+  <tbody *ngIf="formValue?.batiment as batiment" class="bg-white divide-y divide-gray-200 border-t-8 border-gray-50">
+    <tr class="bg-gray-100">
+      <th colspan="2" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+        Bâtiment
+      </th>
+    </tr>
+    <tr>
+      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Adresse</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        {{ batiment.adresse }}<br>
+        {{ batiment.codePostal }} {{ batiment.ville | titlecase }}
+      </td>
+    </tr>
+    <tr>
+      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Type</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        {{ batiment.typeMaison }}
+      </td>
+    </tr>
+  </tbody>
 
-        <!-- Évaluation du risque -->
-        <tbody *ngIf="formValue.evaluation as evaluation" class="bg-white divide-y divide-gray-200 border-t-8 border-transparent">
-            <tr class="bg-gray-50">
-                <th colspan="2" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Évaluation</th>
-            </tr>
-            <tr>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Détails</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    <p *ngIf="evaluation.superficie">Superficie: {{ evaluation.superficie }} m²</p>
-                    <p *ngIf="evaluation.nombrePieces">Nombre de pièces: {{ evaluation.nombrePieces }}</p>
-                    <p *ngIf="evaluation.loyerMensuel">Loyer mensuel: {{ evaluation.loyerMensuel | currency:'EUR' }}</p>
-                </td>
-            </tr>
-        </tbody>
+  <!-- Évaluation -->
+  <tbody *ngIf="formValue?.evaluation as evaluation" class="bg-white divide-y divide-gray-200 border-t-8 border-gray-50">
+    <tr class="bg-gray-100">
+      <th colspan="2" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+        Évaluation
+      </th>
+    </tr>
+    <tr>
+      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Dimensions</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        <div><span class="font-medium">Superficie:</span> {{ evaluation.superficie }} m²</div>
+        <div><span class="font-medium">Pièces:</span> {{ evaluation.nombrePieces }}</div>
+        <div *ngIf="evaluation.loyerMensuel"><span class="font-medium">Loyer:</span> {{ evaluation.loyerMensuel | currency:'EUR' }}</div>
+      </td>
+    </tr>
+    <tr>
+      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Valeurs</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        <div><span class="font-medium">Bâtiment:</span> {{ evaluation.typeValeurBatiment }}</div>
+        <div *ngIf="evaluation.valeurExpertise"><span class="font-medium">Valeur expertise:</span> {{ evaluation.valeurExpertise | currency:'EUR' }} ({{ evaluation.dateExpertise | date:'dd/MM/yyyy' }})</div>
+        <div><span class="font-medium">Contenu:</span> {{ evaluation.typeValeurContenu }}</div>
+        <div *ngIf="evaluation.evaluation_valeur_libre_contenu"><span class="font-medium">Valeur contenu:</span> {{ evaluation.evaluation_valeur_libre_contenu | currency:'EUR' }}</div>
+      </td>
+    </tr>
+  </tbody>
 
-        <!-- Garanties et contrat -->
-        <tbody *ngIf="formValue.garantiesHabitation as garanties" class="bg-white divide-y divide-gray-200 border-t-8 border-transparent">
-            <tr class="bg-gray-50">
-                <th colspan="2" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Garanties et contrat</th>
-            </tr>
-            <tr>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Garanties</td>
-                <td class="px-6 py-4 text-sm text-gray-900">
-                    <ul class="list-disc list-inside">
-                        <li *ngIf="garanties.contenu">Contenu</li>
-                        <li *ngIf="garanties.vol">Vol</li>
-                        <li *ngIf="garanties.pertesIndirectes">Pertes indirectes</li>
-                        <li *ngIf="garanties.protectionJuridique">Protection juridique</li>
-                        <li *ngIf="garanties.assistance">Assistance</li>
-                    </ul>
-                </td>
-            </tr>
-            <tr>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Contrat</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    <p>Date d'effet: {{ garanties.dateEffet | date:'dd/MM/yyyy' }}</p>
-                    <p>Compagnie: {{ getCompanyName(garanties.insuranceCompany) || 'Non spécifiée' }}</p>
-                    <p>Statut: <span class="font-medium px-2.5 py-0.5 rounded-full text-xs" [ngClass]="getStatutClass(garanties.statut)">{{ garanties.statut || 'N/A' }}</span></p>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-</div>
-
-<!-- Template pour le cas où il n'y a pas de données -->
-<ng-template #noData>
-    <div class="text-center py-8 text-gray-500">
-        <p>Les informations du devis ne sont pas disponibles.</p>
-    </div>
-</ng-template>
+  <!-- Garanties -->
+  <tbody *ngIf="formValue?.garantiesHabitation as garanties" class="bg-white divide-y divide-gray-200 border-t-8 border-gray-50">
+    <tr class="bg-gray-100">
+      <th colspan="2" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+        Garanties et Contrat
+      </th>
+    </tr>
+    <tr>
+      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Statut & Contrat</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        <div><span class="font-medium">Statut:</span> <span class="px-2.5 py-0.5 rounded-full text-xs font-medium" [ngClass]="getStatutClass(garanties.statut)">{{ garanties.statut }}</span></div>
+        <div><span class="font-medium">Date d'effet:</span> {{ garanties.dateEffet | date:'dd/MM/yyyy' }}</div>
+        <div><span class="font-medium">Compagnie:</span> {{ getCompanyName(garanties.insuranceCompany) }}</div>
+      </td>
+    </tr>
+    <tr>
+      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Options souscrites</td>
+      <td class="px-6 py-4 text-sm text-gray-900">
+        <ul class="list-disc list-inside">
+          <li>Contenu: <strong>{{ garanties.contenu ? 'Oui' : 'Non' }}</strong></li>
+          <li>Vol: <strong>{{ garanties.vol ? 'Oui' : 'Non' }}</strong></li>
+          <li>Pertes indirectes: <strong>{{ garanties.pertesIndirectes ? 'Oui' : 'Non' }}</strong></li>
+          <li>Protection Juridique: <strong>{{ garanties.protectionJuridique ? 'Oui' : 'Non' }}</strong></li>
+          <li>Assistance: <strong>{{ garanties.assistance ? 'Oui' : 'Non' }}</strong></li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>

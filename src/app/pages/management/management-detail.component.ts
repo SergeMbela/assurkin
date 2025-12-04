@@ -104,11 +104,11 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
 
     this.quoteUpdateForm = this.fb.group({
       preneurAssurance: this.fb.group({
-        firstName: [''],
-        lastName: [''],
+        prenom: [''],
+        nom: [''],
         date_naissance: [''],
         email: ['', Validators.email],
-        phone: [''],
+        telephone: [''],
         address: [''],
         postalCode: [''],
         city: [null], // Changed to null for better select default
@@ -121,22 +121,22 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
         maritalStatus: ['']
       }),
       preneurObseques: this.fb.group({
-        firstName: [''],
-        lastName: [''],
+        prenom: [''],
+        nom: [''],
         date_naissance: [''],
         email: ['', Validators.email],
-        phone: [''],
+        telephone: [''],
         address: [''],
         postalCode: [''],
         city: [null], // Changed to null for better select default
       }),
       conducteurPrincipal: this.fb.group({
         // ... (champs identiques au preneur)
-        firstName: [''],
-        lastName: [''],
+        prenom: [''],
+        nom: [''],
         date_naissance: [''],
         email: ['', Validators.email],
-        phone: [''],
+        telephone: [''],
         address: [''],
         postalCode: [''],
         city: [null], // Changed to null for better select default
@@ -207,7 +207,7 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
         preneur_prenom: [''],
         preneur_genre: [''],
         preneur_telephone: [''],
-        preneur_email: ['', Validators.email],
+        preneur_email: [''],
         preneur_adresse: [''],
         preneur_code_postal: [''],
         preneur_ville: [''],
@@ -373,11 +373,11 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
     if (preneurData) {
       console.warn('[ManagementDetailComponent] Patching preneur form with date_naissance:', preneurData.date_naissance);
       this.quoteUpdateForm.get('preneurAssurance')?.patchValue({
-        firstName: preneurData.prenom,
-        lastName: preneurData.nom,
+        prenom: preneurData.prenom,
+        nom: preneurData.nom,
         date_naissance: formatDate(preneurData.date_naissance),
         email: preneurData.email,
-        phone: preneurData.telephone,
+        telephone: preneurData.telephone,
         address: preneurData.adresse,
         postalCode: preneurData.code_postal,
         city: preneurData.ville,
@@ -402,7 +402,7 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
         lastName: details.conducteur.nom,
         date_naissance: formatDate(details.conducteur.date_naissance),
         email: details.conducteur.email,
-        phone: details.conducteur.telephone,
+        telephone: details.conducteur.telephone,
         address: details.conducteur.adresse,
         postalCode: details.conducteur.code_postal,
         city: details.conducteur.ville,
@@ -476,8 +476,8 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
   private _patchObseques(details: any, formatDate: (dateStr: string | null | undefined) => string | null) {
     const preneurObsData = details.preneur || details;
     this.quoteUpdateForm.get('preneurObseques')?.patchValue({
-      firstName: preneurObsData.prenom,
-      lastName: preneurObsData.nom,
+      prenom: preneurObsData.prenom,
+      nom: preneurObsData.nom,
       dateNaissance: formatDate(preneurObsData.date_naissance),
       email: preneurObsData.email,
       phone: preneurObsData.telephone,
@@ -747,7 +747,7 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
         ...assure,
         dateNaissance: assure.dateNaissance ? this.formatDateForInput(assure.dateNaissance) : null
       }));
-
+    
       const payload: ObsequesQuoteUpdatePayload = {
         preneur: {
           ...formValue["preneurObseques"]!,
@@ -777,6 +777,7 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
                 evaluation_type_valeur_contenu: formValue.evaluation?.typeValeurContenu,
                 evaluation_valeur_expertise: formValue.evaluation?.valeurExpertise,
                 evaluation_date_expertise: formValue.evaluation?.dateExpertise ? this.formatDateForInput(formValue.evaluation.dateExpertise) : null,
+                evaluation_valeur_libre_contenu: formValue.evaluation?.evaluation_valeur_libre_contenu,
                 garantie_contenu: formValue['garantiesHabitation']?.contenu,
                 garantie_vol: formValue['garantiesHabitation']?.vol,
                 garantie_pertes_indirectes: formValue['garantiesHabitation']?.pertesIndirectes,

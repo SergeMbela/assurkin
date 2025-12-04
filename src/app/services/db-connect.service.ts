@@ -72,6 +72,7 @@ export interface HabitationQuoteUpdatePayload {
     evaluation_type_valeur_contenu: string;
     evaluation_valeur_expertise: number;
     evaluation_date_expertise: string | null;
+    evaluation_valeur_libre_contenu: number;
     // Garanties (correspond aux colonnes garantie_*)
     garantie_contenu: boolean;
     garantie_vol: boolean;
@@ -202,7 +203,7 @@ export interface HabitationFormData {
     valeurContenu: string;
     valeurExpertise?: number;
     dateExpertise?: string;
-    valeurLibre?: number;
+    evaluation_valeur_libre_contenu?: number;
   };
   garanties: {
     contenu: boolean;
@@ -499,7 +500,7 @@ export class DbConnectService {
         evaluation_valeur_expertise: formData.evaluation.valeurExpertise,
         // On convertit la date YYYY-MM en YYYY-MM-DD pour la base de données
         evaluation_date_expertise: formData.evaluation.dateExpertise ? `${formData.evaluation.dateExpertise}-01` : null,
-        evaluation_valeur_libre_contenu: formData.evaluation.valeurLibre,
+        evaluation_valeur_libre_contenu: formData.evaluation.evaluation_valeur_libre_contenu,
 
         // Garanties
         garantie_contenu: formData.garanties.contenu,
@@ -1713,30 +1714,35 @@ export class DbConnectService {
    * @returns Un Observable qui émet la réponse de la fonction RPC.
    */
   updateHabitationQuote(quoteId: number, payload: HabitationQuoteUpdatePayload): Observable<{ success: boolean, error?: any, data?: any }> {
-    // Mapper les données du devis pour correspondre aux attentes de la fonction RPC.
-    const mapDevisData = (devisForm: any) => ({
-      // Bâtiment
-      adresse: devisForm.batiment_adresse,
-      codePostal: devisForm.batiment_code_postal,
-      ville: devisForm.batiment_ville,
-      typeMaison: devisForm.batiment_type_maison,
-      // Évaluation
-      superficie: devisForm.evaluation_superficie,
-      nombrePieces: devisForm.evaluation_nombre_pieces,
-      loyerMensuel: devisForm.evaluation_loyer_mensuel,
-      // Garanties
-      contenu: devisForm.garantie_contenu,
-      vol: devisForm.garantie_vol,
-      pertesIndirectes: devisForm.garantie_pertes_indirectes,
-      protectionJuridique: devisForm.garantie_protection_juridique,
-      // Infos générales
-      insuranceCompany: devisForm.compagnie_id // Utiliser la clé attendue par la procédure SQL
-    });
-
+    // Le payload est construit pour correspondre exactement aux paramètres de la fonction RPC `update_habitation_quote_details`.
     const rpcPayload = {
       p_quote_id: quoteId,
-      p_preneur_data: this.mapPersonDataForRpc(payload.p_preneur),
-      p_devis_data: payload.p_devis // The payload already has the correct structure for the RPC
+      p_devis_data: {
+        // Bâtiment
+        batiment_adresse: payload.p_devis.batiment_adresse,
+        batiment_code_postal: payload.p_devis.batiment_code_postal,
+        batiment_ville: payload.p_devis.batiment_ville,
+        batiment_type_maison: payload.p_devis.batiment_type_maison,
+        // Évaluation
+        evaluation_superficie: payload.p_devis.evaluation_superficie,
+        evaluation_nombre_pieces: payload.p_devis.evaluation_nombre_pieces,
+        evaluation_loyer_mensuel: payload.p_devis.evaluation_loyer_mensuel,
+        evaluation_type_valeur_batiment: payload.p_devis.evaluation_type_valeur_batiment,
+        evaluation_type_valeur_contenu: payload.p_devis.evaluation_type_valeur_contenu,
+        evaluation_valeur_expertise: payload.p_devis.evaluation_valeur_expertise,
+        evaluation_date_expertise: payload.p_devis.evaluation_date_expertise,
+        evaluation_valeur_libre_contenu: payload.p_devis.evaluation_valeur_libre_contenu,
+        // Garanties
+        garantie_contenu: payload.p_devis.garantie_contenu,
+        garantie_vol: payload.p_devis.garantie_vol,
+        garantie_pertes_indirectes: payload.p_devis.garantie_pertes_indirectes,
+        garantie_protection_juridique: payload.p_devis.garantie_protection_juridique,
+        garantie_assistance: payload.p_devis.garantie_assistance,
+        // Contrat
+        date_effet: payload.p_devis.date_effet,
+        compagnie_id: payload.p_devis.compagnie_id,
+        statut: payload.p_devis.statut
+      },
     };
 
     const promise = this.supabase.supabase

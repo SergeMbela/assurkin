@@ -9,7 +9,7 @@
     <tr>
       <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50 w-1/3">Prénom & Nom</td>
       <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-        {{ preneur.firstName | titlecase }} {{ preneur.lastName | uppercase }}
+        {{ preneur.prenom | titlecase }} {{ preneur.nom | uppercase }}
       </td>
     </tr>
     <tr>
@@ -22,7 +22,7 @@
       <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Contact</td>
       <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
         <div><span class="font-medium">Email:</span> {{ preneur.email }}</div>
-        <div><span class="font-medium">Tél:</span> {{ preneur.phone }}</div>
+        <div><span class="font-medium">Tél:</span> {{ preneur.telephone }}</div>
       </td>
     </tr>
     <tr>
@@ -54,13 +54,50 @@
   </tbody>
 
   <!-- Conducteur Principal -->
-  <tbody *ngIf="formValue?.conducteurPrincipal as driver" class="bg-white divide-y divide-gray-200 border-t-8 border-gray-50">
+  <tbody *ngIf="showMainDriverSection && formValue?.conducteurPrincipal as driver" class="bg-white divide-y divide-gray-200 border-t-8 border-gray-50">
     <tr class="bg-gray-100">
       <th colspan="2" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
         Conducteur Principal
       </th>
     </tr>
-    <!-- ... (détails du conducteur principal, similaire au preneur) ... -->
+    <tr>
+      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50 w-1/3">Prénom & Nom</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        {{ driver.prenom | titlecase }} {{ driver.nom | uppercase }}
+      </td>
+    </tr>
+    <tr>
+      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Date de naissance</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        {{ driver.date_naissance | date:'dd/MM/yyyy' }}
+      </td>
+    </tr>
+    <tr>
+      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Contact</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        <div><span class="font-medium">Email:</span> {{ driver.email }}</div>
+        <div><span class="font-medium">Tél:</span> {{ driver.telephone }}</div>
+      </td>
+    </tr>
+    <tr>
+      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Permis de conduire</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        N° {{ driver.driverLicenseNumber }} (Obtenu le {{ driver.driverLicenseDate | date:'dd/MM/yyyy' }})
+      </td>
+    </tr>
+    <tr>
+      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Identité nationale</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        <div><span class="font-medium">RN:</span> {{ driver.nationalRegistryNumber }}</div>
+        <div><span class="font-medium">Carte Id:</span> {{ driver.idCardNumber }} (Validité: {{ driver.idCardValidityDate | date:'dd/MM/yyyy' }})</div>
+      </td>
+    </tr>
+    <tr>
+      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Infos persos</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        {{ driver.nationality }} — {{ getMaritalStatusLabel(driver.maritalStatus) }}
+      </td>
+    </tr>
   </tbody>
 
   <!-- Véhicule -->

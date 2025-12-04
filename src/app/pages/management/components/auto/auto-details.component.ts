@@ -11,6 +11,7 @@ import { Subject, takeUntil } from 'rxjs';
 })
 export class AutoDetailsComponent implements OnInit, OnDestroy {
   @Input() formValue: any;
+  @Input() showMainDriverSection: boolean = false;
 
   private destroy$ = new Subject<void>();
   private insuranceCompanies: Assureur[] = [];

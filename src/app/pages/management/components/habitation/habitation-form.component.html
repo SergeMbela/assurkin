@@ -1,27 +1,39 @@
 <div [formGroup]="parentForm">
     <!-- Section Preneur d'Assurance -->
     <fieldset formGroupName="preneurAssurance" [disabled]="isReadOnly">
-      <legend class="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">Informations sur le preneur</legend>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+      <legend class="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">Informations sur le preneur (non modifiable)</legend>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
         <div>
           <label for="preneur-firstName" class="block text-sm font-medium text-gray-700">Prénom</label>
-          <input type="text" id="preneur-firstName" formControlName="firstName" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'border-red-500 ring-red-500': parentForm.get('preneurAssurance.firstName')?.invalid && parentForm.get('preneurAssurance.firstName')?.touched}">
+          <input type="text" id="preneur-firstName" formControlName="prenom" class="mt-1 bg-gray-100 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" readonly>
         </div>
         <div>
           <label for="preneur-lastName" class="block text-sm font-medium text-gray-700">Nom</label>
-          <input type="text" id="preneur-lastName" formControlName="lastName" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'border-red-500 ring-red-500': parentForm.get('preneurAssurance.lastName')?.invalid && parentForm.get('preneurAssurance.lastName')?.touched}">
+          <input type="text" id="preneur-lastName" formControlName="nom" class="mt-1 bg-gray-100 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" readonly>
         </div>
         <div>
           <label for="preneur-dateNaissance" class="block text-sm font-medium text-gray-700">Date de naissance</label>
-          <input type="date" id="preneur-dateNaissance" formControlName="date_naissance" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'border-red-500 ring-red-500': parentForm.get('preneurAssurance.date_naissance')?.invalid && parentForm.get('preneurAssurance.date_naissance')?.touched}">
+          <input type="date" id="preneur-dateNaissance" formControlName="date_naissance" class="mt-1 bg-gray-100 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" readonly>
         </div>
         <div>
           <label for="preneur-email" class="block text-sm font-medium text-gray-700">Email</label>
-          <input type="email" id="preneur-email" formControlName="email" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'border-red-500 ring-red-500': parentForm.get('preneurAssurance.email')?.invalid && parentForm.get('preneurAssurance.email')?.touched}">
+          <input type="email" id="preneur-email" formControlName="email" class="mt-1 bg-gray-100 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" readonly>
         </div>
         <div>
           <label for="preneur-phone" class="block text-sm font-medium text-gray-700">Téléphone</label>
-          <input type="tel" id="preneur-phone" formControlName="phone" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'border-red-500 ring-red-500': parentForm.get('preneurAssurance.phone')?.invalid && parentForm.get('preneurAssurance.phone')?.touched}">
+          <input type="tel" id="preneur-phone" formControlName="telephone" class="mt-1 bg-gray-100 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" readonly>
+        </div>
+        <div>
+          <label for="preneur-national-number" class="block text-sm font-medium text-gray-700">Numéro national</label>
+          <input type="text" id="preneur-national-number" formControlName="numero_national" class="mt-1 bg-gray-100 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" readonly>
+        </div>
+        <div>
+          <label for="preneur-idcard" class="block text-sm font-medium text-gray-700">N° carte d'identité</label>
+          <input type="text" id="preneur-idcard" formControlName="idcard_number" class="mt-1 bg-gray-100 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" readonly>
+        </div>
+        <div>
+          <label for="preneur-idcard-validity" class="block text-sm font-medium text-gray-700">Validité carte d'identité</label>
+          <input type="date" id="preneur-idcard-validity" formControlName="idcard_validity" class="mt-1 bg-gray-100 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" readonly>
         </div>
       </div>
     </fieldset>
@@ -32,17 +44,17 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
         <div class="md:col-span-2">
           <label for="adresse" class="block text-sm font-medium text-gray-700">Rue et numéro</label>
-          <input type="text" id="adresse" formControlName="adresse" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'border-red-500 ring-red-500': parentForm.get('batiment.adresse')?.invalid && parentForm.get('batiment.adresse')?.touched}">
+          <input type="text" id="adresse" formControlName="batiment_adresse" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'border-red-500 ring-red-500': parentForm.get('batiment.batiment_adresse')?.invalid && parentForm.get('batiment.batiment_adresse')?.touched}">
         </div>
         <div>
           <div class="relative">
             <label for="code-postal" class="block text-sm font-medium text-gray-700">Code Postal</label>
-            <input type="text" id="code-postal" formControlName="codePostal" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'border-red-500 ring-red-500': parentForm.get('batiment.codePostal')?.invalid && parentForm.get('batiment.codePostal')?.touched}">
+            <input type="text" id="code-postal" formControlName="batiment_code_postal" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'border-red-500 ring-red-500': parentForm.get('batiment.batiment_code_postal')?.invalid && parentForm.get('batiment.batiment_code_postal')?.touched}">
           </div>
         </div>
         <div>
           <label for="ville" class="block text-sm font-medium text-gray-700">Ville</label>
-          <select id="ville" formControlName="ville" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'border-red-500 ring-red-500': parentForm.get('batiment.ville')?.invalid && parentForm.get('batiment.ville')?.touched}">
+          <select id="ville" formControlName="batiment_ville" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'border-red-500 ring-red-500': parentForm.get('batiment.batiment_ville')?.invalid && parentForm.get('batiment.batiment_ville')?.touched}">
             <option [ngValue]="null" disabled>-- Entrez un code postal --</option>
             <option *ngFor="let city of (batimentCities$ | async) || []" [value]="city">
                 {{ city }}
@@ -51,7 +63,7 @@
         </div>
         <div>
           <label for="type-maison" class="block text-sm font-medium text-gray-700">Type de maison</label>
-          <select id="type-maison" formControlName="typeMaison" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          <select id="type-maison" formControlName="batiment_type_maison" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
             <option>Maison 2 façades</option>
             <option>Maison 3 façades</option>
             <option>Maison 4 façades (villa)</option>
@@ -69,22 +81,22 @@
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
         <div>
           <label for="superficie" class="block text-sm font-medium text-gray-700">Superficie (m²)</label>
-          <input type="number" id="superficie" formControlName="superficie" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          <input type="number" id="superficie" formControlName="evaluation_superficie" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
         </div>
         <div>
           <label for="nombre-pieces" class="block text-sm font-medium text-gray-700">Nombre de pièces</label>
-          <input type="number" id="nombre-pieces" formControlName="nombrePieces" placeholder="Salon + Cuisine = 1 pièce" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          <input type="number" id="nombre-pieces" formControlName="evaluation_nombre_pieces" placeholder="Salon + Cuisine = 1 pièce" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
         </div>
         <div>
           <label for="loyer" class="block text-sm font-medium text-gray-700">Loyer mensuel (charges comprises)</label>
-          <input type="number" id="loyer" formControlName="loyerMensuel" placeholder="€" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          <input type="number" id="loyer" formControlName="evaluation_loyer_mensuel" placeholder="€" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
         </div>
       </div>
       <!-- Sous-section Évaluation Bâtiment -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 mt-4 border-t">
         <div>
           <label for="type-valeur-batiment" class="block text-sm font-medium text-gray-700">Valeur bâtiment selon</label>
-          <select id="type-valeur-batiment" formControlName="typeValeurBatiment" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          <select id="type-valeur-batiment" formControlName="evaluation_type_valeur_batiment" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
             <option [ngValue]="null">-- Sélectionner --</option>
             <option>Expertise</option>
             <option>Librement exprimé</option>
@@ -92,18 +104,18 @@
         </div>
         <div>
           <label for="valeur-expertise" class="block text-sm font-medium text-gray-700">Valeur expertise bâtiment</label>
-          <input type="number" id="valeur-expertise" formControlName="valeurExpertise" placeholder="€" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          <input type="number" id="valeur-expertise" formControlName="evaluation_valeur_expertise" placeholder="€" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
         </div>
         <div>
           <label for="date-expertise" class="block text-sm font-medium text-gray-700">Date expertise bâtiment</label>
-          <input type="date" id="date-expertise" formControlName="dateExpertise" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          <input type="date" id="date-expertise" formControlName="evaluation_date_expertise" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
         </div>
       </div>
       <!-- Sous-section Évaluation Contenu -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 mt-4 border-t">
         <div>
           <label for="type-valeur-contenu" class="block text-sm font-medium text-gray-700">Valeur contenu</label>
-          <select id="type-valeur-contenu" formControlName="typeValeurContenu" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          <select id="type-valeur-contenu" formControlName="evaluation_type_valeur_contenu" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
             <option [ngValue]="null">-- Sélectionner --</option>
             <option>Courtier</option>
             <option>Client</option>
@@ -111,7 +123,7 @@
         </div>
         <div>
           <label for="valeur-libre-contenu" class="block text-sm font-medium text-gray-700">Valeur du contenu</label>
-          <input type="number" id="valeur-libre-contenu" formControlName="valeurLibreContenu" placeholder="€" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          <input type="number" id="valeur-libre-contenu" formControlName="evaluation_valeur_libre_contenu" placeholder="€" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
         </div>
       </div>
     </fieldset>
@@ -121,21 +133,21 @@
       <legend class="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">Garanties et contrat</legend>
       <div class="space-y-4 pt-4">
         <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-            <div class="flex items-start"><div class="flex h-5 items-center"><input id="garantie-contenu" formControlName="contenu" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"></div><div class="ml-3 text-sm"><label for="garantie-contenu" class="font-medium text-gray-700">Contenu</label></div></div>
-            <div class="flex items-start"><div class="flex h-5 items-center"><input id="garantie-vol" formControlName="vol" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"></div><div class="ml-3 text-sm"><label for="garantie-vol" class="font-medium text-gray-700">Vol</label></div></div>
-            <div class="flex items-start"><div class="flex h-5 items-center"><input id="garantie-pertes" formControlName="pertesIndirectes" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"></div><div class="ml-3 text-sm"><label for="garantie-pertes" class="font-medium text-gray-700">Pertes indirectes</label></div></div>
-            <div class="flex items-start"><div class="flex h-5 items-center"><input id="garantie-pj" formControlName="protectionJuridique" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"></div><div class="ml-3 text-sm"><label for="garantie-pj" class="font-medium text-gray-700">Protection Juridique</label></div></div>
-            <div class="flex items-start"><div class="flex h-5 items-center"><input id="garantie-assistance" formControlName="assistance" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"></div><div class="ml-3 text-sm"><label for="garantie-assistance" class="font-medium text-gray-700">Assistance</label></div></div>
+            <div class="flex items-start"><div class="flex h-5 items-center"><input id="garantie-contenu" formControlName="garantie_contenu" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"></div><div class="ml-3 text-sm"><label for="garantie-contenu" class="font-medium text-gray-700">Contenu</label></div></div>
+            <div class="flex items-start"><div class="flex h-5 items-center"><input id="garantie-vol" formControlName="garantie_vol" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"></div><div class="ml-3 text-sm"><label for="garantie-vol" class="font-medium text-gray-700">Vol</label></div></div>
+            <div class="flex items-start"><div class="flex h-5 items-center"><input id="garantie-pertes" formControlName="garantie_pertes_indirectes" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"></div><div class="ml-3 text-sm"><label for="garantie-pertes" class="font-medium text-gray-700">Pertes indirectes</label></div></div>
+            <div class="flex items-start"><div class="flex h-5 items-center"><input id="garantie-pj" formControlName="garantie_protection_juridique" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"></div><div class="ml-3 text-sm"><label for="garantie-pj" class="font-medium text-gray-700">Protection Juridique</label></div></div>
+            <div class="flex items-start"><div class="flex h-5 items-center"><input id="garantie-assistance" formControlName="garantie_assistance" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"></div><div class="ml-3 text-sm"><label for="garantie-assistance" class="font-medium text-gray-700">Assistance</label></div></div>
         </div>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
         <div>
-          <label for="garantie-dateEffet" class="block text-sm font-medium text-gray-700">Date d'effet</label>
-          <input type="date" id="garantie-dateEffet" formControlName="dateEffet" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          <label for="date_effet" class="block text-sm font-medium text-gray-700">Date d'effet</label>
+          <input type="date" id="garantie-dateEffet" formControlName="date_effet" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
         </div>
         <div>
           <label for="garantie-insuranceCompany" class="block text-sm font-medium text-gray-700">Compagnie</label>
-          <select id="garantie-insuranceCompany" formControlName="insuranceCompany" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          <select id="garantie-insuranceCompany" formControlName="compagnie_id" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
             <option [ngValue]="null">-- Sélectionner --</option>
             <option *ngFor="let company of insuranceCompanies$ | async" [value]="company.id">{{ company.nom }}</option>
           </select>
