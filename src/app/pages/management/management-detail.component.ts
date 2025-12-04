@@ -178,10 +178,10 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
         insuranceCompany: [null]
       }),
       batiment: this.fb.group({
-        adresse: [''],
-        codePostal: [''],
-        ville: [null], // Changed to null for better select default
-        typeMaison: [''],
+        batiment_adresse: [''],
+        batiment_code_postal: [''],
+        batiment_ville: [null],
+        batiment_type_maison: [''],
       }),
       evaluation: this.fb.group({
         typeValeurBatiment: [''],
@@ -332,8 +332,7 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
 
     const batimentCities$ = (isPlatformBrowser(this.platformId) && batimentPostalCode)
       ? this.dbService.getCitiesByPostalCode(batimentPostalCode).pipe(tap(cities => this.batimentCities$.next(cities)))
-      : of(null);
-
+      : of([]);
     const obsequesCities$ = (isPlatformBrowser(this.platformId) && obsequesPostalCode)
       ? this.dbService.getCitiesByPostalCode(obsequesPostalCode).pipe(tap(cities => this.obsequesCities$.next(cities)))
       : of(null);
@@ -447,10 +446,10 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
     this._patchCommonPreneur(details, formatDate);
 
     this.quoteUpdateForm.get('batiment')?.patchValue({
-      adresse: details.batiment_adresse,
-      codePostal: details.batiment_code_postal,
-      ville: details.batiment_ville,
-      typeMaison: details.batiment_type_maison,
+      batiment_adresse: details.batiment_adresse,
+      batiment_code_postal: details.batiment_code_postal,
+      batiment_ville: details.batiment_ville,
+      batiment_type_maison: details.batiment_type_maison,
     });
     this.quoteUpdateForm.get('evaluation')?.patchValue({
       typeValeurBatiment: details.evaluation_type_valeur_batiment,
@@ -535,6 +534,14 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
               this._patchCommonPreneur(details, formatDate);
               this.quoteUpdateForm.get('detailsRCFamiliale')?.patchValue({ ...details, nationalRegistryNumber: details.numero_national });
               break;
+          }
+
+          // Si c'est un devis habitation, on s'assure de patcher la ville après que la liste des villes soit chargée
+          if (this.quoteType === 'habitation' && details.batiment_code_postal) {
+            this.dbService.getCitiesByPostalCode(details.batiment_code_postal).subscribe(cities => {
+              this.batimentCities$.next(cities);
+              this.quoteUpdateForm.get('batiment.batiment_ville')?.patchValue(details.batiment_ville);
+            });
           }
 
           // patchFormValues retourne maintenant un Observable que nous pouvons chaîner
@@ -766,10 +773,10 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
         const payload: HabitationQuoteUpdatePayload = {
             p_preneur: formValue["preneurAssurance"]!,
             p_devis: {
-                batiment_adresse: formValue.batiment?.adresse,
-                batiment_code_postal: formValue.batiment?.codePostal,
-                batiment_ville: formValue.batiment?.ville,
-                batiment_type_maison: formValue.batiment?.typeMaison,
+                batiment_adresse: formValue.batiment?.batiment_adresse,
+                batiment_code_postal: formValue.batiment?.batiment_code_postal,
+                batiment_ville: formValue.batiment?.batiment_ville,
+                batiment_type_maison: formValue.batiment?.batiment_type_maison,
                 evaluation_type_valeur_batiment: formValue.evaluation?.typeValeurBatiment,
                 evaluation_superficie: formValue.evaluation?.superficie,
                 evaluation_nombre_pieces: formValue.evaluation?.nombrePieces,

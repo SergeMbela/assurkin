@@ -26,6 +26,13 @@
       </td>
     </tr>
     <tr>
+      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Adresse</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+          {{ preneur.address }}<br>
+        {{ preneur.code_postal }} {{ preneur.city | titlecase }}
+      </td>
+    </tr>
+    <tr>
       <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Identité nationale</td>
       <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
         <div><span class="font-medium">RN:</span> {{ preneur.nationalRegistryNumber }}</div>
@@ -44,14 +51,14 @@
     <tr>
       <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Adresse</td>
       <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-        {{ batiment.adresse }}<br>
-        {{ batiment.codePostal }} {{ batiment.ville | titlecase }}
+        {{ batiment.batiment_adresse }}<br>
+        {{ batiment.batiment_code_postal }} {{ batiment.batiment_ville | titlecase }}
       </td>
     </tr>
     <tr>
       <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Type</td>
       <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-        {{ batiment.typeMaison }}
+        {{ batiment.batiment_type_maison }}
       </td>
     </tr>
   </tbody>
