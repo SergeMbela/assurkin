@@ -1,8 +1,8 @@
 <ng-container [formGroup]="parentForm">
   <!-- Section Preneur d'assurance -->
-  <div formGroupName="preneurAssurance" *ngIf="parentForm.get('preneurAssurance')">
-    <h3 class="text-lg font-semibold text-gray-800 bg-gray-100 -mx-6 px-6 py-2 mb-4 border-y">Preneur d'assurance</h3>
-    <!-- Ici, on pourrait même utiliser un composant partagé pour le preneur -->
+  <fieldset formGroupName="preneurAssurance" *ngIf="parentForm.get('preneurAssurance')" [disabled]="true">
+    <legend class="text-lg font-semibold text-gray-800 bg-gray-100 -mx-6 px-6 py-2 mb-4 border-y">Preneur d'assurance</legend>
+    
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
       <div>
         <label for="preneur-firstName" class="block text-sm font-medium text-gray-700">Prénom</label>
@@ -73,7 +73,7 @@
         </select>
       </div>
     </div>
-  </div>
+  </fieldset>
 
   <!-- Section Conducteur principal (conditionnelle) -->
   <div formGroupName="conducteurPrincipal" *ngIf="showMainDriverSection && parentForm.get('conducteurPrincipal')">
@@ -175,17 +175,17 @@
   </div>
 
   <!-- Section Garantie -->
-  <div formGroupName="garantie" *ngIf="parentForm.get('garantie')">
+  <div formGroupName="garanties" *ngIf="parentForm.get('garanties')">
     <h3 class="text-lg font-semibold text-gray-800 bg-gray-100 -mx-6 px-6 py-2 mb-4 border-y">Garanties</h3>
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
       <div class="sm:col-span-2">
         <label for="effectiveDate" class="block text-sm font-medium text-gray-700">Date d'effet</label>
-        <input type="date" id="effectiveDate" formControlName="effectiveDate"
+        <input type="date" id="effectiveDate" formControlName="date_effet"
           class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
       </div>
       <div class="sm:col-span-2">
         <label for="omniumLevel" class="block text-sm font-medium text-gray-700">Niveau d'omnium</label>
-        <select id="omniumLevel" formControlName="omniumLevel"
+        <select id="omniumLevel" formControlName="garantie_omnium_niveau"
           class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
           <option value="non">Aucune</option>
           <option value="partiel">Mini Omnium</option>
@@ -202,7 +202,7 @@
       </div>
       <div class="sm:col-span-2">
         <label for="insuranceCompany" class="block text-sm font-medium text-gray-700">Compagnie d'assurance</label>
-        <select id="insuranceCompany" formControlName="insuranceCompany"
+        <select id="insuranceCompany" formControlName="compagnie_id"
           class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
           <option [ngValue]="null" disabled>Sélectionnez une compagnie</option>
           <option *ngFor="let company of (insuranceCompanies$ | async)" [value]="company.id">
@@ -211,17 +211,17 @@
         </select>
       </div>
       <div class="flex items-center">
-        <input id="baseRC" type="checkbox" formControlName="baseRC"
+        <input id="baseRC" type="checkbox" formControlName="garantie_base_rc"
           class="form-checkbox h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
         <label for="baseRC" class="ml-2 block text-sm text-gray-900">Garantie RC de base</label>
       </div>
       <div class="flex items-center">
-        <input id="driverCoverage" type="checkbox" formControlName="driverCoverage"
+        <input id="driverCoverage" type="checkbox" formControlName="garantie_conducteur"
           class="form-checkbox h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
         <label for="driverCoverage" class="ml-2 block text-sm text-gray-900">Garantie Conducteur</label>
       </div>
       <div class="flex items-center">
-        <input id="assistance" type="checkbox" formControlName="assistance"
+        <input id="assistance" type="checkbox" formControlName="garantie_assistance"
           class="form-checkbox h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
         <label for="assistance" class="ml-2 block text-sm text-gray-900">Assistance</label>
       </div>

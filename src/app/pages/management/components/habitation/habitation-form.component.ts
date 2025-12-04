@@ -16,6 +16,7 @@ import { debounceTime, distinctUntilChanged, switchMap, takeUntil, startWith, ca
 })
 export class HabitationFormComponent implements OnInit, OnDestroy {
   @Input() parentForm!: FormGroup;
+  @Input() isReadOnly: boolean = true;
 
   statuts$!: Observable<Statut[]>;
   insuranceCompanies$!: Observable<Assureur[]>;
@@ -56,7 +57,7 @@ export class HabitationFormComponent implements OnInit, OnDestroy {
       }
 
       // Logique pour les villes du preneur d'assurance
-      const preneurPostalCodeControl = this.parentForm.get('preneur.codePostal');
+      const preneurPostalCodeControl = this.parentForm.get('preneurAssurance.codePostal');
       if (preneurPostalCodeControl) {
         this.preneurCities$ = preneurPostalCodeControl.valueChanges.pipe(
           debounceTime(300),

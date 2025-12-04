@@ -32,8 +32,6 @@ export interface CorporateAccount {
 }
 
 export interface AutoQuoteUpdatePayload {
-  p_preneur: { [key: string]: any };
-  p_conducteur?: { [key: string]: any };
   p_vehicule: { [key: string]: any };
   p_devis: {
     garantie_base_rc: boolean;
@@ -57,7 +55,22 @@ export interface ObsequesQuoteUpdatePayload {
 }
 
 export interface HabitationQuoteUpdatePayload {
-  p_preneur: { [key: string]: any };
+  // Les données du preneur sont "aplaties" pour correspondre à la fonction RPC
+  p_preneur_id: number;
+  p_prenom: string;
+  p_nom: string;
+  p_date_naissance: string | null;
+  p_email: string;
+  p_telephone: string;
+  p_adresse: string;
+  p_code_postal: string;
+  p_ville: string;
+  p_numero_national: string;
+  p_idcard_number: string;
+  p_idcard_validity: string | null;
+  p_nationality: string;
+  p_marital_status: string;
+
   p_devis: {
     // Bâtiment (correspond aux colonnes batiment_*)
     batiment_adresse: string;
@@ -1639,20 +1652,16 @@ export class DbConnectService {
    * @returns Un Observable qui émet la réponse de la fonction RPC.
    */
   updateAutoQuote(quoteId: number, payload: AutoQuoteUpdatePayload): Observable<{ success: boolean, error?: any, data?: any }> {
-    // Le payload est construit pour correspondre exactement aux paramètres de la fonction RPC `update_auto_quote_details`.
+    // Les clés doivent être dans l'ordre alphabétique pour correspondre à la signature de la fonction RPC
     const rpcPayload = {
+      p_devis_data: payload.p_devis,
       p_quote_id: quoteId,
       p_vehicule_data: {
         marque: payload.p_vehicule['make'],
         modele: payload.p_vehicule['model'],
         annee: payload.p_vehicule['year'],
-        plaque: payload.p_vehicule['licensePlate'],
-        puissance_kw: payload.p_vehicule['power'],
-        places: payload.p_vehicule['seats'],
-        valeur: payload.p_vehicule['value'],
-        date_circulation: payload.p_vehicule['registrationDate']
-      },
-      p_devis_data: payload.p_devis // Les données des garanties, statut, etc.
+        plaque: payload.p_vehicule['licensePlate']
+      }
     };
 
     // Appeler la fonction RPC de Supabase
@@ -1713,30 +1722,9 @@ export class DbConnectService {
    * @returns Un Observable qui émet la réponse de la fonction RPC.
    */
   updateHabitationQuote(quoteId: number, payload: HabitationQuoteUpdatePayload): Observable<{ success: boolean, error?: any, data?: any }> {
-    // Mapper les données du devis pour correspondre aux attentes de la fonction RPC.
-    const mapDevisData = (devisForm: any) => ({
-      // Bâtiment
-      adresse: devisForm.batiment_adresse,
-      codePostal: devisForm.batiment_code_postal,
-      ville: devisForm.batiment_ville,
-      typeMaison: devisForm.batiment_type_maison,
-      // Évaluation
-      superficie: devisForm.evaluation_superficie,
-      nombrePieces: devisForm.evaluation_nombre_pieces,
-      loyerMensuel: devisForm.evaluation_loyer_mensuel,
-      // Garanties
-      contenu: devisForm.garantie_contenu,
-      vol: devisForm.garantie_vol,
-      pertesIndirectes: devisForm.garantie_pertes_indirectes,
-      protectionJuridique: devisForm.garantie_protection_juridique,
-      // Infos générales
-      insuranceCompany: devisForm.compagnie_id // Utiliser la clé attendue par la procédure SQL
-    });
-
     const rpcPayload = {
       p_quote_id: quoteId,
-      p_preneur_data: this.mapPersonDataForRpc(payload.p_preneur),
-      p_devis_data: payload.p_devis // The payload already has the correct structure for the RPC
+      ...payload // Le payload a déjà la structure "aplatie" attendue par la fonction RPC
     };
 
     const promise = this.supabase.supabase

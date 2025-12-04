@@ -1,0 +1,127 @@
+<form *ngIf="updateForm" [formGroup]="updateForm" (ngSubmit)="onSubmit()" class="space-y-8">
+
+  <!-- Section Informations Personnelles -->
+  <div class="space-y-6">
+    <h3 class="text-lg font-medium leading-6 text-gray-900 border-b pb-2">Informations Personnelles</h3>
+    <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+      
+      <!-- Genre -->
+      <div class="sm:col-span-2">
+        <label for="genre" class="block text-sm font-medium text-gray-700">Civilité</label>
+        <select id="genre" formControlName="genre" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+          <option>Monsieur</option>
+          <option>Madame</option>
+        </select>
+      </div>
+
+      <!-- Prénom -->
+      <div class="sm:col-span-2">
+        <label for="prenom" class="block text-sm font-medium text-gray-700">Prénom</label>
+        <input type="text" id="prenom" formControlName="prenom" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+      </div>
+
+      <!-- Nom -->
+      <div class="sm:col-span-2">
+        <label for="nom" class="block text-sm font-medium text-gray-700">Nom</label>
+        <input type="text" id="nom" formControlName="nom" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+      </div>
+
+      <!-- Date de naissance -->
+      <div class="sm:col-span-3">
+        <label for="date_naissance" class="block text-sm font-medium text-gray-700">Date de naissance</label>
+        <input type="date" id="date_naissance" formControlName="date_naissance" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+      </div>
+
+      <!-- Numéro National -->
+      <div class="sm:col-span-3">
+        <label for="numero_national" class="block text-sm font-medium text-gray-700">Numéro National</label>
+        <input type="text" id="numero_national" formControlName="numero_national" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+      </div>
+
+      <!-- Nationalité -->
+      <div class="sm:col-span-3">
+        <label for="nationality" class="block text-sm font-medium text-gray-700">Nationalité</label>
+        <input type="text" id="nationality" formControlName="nationality" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+      </div>
+
+      <!-- Statut Marital -->
+      <div class="sm:col-span-3">
+        <label for="marital_status" class="block text-sm font-medium text-gray-700">État civil</label>
+        <select id="marital_status" formControlName="marital_status" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+          <option>Célibataire</option>
+          <option>Marié(e)</option>
+          <option>Divorcé(e)</option>
+          <option>Veuf(ve)</option>
+          <option>Cohabitant légal</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section Contact & Adresse -->
+  <div class="space-y-6">
+    <h3 class="text-lg font-medium leading-6 text-gray-900 border-b pb-2">Contact & Adresse</h3>
+    <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+      <!-- Email -->
+      <div class="sm:col-span-3">
+        <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+        <input type="email" id="email" formControlName="email" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+      </div>
+      <!-- Téléphone -->
+      <div class="sm:col-span-3">
+        <label for="telephone" class="block text-sm font-medium text-gray-700">Téléphone</label>
+        <input type="tel" id="telephone" formControlName="telephone" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+      </div>
+      <!-- Adresse -->
+      <div class="sm:col-span-6">
+        <label for="adresse" class="block text-sm font-medium text-gray-700">Adresse</label>
+        <input type="text" id="adresse" formControlName="adresse" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+      </div>
+      <!-- Code Postal -->
+      <div class="sm:col-span-2">
+        <label for="code_postal" class="block text-sm font-medium text-gray-700">Code Postal</label>
+        <input type="text" id="code_postal" formControlName="code_postal" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+      </div>
+      <!-- Ville -->
+      <div class="sm:col-span-4">
+        <label for="ville" class="block text-sm font-medium text-gray-700">Ville</label>
+        <input type="text" id="ville" formControlName="ville" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+      </div>
+    </div>
+  </div>
+
+  <!-- Section Documents -->
+  <div class="space-y-6">
+    <h3 class="text-lg font-medium leading-6 text-gray-900 border-b pb-2">Documents</h3>
+    <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+      <!-- Numéro de permis -->
+      <div class="sm:col-span-3">
+        <label for="permis_numero" class="block text-sm font-medium text-gray-700">Numéro de permis</label>
+        <input type="text" id="permis_numero" formControlName="permis_numero" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+      </div>
+      <!-- Date du permis -->
+      <div class="sm:col-span-3">
+        <label for="permis_date" class="block text-sm font-medium text-gray-700">Date d'obtention du permis</label>
+        <input type="date" id="permis_date" formControlName="permis_date" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+      </div>
+    </div>
+  </div>
+
+  <!-- Boutons d'action -->
+  <div class="flex justify-end pt-6 border-t">
+    <button type="button" (click)="closeModal.emit(false)" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">Annuler</button>
+    <button type="submit" [disabled]="updateForm.invalid || isLoading" class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
+      <span *ngIf="!isLoading">Enregistrer</span>
+      <span *ngIf="isLoading">Enregistrement...</span>
+    </button>
+  </div>
+</form>
+
+<div *ngIf="isLoading" class="text-center p-4">
+  <p>Chargement des données du preneur...</p>
+</div>
+
+<div *ngIf="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+  <strong class="font-bold">Erreur !</strong>
+  <span class="block sm:inline">{{ error }}</span>
+</div>
