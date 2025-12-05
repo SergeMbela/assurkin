@@ -509,6 +509,7 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
         if (this.quoteType && this.quoteId) {
           return this.dbService.getQuoteDetails(this.quoteType, this.quoteId);
         }
+        console.warn('[ManagementDetailComponent] Missing quote type or ID in route parameters.');
         return of(null);
       }),
       switchMap(details => {
@@ -799,7 +800,7 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
     
     // NOTE: La logique de mise à jour pour 'rc' et 'voyage' n'est pas encore implémentée.
     } else {
-      console.error(`Le type de devis '${this.quoteType}' n'est pas supporté pour la mise à jour.`);
+      console.warn(`[ManagementDetailComponent] La mise à jour pour le type de devis '${this.quoteType}' n'est pas encore implémentée.`);
     }
   }
 
@@ -840,6 +841,7 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
           this.quoteUpdateForm.markAsPristine(); // Réinitialise l'état du formulaire pour désactiver le bouton
           this.showNotification('Devis mis à jour avec succès !', 'success');
         } else {
+          console.warn('[ManagementDetailComponent] Update failed. Response:', response);
           this.showNotification("La mise à jour du devis a échoué. " + (response?.error?.message || ''), 'error');
         }
       });

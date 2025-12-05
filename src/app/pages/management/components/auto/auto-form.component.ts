@@ -44,6 +44,10 @@ export class AutoFormComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    if (!this.parentForm) {
+      console.warn('AutoFormComponent: [parentForm] input is missing.');
+    }
+
     // Initialiser les données nécessaires
     this.statuts$ = this.dbService.getAllStatuts();
     this.insuranceCompanies$ = this.dbService.getAllAssureurs();

@@ -1,20 +1,20 @@
 <ng-container [formGroup]="parentForm">
   <!-- Section Preneur d'assurance -->
-  <fieldset formGroupName="preneurAssurance" *ngIf="parentForm.get('preneurAssurance')" [disabled]="true">
+  <fieldset formGroupName="preneurAssurance" *ngIf="parentForm.get('preneurAssurance')">
     <legend class="text-lg font-semibold text-gray-800 bg-gray-100 -mx-6 px-6 py-2 mb-4 border-y">Preneur d'assurance</legend>
     
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
       <div>
         <label for="preneur-firstName" class="block text-sm font-medium text-gray-700">Prénom</label>
-        <input type="text" id="preneur-firstName" formControlName="prenom" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+        <input type="text" id="preneur-firstName" formControlName="prenom" class="mt-1 w-full text-sm leading-6 text-slate-900 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm bg-gray-100 cursor-not-allowed" readonly>
       </div>
       <div>
         <label for="preneur-lastName" class="block text-sm font-medium text-gray-700">Nom</label>
-        <input type="text" id="preneur-lastName" formControlName="nom" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+        <input type="text" id="preneur-lastName" formControlName="nom" class="mt-1 w-full text-sm leading-6 text-slate-900 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm bg-gray-100 cursor-not-allowed" readonly>
       </div>
       <div>
         <label for="preneur-dateNaissance" class="block text-sm font-medium text-gray-700">Date de naissance</label>
-        <input type="date" id="preneur-dateNaissance" formControlName="date_naissance" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+        <input type="date" id="preneur-dateNaissance" formControlName="date_naissance" class="mt-1 w-full text-sm leading-6 text-slate-900 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm bg-gray-100 cursor-not-allowed" readonly>
       </div>
       <div>
         <label for="preneur-email" class="block text-sm font-medium text-gray-700">Email</label>
@@ -22,21 +22,19 @@
       </div>
       <div>
         <label for="preneur-phone" class="block text-sm font-medium text-gray-700">Téléphone</label>
-        <input type="tel" id="preneur-phone" formControlName="telephone" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+        <input type="tel" id="preneur-phone" formControlName="telephone" class="mt-1 w-full text-sm leading-6 text-slate-900 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm bg-gray-100 cursor-not-allowed" readonly>
       </div>
       <div class="sm:col-span-2">
         <label for="preneur-address" class="block text-sm font-medium text-gray-700">Adresse</label>
-        <input type="text" id="preneur-address" formControlName="address" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+        <input type="text" id="preneur-address" formControlName="address" class="mt-1 w-full text-sm leading-6 text-slate-900 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm bg-gray-100 cursor-not-allowed" readonly>
       </div>
       <div>
         <label for="preneur-postalCode" class="block text-sm font-medium text-gray-700">Code Postal</label>
-        <input type="text" id="preneur-postalCode" formControlName="postalCode" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+        <input type="text" id="preneur-postalCode" formControlName="postalCode" class="mt-1 w-full text-sm leading-6 text-slate-900 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm bg-gray-100 cursor-not-allowed" readonly>
       </div>
       <div>
         <label for="preneur-city" class="block text-sm font-medium text-gray-700">Ville</label>
-        <select id="preneur-city" formControlName="city" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
-          <option *ngFor="let city of preneurCities$ | async" [value]="city">{{ city }}</option>
-        </select>
+        <input type="text" id="preneur-city" formControlName="city" class="mt-1 w-full text-sm leading-6 text-slate-900 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm bg-gray-100 cursor-not-allowed" readonly>
       </div>
       <div>
         <label for="preneur-driverLicenseNumber" class="block text-sm font-medium text-gray-700">N° de permis</label>
@@ -62,7 +60,7 @@
         <label for="preneur-nationality" class="block text-sm font-medium text-gray-700">Nationalité</label>
         <select id="preneur-nationality" formControlName="nationality" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
           <option [ngValue]="null" disabled>Sélectionnez une nationalité</option>
-          <option *ngFor="let nat of nationalities$ | async" [value]="nat.nationality">{{ nat.nationality }}</option>
+          <option *ngFor="let nat of nationalities$ | async" [value]="nat.id">{{ nat.nationality }}</option>
         </select>
       </div>
       <div>

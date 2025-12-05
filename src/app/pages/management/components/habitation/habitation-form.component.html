@@ -1,6 +1,6 @@
 <div [formGroup]="parentForm">
     <!-- Section Preneur d'Assurance -->
-    <fieldset formGroupName="preneurAssurance" [disabled]="isReadOnly">
+    <fieldset formGroupName="preneurAssurance">
       <legend class="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">Informations sur le preneur (non modifiable)</legend>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 mb-4">
         <div>
@@ -39,15 +39,15 @@
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t">
         <div class="md:col-span-3">
           <label for="preneur-adresse" class="block text-sm font-medium text-gray-700">Rue et numéro</label>
-          <input type="text" id="preneur-adresse" formControlName="adresse" class="mt-1 bg-gray-100 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" readonly>
+          <input type="text" id="preneur-adresse" formControlName="address" class="mt-1 bg-gray-100 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" readonly>
         </div>
         <div>
           <label for="preneur-code-postal" class="block text-sm font-medium text-gray-700">Code Postal</label>
-          <input type="text" id="preneur-code-postal" formControlName="code_postal" class="mt-1 bg-gray-100 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" readonly>
+          <input type="text" id="preneur-code-postal" formControlName="postalCode" class="mt-1 bg-gray-100 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" readonly>
         </div>
         <div>
           <label for="preneur-ville" class="block text-sm font-medium text-gray-700">Ville</label>
-          <input type="text" id="preneur-ville" formControlName="ville" class="mt-1 bg-gray-100 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" readonly>
+          <input type="text" id="preneur-ville" formControlName="city" class="mt-1 bg-gray-100 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" readonly>
           <!-- Note: Using a readonly input instead of a select as the value is not meant to be changed here.
                The preneurCities$ logic is in place if this ever needs to become a selectable field. -->
         </div>
@@ -139,7 +139,7 @@
         </div>
         <div>
           <label for="valeur-libre-contenu" class="block text-sm font-medium text-gray-700">Valeur du contenu</label>
-          <input type="number" id="valeur-libre-contenu" formControlName="evaluation_valeur_libre_contenu" placeholder="€" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [readOnly]="isReadOnly">
+          <input type="number" id="valeur-libre-contenu" formControlName="valeurLibreContenu" placeholder="€" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [readOnly]="isReadOnly">
         </div>
       </div>
     </fieldset>
@@ -159,7 +159,7 @@
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
         <div>
           <label for="date_effet" class="block text-sm font-medium text-gray-700">Date d'effet</label>
-          <input type="date" id="garantie-dateEffet" formControlName="dateEffet" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          <input type="date" id="date_effet" formControlName="dateEffet" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
         </div>
         <div>
           <label for="garantie-insuranceCompany" class="block text-sm font-medium text-gray-700">Compagnie</label>

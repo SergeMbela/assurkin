@@ -35,10 +35,12 @@ export class HabitationFormComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnInit(): void {
-    if (!this.parentForm) {
-      // Si aucun formulaire n'est passé en @Input, on en crée un.
+    // Si aucun formulaire n'est passé en @Input, on en crée un avec la structure complète.
+    // C'est la correction clé pour s'assurer que tous les groupes (batiment, evaluation, etc.) existent.
+    if (!this.parentForm) { 
       this.initializeForm();
     }
+
     this.statuts$ = this.dbService.getAllStatuts();
     this.insuranceCompanies$ = this.dbService.getAllAssureurs();
 
@@ -135,7 +137,7 @@ export class HabitationFormComponent implements OnInit, OnChanges, OnDestroy {
         valeurExpertise: [null], // CamelCase pour correspondre à la vue de détail
         dateExpertise: [null], // CamelCase pour correspondre à la vue de détail
         typeValeurContenu: [null], // CamelCase pour correspondre à la vue de détail
-        evaluation_valeur_libre_contenu: [null], // Correspond à la vue de détail
+        valeurLibreContenu: [null], // CamelCase pour correspondre à la vue de détail
       }),
       garantiesHabitation: this.fb.group({
         contenu: [false], // CamelCase pour correspondre à la vue de détail
@@ -184,7 +186,7 @@ export class HabitationFormComponent implements OnInit, OnChanges, OnDestroy {
         valeurExpertise: data.evaluation_valeur_expertise,
         dateExpertise: data.evaluation_date_expertise,
         typeValeurContenu: data.evaluation_type_valeur_contenu,
-        evaluation_valeur_libre_contenu: data.evaluation_valeur_libre_contenu,
+        valeurLibreContenu: data.evaluation_valeur_libre_contenu,
       },
       garantiesHabitation: {
         contenu: data.garantie_contenu,
