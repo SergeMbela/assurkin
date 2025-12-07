@@ -1,19 +1,119 @@
 import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
-import { ReactiveFormsModule, FormControl } from '@angular/forms';
+import { Nationality } from '../../services/db-connect.service';
+import { AbstractControl, ReactiveFormsModule, FormControl, FormsModule, FormBuilder, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms'; //
+import { PhoneNumberMaskDirective } from '../../directives/phone-number-mask.directive'; // Import the directive
 import { ManagementService, DataState, AutoQuoteSummary, HabitationQuoteSummary, ObsequesQuoteSummary, VoyageQuoteSummary, RcQuoteSummary } from '../../services/management.service';
+
 import { Observable, combineLatest, BehaviorSubject, of, Subject } from 'rxjs';
-import { map, startWith, shareReplay, tap, switchMap, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
+import { map, startWith, shareReplay, tap, switchMap, debounceTime, distinctUntilChanged, takeUntil, finalize } from 'rxjs/operators';
 import { StateContainerComponent } from '../../state-container.component';
 
+import { formatBelgianPhoneNumber } from '../../directives/phone-number.utils'; // Import the utility function
 type QuoteType = 'auto' | 'habitation' | 'obseques' | 'rc' | 'voyage';
 // Un type d'union pour représenter n'importe quel résumé de devis.
-type AnyQuoteSummary = AutoQuoteSummary | HabitationQuoteSummary | ObsequesQuoteSummary | VoyageQuoteSummary | RcQuoteSummary;
+export type AnyQuoteSummary = (AutoQuoteSummary | HabitationQuoteSummary | ObsequesQuoteSummary | VoyageQuoteSummary | RcQuoteSummary) & {
+  // Assurer que les champs du preneur sont optionnels sur le type d'union
+  // pour satisfaire TypeScript lors de l'accès dans openEditModal.
+  email?: string;
+  telephone?: string;
+  date_naissance?: string;
+  adresse?: string;
+  code_postal?: string;
+  ville?: string;
+  nationality?: string;
+  idcard_number?: string;
+  idcard_validity?: string;
+  numero_national?: string;
+  permis_numero?: string; // Ajouté pour le permis de conduire
+  permis_date?: string; // Ajouté pour la date du permis de conduire
+  uid?: string; // Ajouté pour identifier les utilisateurs avec un compte
+};
+
+/**
+ * Validateur personnalisé pour le numéro de registre national belge.
+ * Vérifie la longueur (11 chiffres) et la somme de contrôle (checksum).
+ */
+export function belgianNationalNumberValidator(): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const value = control.value;
+
+    // Ne pas valider les valeurs vides, laisser le validateur 'required' s'en charger.
+    if (!value) {
+      return null;
+    }
+
+    // 1. Supprimer les caractères non numériques
+    const digits = String(value).replace(/\D/g, '');
+
+    // 2. Vérifier la longueur
+    if (digits.length !== 11) {
+      return { belgianNationalNumber: { invalidLength: true } };
+    }
+
+    const baseNumberStr = digits.substring(0, 9);
+    const checksum = parseInt(digits.substring(9, 11), 10);
+
+    // 3. Valider la somme de contrôle pour les naissances avant et après 2000
+    const checkPre2000 = 97 - (parseInt(baseNumberStr, 10) % 97);
+    const checkPost2000 = 97 - (parseInt('2' + baseNumberStr, 10) % 97);
+
+    // Si la somme de contrôle ne correspond à aucune des deux méthodes, le numéro est invalide.
+    return (checksum === checkPre2000 || checksum === checkPost2000) ? null : { belgianNationalNumber: { invalidChecksum: true } };
+  };
+}
+
+/**
+ * Validateur de formulaire croisé pour vérifier que la date de naissance
+ * correspond à celle encodée dans le numéro national belge.
+ */
+export function nationalNumberBirthDateValidator(): ValidatorFn {
+  return (group: AbstractControl): ValidationErrors | null => {
+    if (!(group instanceof FormGroup)) {
+      return null;
+    }
+
+    const nationalNumberControl = group.get('numero_national');
+    const birthDateControl = group.get('date_naissance');
+
+    // Ne pas valider si les champs sont absents, vides ou si le numéro national est déjà invalide.
+    if (!nationalNumberControl || !birthDateControl || !nationalNumberControl.value || !birthDateControl.value || nationalNumberControl.errors) {
+      return null;
+    }
+
+    const nationalNumber = String(nationalNumberControl.value).replace(/\D/g, '');
+    const birthDateValue = birthDateControl.value; // Format 'YYYY-MM-DD'
+
+    if (nationalNumber.length !== 11) {
+      return null; // Laisser l'autre validateur gérer l'erreur de longueur
+    }
+
+    // Déterminer le siècle en se basant sur la validité du checksum pour l'an 2000+
+    const baseNumberStr = nationalNumber.substring(0, 9);
+    const checksum = parseInt(nationalNumber.substring(9, 11), 10);
+    const checkPost2000 = 97 - (parseInt('2' + baseNumberStr, 10) % 97);
+    const century = (checksum === checkPost2000) ? '20' : '19';
+
+    const year = century + nationalNumber.substring(0, 2);
+    const month = nationalNumber.substring(2, 4);
+    const day = nationalNumber.substring(4, 6);
+    const birthDateFromNN = `${year}-${month}-${day}`;
+
+    if (birthDateFromNN !== birthDateValue) {
+      // Appliquer l'erreur directement sur le champ de la date de naissance pour un affichage ciblé.
+      birthDateControl.setErrors({ ...birthDateControl.errors, birthDateMismatch: true });
+    }
+
+    return null; // La validation est gérée en appliquant l'erreur sur le contrôle enfant.
+  };
+}
+
+import { DbConnectService } from '../../services/db-connect.service';
 @Component({
   selector: 'app-management',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule, StateContainerComponent],
+  imports: [CommonModule, RouterLink, ReactiveFormsModule, StateContainerComponent, FormsModule, PhoneNumberMaskDirective],
   templateUrl: './management.component.html',
   styleUrl: './management.component.css'
 })
@@ -22,6 +122,8 @@ export class ManagementComponent implements OnInit {
   constructor(
     private managementService: ManagementService,
     private router: Router,
+    private dbConnectService: DbConnectService, // Injection du service DB
+    private fb: FormBuilder, // Injection du FormBuilder
     @Inject(PLATFORM_ID) private platformId: object
   ) {}
 
@@ -53,8 +155,25 @@ export class ManagementComponent implements OnInit {
 
   private destroy$ = new Subject<void>();
 
+  // ===== PROPRIÉTÉS POUR LE MODAL =====
+  isEditModalOpen = false;
+  editModalTitle: string = '';
+  selectedQuoteForEdit: AnyQuoteSummary | null = null;
+  preneurForm!: FormGroup;
+  citiesForPostalCode$: Observable<string[]> = of([]);
+  nationalities$: Observable<Nationality[]> = of([]);
+  isCitiesLoading$ = new BehaviorSubject<boolean>(false);
+  isNationalitiesLoading$ = new BehaviorSubject<boolean>(false);
+
   ngOnInit(): void {
+    this.initPreneurForm(); // Initialiser le formulaire
+    this.isNationalitiesLoading$.next(true);
+    this.nationalities$ = this.dbConnectService.getNationalities().pipe(
+      finalize(() => this.isNationalitiesLoading$.next(false)),
+      shareReplay(1)
+    );
     if (isPlatformBrowser(this.platformId)) {
+      this.setupPostalCodeListener(); // Ajout de l'écouteur pour le code postal
       const searchTerm$ = this.searchControl.valueChanges.pipe(
         startWith(''), // Émet une valeur initiale pour que le filtre s'applique au chargement
         debounceTime(300), // Attend 300ms après la dernière frappe
@@ -121,6 +240,55 @@ export class ManagementComponent implements OnInit {
     }
   }
 
+  private initPreneurForm(): void {
+    this.preneurForm = this.fb.group({
+      id: [null], // Garder une trace de l'ID du preneur
+      prenom: ['', Validators.required],
+      nom: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      telephone: [''],
+      date_naissance: [''],
+      adresse: [''],
+      code_postal: [''],
+      ville: [''],
+      nationality: [''],
+      idcard_number: [''],
+      idcard_validity: [''],
+      numero_national: ['', belgianNationalNumberValidator()],
+      permis_numero: [''], // Ajout du contrôle pour le numéro de permis
+      permis_date: [''], // Ajout du contrôle pour la date du permis
+    }, {
+      validators: nationalNumberBirthDateValidator() // Appliquer le validateur croisé au groupe
+    });
+  }
+
+  private setupPostalCodeListener(): void {
+    const postalCodeControl = this.preneurForm.get('code_postal');
+    if (postalCodeControl) {
+      this.citiesForPostalCode$ = postalCodeControl.valueChanges.pipe(
+        startWith(postalCodeControl.value), // Émet la valeur initiale lors de la souscription
+        debounceTime(300),
+        distinctUntilChanged(),
+        switchMap(postalCode => {
+          // On ne fait l'appel que si le code postal a 4 chiffres (standard belge)
+          if (postalCode && /^\d{4}$/.test(postalCode)) {
+            this.isCitiesLoading$.next(true);
+            return this.dbConnectService.getCitiesByPostalCode(postalCode).pipe(
+              tap(cities => {
+                // Si une seule ville est retournée, on la sélectionne automatiquement.
+                if (cities.length === 1) {
+                  this.preneurForm.get('ville')?.setValue(cities[0]);
+                }
+                this.isCitiesLoading$.next(false);
+              })
+            );
+          }
+          return of([]); // Retourne un tableau vide si le code postal est invalide
+        }),
+        shareReplay(1)
+      );
+    }
+  }
   goToPage(page: number): void {
     this.currentPage$.next(page);
   }
@@ -142,6 +310,105 @@ export class ManagementComponent implements OnInit {
     this.router.navigate(['/assurance-details', quoteType, id]);
   }
 
+  // ===== MÉTHODES POUR LE MODAL =====
+
+  /**
+   * Ouvre le modal de modification et initialise les données du preneur.
+   * @param quote L'objet devis complet.
+   * @param personId L'ID de la personne à modifier (preneur ou conducteur).
+   */
+  openEditModal(quote: AnyQuoteSummary, personId: number): void {
+    // Définir le titre de la modale
+    if (this.isAutoQuote(quote) && quote.preneur_id !== quote.conducteur_id && personId === quote.conducteur_id) {
+      this.editModalTitle = 'Modifier le Conducteur Principal';
+    } else {
+      this.editModalTitle = 'Modifier le Preneur';
+    }
+
+    this.dbConnectService.getPersonById(personId).subscribe({
+      next: (person) => {
+        if (person) {
+          // Fonction pour formater les dates en 'yyyy-MM-dd' pour les inputs de type 'date'
+          const formatDate = (dateString: string | undefined | null): string | null => {
+            if (!dateString) return null;
+            try {
+              return new Date(dateString).toISOString().split('T')[0];
+            } catch (e) {
+              return null; // Gère les dates invalides
+            }
+          };
+
+          // Remplir le formulaire avec les données de la personne récupérées
+          this.preneurForm.patchValue({
+            id: person.id,
+            prenom: person.prenom,
+            nom: person.nom,
+            email: person.email,
+            telephone: person.telephone,
+            date_naissance: formatDate(person.date_naissance),
+            adresse: person.adresse,
+            code_postal: person.code_postal,
+            ville: person.ville,
+            nationality: person.nationality, // Assurez-vous que `person.nationality` contient l'ID
+            idcard_number: person.idcard_number,
+            idcard_validity: formatDate(person.idcard_validity),
+            numero_national: person.numero_national,
+            permis_numero: person.permis_numero, // Pré-remplir le numéro de permis
+            permis_date: formatDate(person.permis_date), // Pré-remplir la date du permis
+          });
+          this.isEditModalOpen = true;
+        } else {
+          console.error(`Impossible de trouver les informations pour la personne avec l'ID ${personId}`);
+          // TODO: Afficher un message d'erreur à l'utilisateur (ex: avec un toast)
+        }
+      },
+      error: (err) => {
+        console.error(`Erreur lors de la récupération de la personne avec l'ID ${personId}`, err);
+      }
+    });
+  }
+
+  /**
+   * Ferme le modal de modification.
+   */
+  closeEditModal(): void {
+    this.isEditModalOpen = false;
+    this.preneurForm.reset(); // Réinitialiser le formulaire
+  }
+
+  /**
+   * Sauvegarde les modifications apportées au preneur.
+   */
+  savePreneurChanges(): void {
+    if (this.preneurForm.invalid) {
+      this.preneurForm.markAllAsTouched(); // Affiche les erreurs de validation
+      console.warn('Formulaire invalide. Impossible de sauvegarder.');
+      return;
+    }
+
+    const formValue = this.preneurForm.value;
+    const preneurId = formValue.id;
+
+    if (preneurId) {
+      console.log(`Sauvegarde des données pour le preneur ID: ${preneurId}`, formValue);
+
+      this.dbConnectService.updatePerson(preneurId, formValue).subscribe({
+        next: (response) => {
+          console.log('Preneur mis à jour avec succès:', response.data);
+          // Rafraîchit la vue pour afficher les nouvelles données
+          this.refreshCurrentView();
+          this.closeEditModal();
+        },
+        error: (error) => {
+          console.error('Erreur lors de la mise à jour du preneur:', error);
+          // TODO: Afficher un message d'erreur à l'utilisateur
+        }
+      });
+    } else {
+      console.warn('savePreneurChanges a été appelé sans ID de preneur dans le formulaire.');
+    }
+  }
+
   /**
    * Garde de type pour vérifier si un devis est un devis automobile.
    * @param quote L'objet devis à vérifier.
@@ -158,5 +425,13 @@ export class ManagementComponent implements OnInit {
    */
   isDescriptionQuote(quote: AnyQuoteSummary): quote is HabitationQuoteSummary | ObsequesQuoteSummary | RcQuoteSummary | VoyageQuoteSummary {
     return 'description' in quote;
+  }
+
+  /**
+   * Rafraîchit les données de la vue actuelle en ré-émettant la page courante.
+   */
+  private refreshCurrentView(): void {
+    const currentPage = this.currentPage$.value;
+    this.currentPage$.next(currentPage);
   }
 }

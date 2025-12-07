@@ -17,10 +17,11 @@ export class SendsmsService {
 
     console.log(`[SendsmsService] Tentative d'envoi du SMS au numéro : ${to}`);
 
-    const supabaseFunctionUrl = environment.supabaseFunctionUrl;
+    const functionUrl = `${environment.supabaseUrl}/functions/v1/send-sms`;
+
 
     try {
-      const response = await fetch(supabaseFunctionUrl, {
+      const response = await fetch(functionUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

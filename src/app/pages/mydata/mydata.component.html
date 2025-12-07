@@ -47,6 +47,12 @@
               <span class="ml-3">Mes Documents</span>
             </a>
           </li>
+          <li>
+            <a (click)="setView('paiement')" class="flex items-center p-3 text-base font-bold text-gray-900 rounded-lg cursor-pointer group hover:shadow" [ngClass]="{'bg-gray-100 hover:bg-gray-200': activeView === 'paiement', 'hover:bg-gray-100': activeView !== 'paiement'}">
+              <i class="fas fa-credit-card w-6 h-6 text-gray-500"></i>
+              <span class="ml-3">Paiement</span>
+            </a>
+          </li>
           <!-- Bouton de déconnexion -->
           <li class="border-t pt-2 mt-2">
             <a (click)="logout()" class="flex items-center p-3 text-base font-bold text-red-600 rounded-lg cursor-pointer hover:bg-red-50 group hover:shadow">
@@ -152,6 +158,106 @@
             <p>Aucun document trouvé.</p>
           </div>
         </div>
+
+        <!-- Section Paiement -->
+        <div *ngIf="activeView === 'paiement'">
+          <h2 class="text-2xl font-bold mb-6 text-gray-800">Mes Paiements</h2>
+
+          <!-- Historique des demandes de paiement -->
+          <div class="mt-8">
+            <h3 class="text-xl font-semibold mb-4 text-gray-700">Historique des demandes de paiement</h3>
+            <div *ngIf="paymentRequestsLoading" class="text-center"><p>Chargement de l'historique...</p></div>
+            <div *ngIf="!paymentRequestsLoading && paymentRequests.length > 0" class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sujet</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Montant</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Échéance</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                  <tr *ngFor="let req of paymentRequests">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ req.sujet }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ req.montant | currency:'EUR' }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ req.date_echeance | date:'dd/MM/yyyy' }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                      <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full" [ngClass]="{
+                        'bg-green-100 text-green-800': req.statut === 'paid',
+                        'bg-red-100 text-red-800': req.statut === 'failed' || req.statut === 'overdue',
+                        'bg-yellow-100 text-yellow-800': req.statut === 'pending',
+                        'bg-gray-100 text-gray-800': req.statut === 'cancelled'
+                      }">{{ req.statut | paymentStatus }}</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <!-- Bouton pour initier le paiement -->
+                      <button *ngIf="req.statut === 'pending' || req.statut === 'overdue'" (click)="initiatePayment(req)" class="text-indigo-600 hover:text-indigo-900">Payer</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div *ngIf="!paymentRequestsLoading && paymentRequests.length === 0" class="text-center text-gray-500 bg-gray-50 p-4 rounded-lg"><p>Aucune demande de paiement trouvée.</p></div>
+          </div>
+          
+          <!-- Section du formulaire de paiement, visible uniquement si une demande est sélectionnée -->
+          <div *ngIf="selectedPaymentRequest" class="mt-8 border-t pt-6">
+            <h3 class="text-xl font-semibold mb-4 text-gray-700">Régler la demande : "{{ selectedPaymentRequest.sujet }}"</h3>
+            
+            <!-- Résumé de la facture à payer -->
+            <div class="bg-gray-50 p-4 rounded-lg shadow-sm flex items-center justify-between mb-6">
+              <div>
+                <p class="font-semibold text-gray-700">{{ selectedPaymentRequest.sujet }}</p>
+                <p class="text-sm text-gray-500">Échéance: {{ selectedPaymentRequest.date_echeance | date:'dd/MM/yyyy' }}</p>
+              </div>
+              <div class="text-right">
+                <p class="text-lg font-bold text-gray-800">{{ selectedPaymentRequest.montant | currency:'EUR' }}</p>
+              </div>
+            </div>
+
+            <!-- Formulaire de paiement Stripe Elements -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Informations de la carte de crédit</label>
+              <ngx-stripe-card [options]="cardOptions" [elementsOptions]="elementsOptions"></ngx-stripe-card>
+            </div>
+
+            <div class="flex items-center gap-4 mt-4">
+              <button (click)="payWithStripe()" [disabled]="paymentLoading" class="flex-grow px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                {{ paymentLoading ? 'Paiement en cours...' : 'Payer ' + (selectedPaymentRequest.montant | currency:'EUR') }}
+              </button>
+              <button (click)="cancelPayment()" [disabled]="paymentLoading" class="px-4 py-2 bg-gray-200 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-300">Annuler</button>
+            </div>
+
+            <!-- Message d'erreur -->
+            <p *ngIf="paymentError" class="text-sm mt-2 font-medium text-red-600">{{ paymentError }}</p>
+          </div>
+          
+          <!-- Pop-up de succès de paiement -->
+          <div *ngIf="paymentSuccess" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center z-50" id="my-modal">
+            <div class="relative mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
+              <div class="mt-3 text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
+                  <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                  </svg>
+                </div>
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mt-2">Paiement Réussi</h3>
+                <div class="mt-2 px-7 py-3">
+                  <p class="text-sm text-gray-500">{{ paymentSuccess }}</p>
+                </div>
+                <div class="items-center px-4 py-3">
+                  <button (click)="closeSuccessPopup()" class="px-4 py-2 bg-green-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300">
+                    Fermer
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
       </div>
     </div>
 

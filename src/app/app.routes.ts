@@ -61,6 +61,7 @@ export const routes: Routes = [
     { path: 'management/upload/:type/:id/:preneurId', loadComponent: () => import('./pages/uploader/uploader.component').then(m => m.UploaderComponent) },
     // La navigation vers les détails se fait par programmation depuis management.component.ts
     { path: 'assurance-details/:type/:id', component: AssurancesDetailsComponent }, // Route pour les détails depuis la gestion
+    { path: 'messagerie/:type/:id', loadComponent: () => import('./pages/messagerie/messagerie.component').then(m => m.MessagerieComponent) },
     { path: 'management/assurance-details/:type/:id', loadComponent: () => import('./pages/assurances-details/assurances-details.component').then(m => m.AssurancesDetailsComponent) },
 
     // Redirections

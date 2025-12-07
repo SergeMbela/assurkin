@@ -1,46 +1,4 @@
 <div [formGroup]="parentForm">
-    <!-- Section Preneur d'Assurance Obsèques -->
-    <div formGroupName="preneurObseques">
-        <h3 class="text-lg font-semibold text-gray-800 bg-gray-100 -mx-6 px-6 py-2 mb-4 border-y">Informations sur le preneur</h3>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-            <div>
-                <label for="obs-firstName" class="block text-sm font-medium text-gray-700">Prénom</label>
-                <input type="text" id="obs-firstName" formControlName="firstName" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'border-red-500 ring-red-500': parentForm.get('preneurObseques.firstName')?.invalid && parentForm.get('preneurObseques.firstName')?.touched}">
-            </div>
-            <div>
-                <label for="obs-lastName" class="block text-sm font-medium text-gray-700">Nom</label>
-                <input type="text" id="obs-lastName" formControlName="lastName" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'border-red-500 ring-red-500': parentForm.get('preneurObseques.lastName')?.invalid && parentForm.get('preneurObseques.lastName')?.touched}">
-            </div>
-            <div>
-                <label for="obs-dateNaissance" class="block text-sm font-medium text-gray-700">Date de naissance</label>
-                <input type="date" id="obs-dateNaissance" formControlName="dateNaissance" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'border-red-500 ring-red-500': parentForm.get('preneurObseques.dateNaissance')?.invalid && parentForm.get('preneurObseques.dateNaissance')?.touched}">
-            </div>
-            <div>
-                <label for="obs-email" class="block text-sm font-medium text-gray-700">Email</label>
-                <input type="email" id="obs-email" formControlName="email" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'border-red-500 ring-red-500': parentForm.get('preneurObseques.email')?.invalid && parentForm.get('preneurObseques.email')?.touched}">
-            </div>
-            <div>
-                <label for="obs-phone" class="block text-sm font-medium text-gray-700">Téléphone</label>
-                <input type="tel" id="obs-phone" formControlName="phone" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'border-red-500 ring-red-500': parentForm.get('preneurObseques.phone')?.invalid && parentForm.get('preneurObseques.phone')?.touched}">
-            </div>
-            <div class="md:col-span-2">
-                <label for="obs-address" class="block text-sm font-medium text-gray-700">Adresse</label>
-                <input type="text" id="obs-address" formControlName="address" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'border-red-500 ring-red-500': parentForm.get('preneurObseques.address')?.invalid && parentForm.get('preneurObseques.address')?.touched}">
-            </div>
-            <div>
-                <label for="obs-postalCode" class="block text-sm font-medium text-gray-700">Code Postal</label>
-                <input type="text" id="obs-postalCode" formControlName="postalCode" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" [ngClass]="{'border-red-500 ring-red-500': parentForm.get('preneurObseques.postalCode')?.invalid && parentForm.get('preneurObseques.postalCode')?.touched}">
-            </div>
-            <div>
-                <label for="obs-city" class="block text-sm font-medium text-gray-700">Ville</label>
-                <select id="obs-city" formControlName="city" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm disabled:bg-gray-100" [disabled]="!parentForm.get('preneurObseques.postalCode')?.value">
-                    <option [ngValue]="null" disabled>-- Sélectionner une ville --</option>
-                    <option *ngFor="let city of obsequesCities$ | async" [value]="city">{{ city }}</option>
-                </select>
-            </div>
-        </div>
-    </div>
-
     <!-- Section Assurés et Contrat -->
     <div formGroupName="assures" class="mt-6">
         <h3 class="text-lg font-semibold text-gray-800 bg-gray-100 -mx-6 px-6 py-2 mb-4 border-y">Assurés et contrat</h3>

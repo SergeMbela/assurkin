@@ -7,9 +7,10 @@ import { DbConnectService } from './db-connect.service';
 // Interfaces partagées pour la Gestion des offres.
 export interface AutoQuoteSummary {
   preneur_id: number;
+  conducteur_id: number;
   id: number;
-  nom: string;
-  prenom: string;
+  nom: string | null;
+  prenom: string | null;
   dateDemande: string;
   statut: string;
   typeVehicule: string;
@@ -20,8 +21,8 @@ export interface AutoQuoteSummary {
 export interface HabitationQuoteSummary {
   preneur_id: number;
   id: number;
-  nom: string;
-  prenom: string;
+  nom: string | null;
+  prenom: string | null;
   dateDemande: string;
   statut: string;
   description: string;
@@ -30,8 +31,8 @@ export interface HabitationQuoteSummary {
 export interface ObsequesQuoteSummary {
   preneur_id: number;
   id: number;
-  nom: string;
-  prenom: string;
+  nom: string | null;
+  prenom: string | null;
   dateDemande: string;
   statut: string;
   description: string;
@@ -40,8 +41,8 @@ export interface ObsequesQuoteSummary {
 export interface VoyageQuoteSummary {
   preneur_id: number;
   id: number;
-  nom: string;
-  prenom: string;
+  nom: string | null;
+  prenom: string | null;
   dateDemande: string;
   statut: string;
   description: string;
@@ -50,8 +51,8 @@ export interface VoyageQuoteSummary {
 export interface RcQuoteSummary {
   preneur_id: number;
   id: number;
-  nom: string;
-  prenom: string;
+  nom: string | null;
+  prenom: string | null;
   dateDemande: string;
   statut: string;
   description: string; // Mappé depuis 'risque'
@@ -130,8 +131,8 @@ export class ManagementService {
             quotes: response.map((item: any) => ({
               preneur_id: item.preneur_id,
               id: item.id,
-              nom: item.preneur_nom ?? '',
-              prenom: item.preneur_prenom ?? '',
+            nom: item.preneur_nom ?? null,
+            prenom: item.preneur_prenom ?? null,
               dateDemande: item.created_at,
               statut: item.statut || 'Nouveau', // 'statut' n'est pas dans la table, on met une valeur par défaut
               description: `Risque: ${item.risque}`
@@ -167,8 +168,8 @@ export class ManagementService {
           quotes: response.data.map(item => ({
             preneur_id: item.preneur_id,
             id: item.id,
-            nom: item.nom ?? '',
-            prenom: item.prenom ?? '',
+            nom: item.nom ?? null,
+            prenom: item.prenom ?? null,
             dateDemande: item.date_created,
             statut: item.statut || 'Nouveau',
             description: item.description || 'Aucun message'
@@ -190,8 +191,9 @@ export class ManagementService {
           quotes: response.data.map((item: any) => ({ // Correction pour éviter 'N/A'
             preneur_id: item.preneur_id,
             id: item.id,
-            nom: item.preneur?.nom ?? '',
-            prenom: item.preneur?.prenom ?? '',
+            nom: item.preneur?.nom ?? null,
+            prenom: item.preneur?.prenom ?? null,
+            uid: item.preneur?.uid ?? null,
             dateDemande: item.created_at,
             statut: item.statut || 'Nouveau',
             description: `${item.batiment_type_maison} - ${item.batiment_adresse}`
@@ -215,8 +217,10 @@ export class ManagementService {
             quotes: response.data.map(item => ({
               id: item.id, // Correction pour éviter 'N/A'
               preneur_id: item.preneur_id,
-              nom: item.preneur?.nom ?? '',
-              prenom: item.preneur?.prenom ?? '',
+              conducteur_id: item.conducteur_id,
+              nom: item.preneur?.nom ?? null,
+              prenom: item.preneur?.prenom ?? null,
+              uid: item.preneur?.uid ?? null,
               dateDemande: item.created_at,
               statut: item.statut || 'Nouveau',
               typeVehicule: item.vehicules?.type ?? '',
@@ -245,8 +249,9 @@ export class ManagementService {
           quotes: response.data.map((item: any) => ({ // Correction pour éviter 'N/A'
             preneur_id: item.preneur_id,
             id: item.id,
-            nom: item.preneur?.nom ?? '',
-            prenom: item.preneur?.prenom ?? '',
+            nom: item.preneur?.nom ?? null,
+            prenom: item.preneur?.prenom ?? null,
+            uid: item.preneur?.uid ?? null,
             dateDemande: item.created_at,
             statut: item.statut || 'Nouveau',
             description: `Devis pour ${item.nombre_assures} personne(s)`

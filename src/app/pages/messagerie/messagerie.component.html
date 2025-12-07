@@ -1,0 +1,163 @@
+<div class="container mx-auto p-4 sm:p-6 lg:p-8">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">
+      Messagerie pour le devis #{{ quoteId }}
+    </h1>
+    <a [routerLink]="['/management']" class="text-blue-600 hover:text-blue-800 font-medium flex items-center">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+      </svg>      
+      Retour à la gestion
+    </a>
+  </div>
+
+  <!-- Barre d'onglets -->
+  <div class="border-b border-gray-200 mb-6">
+    <nav class="-mb-px flex space-x-6" aria-label="Tabs">
+      <button (click)="setActiveTab('sms')"
+              [ngClass]="activeTab === 'sms' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+              class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
+        </svg>
+        SMS
+      </button>
+      <button (click)="setActiveTab('email')"
+              [ngClass]="activeTab === 'email' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+              class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+        </svg>
+        Email
+      </button>
+      <button (click)="setActiveTab('payment')"
+              [ngClass]="activeTab === 'payment' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+              class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
+        </svg>
+        Paiement
+      </button>
+    </nav>
+  </div>
+
+  <!-- Contenu des onglets -->
+  <div class="bg-white p-6 rounded-lg shadow-md">
+
+    <!-- Notifications -->
+    <div *ngIf="successMessage" class="mb-4 p-4 text-sm text-green-700 bg-green-100 rounded-lg" role="alert">
+      {{ successMessage }}
+    </div>
+    <div *ngIf="errorMessage" class="mb-4 p-4 text-sm text-red-700 bg-red-100 rounded-lg" role="alert">
+      {{ errorMessage }}
+    </div>
+
+    <!-- Formulaire SMS -->
+    <div *ngIf="activeTab === 'sms'">
+      <form [formGroup]="smsForm" (ngSubmit)="sendSms()">
+        <div class="mb-4">
+          <label for="sms-to" class="block text-sm font-medium text-gray-700">Destinataire (téléphone)</label>
+          <input type="text" id="sms-to" formControlName="to" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+        </div>
+        <div class="mb-4">
+          <label for="sms-message" class="block text-sm font-medium text-gray-700">Message</label>
+          <textarea id="sms-message" formControlName="message" rows="5" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm"></textarea>
+          <div class="text-right text-xs text-gray-500 mt-1">
+            {{ smsForm.get('message')?.value?.length || 0 }} / 160 caractères
+          </div>
+        </div>
+        <div class="text-right">
+          <button type="submit" [disabled]="smsForm.invalid || loading" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
+            <svg *ngIf="loading" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            {{ loading ? 'Envoi en cours...' : 'Envoyer le SMS' }}
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Formulaire Email -->
+    <div *ngIf="activeTab === 'email'">
+      <form [formGroup]="emailForm" (ngSubmit)="sendEmail()">
+        <div class="mb-4">
+          <label for="email-to" class="block text-sm font-medium text-gray-700">Destinataire (email)</label>
+          <input type="email" id="email-to" formControlName="to" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+        </div>
+        <div class="mb-4">
+          <label for="email-subject" class="block text-sm font-medium text-gray-700">Sujet</label>
+          <input type="text" id="email-subject" formControlName="subject" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+        </div>
+        <div class="mb-4">
+          <label for="email-content" class="block text-sm font-medium text-gray-700">Contenu de l'e-mail</label>
+          <textarea id="email-content" formControlName="htmlContent" rows="10" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm"></textarea>
+        </div>
+        <div class="text-right">
+          <button type="submit" [disabled]="emailForm.invalid || loading" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
+            <svg *ngIf="loading" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            {{ loading ? 'Envoi en cours...' : 'Envoyer l\'e-mail' }}
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Contenu de l'onglet Paiement -->
+    <div *ngIf="activeTab === 'payment'">
+      <form [formGroup]="paymentForm" (ngSubmit)="sendPaymentRequest()">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Sujet -->
+          <div class="mb-4">
+            <label for="payment-subject" class="block text-sm font-medium text-gray-700">Sujet de la demande</label>
+            <select id="payment-subject" formControlName="sujet" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+              <option value="" disabled>Sélectionnez un sujet</option>
+              <option *ngFor="let subject of paymentSubjects" [value]="subject.value">{{ subject.label }}</option>
+            </select>
+            <div *ngIf="paymentForm.get('sujet')?.touched && paymentForm.get('sujet')?.hasError('required')" class="text-red-600 text-xs mt-1">Le sujet est requis.</div>
+          </div>
+
+          <!-- Montant -->
+          <div class="mb-4">
+            <label for="payment-amount" class="block text-sm font-medium text-gray-700">Montant</label>
+            <div class="relative mt-1">
+              <input type="number" id="payment-amount" formControlName="montant" class="pl-3 pr-12 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 ring-1 ring-slate-200 shadow-sm" placeholder="0.00">
+              <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                <span class="text-gray-500 sm:text-sm">EUR</span>
+              </div>
+            </div>
+            <div *ngIf="paymentForm.get('montant')?.touched && paymentForm.get('montant')?.hasError('required')" class="text-red-600 text-xs mt-1">Le montant est requis.</div>
+            <div *ngIf="paymentForm.get('montant')?.touched && paymentForm.get('montant')?.hasError('min')" class="text-red-600 text-xs mt-1">Le montant doit être positif.</div>
+          </div>
+        </div>
+
+        <!-- Date d'échéance -->
+        <div class="mb-4">
+          <label for="payment-due-date" class="block text-sm font-medium text-gray-700">Date d'échéance</label>
+          <input type="date" id="payment-due-date" formControlName="dateEcheance" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          <div *ngIf="paymentForm.get('dateEcheance')?.touched && paymentForm.get('dateEcheance')?.hasError('required')" class="text-red-600 text-xs mt-1">La date d'échéance est requise.</div>
+          <div *ngIf="paymentForm.get('dateEcheance')?.touched && paymentForm.get('dateEcheance')?.hasError('pastDate')" class="text-red-600 text-xs mt-1">La date d'échéance ne peut pas être dans le passé.</div>
+        </div>
+
+        <!-- Remarques -->
+        <div class="mb-6">
+          <label for="payment-remarks" class="block text-sm font-medium text-gray-700">Remarques (optionnel)</label>
+          <textarea id="payment-remarks" formControlName="remarques" rows="4" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm" placeholder="Ajoutez des informations complémentaires pour le client..."></textarea>
+        </div>
+
+        <div class="text-right">
+          <button type="submit" [disabled]="paymentForm.invalid || loading" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
+            <svg *ngIf="loading" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            {{ loading ? 'Envoi en cours...' : 'Envoyer la demande de paiement' }}
+          </button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</div>

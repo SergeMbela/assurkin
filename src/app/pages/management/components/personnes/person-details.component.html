@@ -1,0 +1,56 @@
+<ng-container *ngIf="person">
+  <tbody class="bg-white divide-y divide-gray-200 border-t-8 border-gray-50">
+    <tr class="bg-gray-100">
+      <th colspan="2" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+        {{ title }}
+      </th>
+    </tr>
+    <tr>
+      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50 w-1/3">Prénom & Nom</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        {{ person.prenom | titlecase }} {{ person.nom | uppercase }}
+      </td>
+    </tr>
+    <tr>
+      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Date de naissance</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        {{ person.date_naissance | date:'dd/MM/yyyy' }}
+      </td>
+    </tr>
+    <tr>
+      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Contact</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        <div><span class="font-medium">Email:</span> {{ person.email }}</div>
+        <div><span class="font-medium">Tél:</span> {{ person.telephone }}</div>
+      </td>
+    </tr>
+    <tr>
+      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Adresse</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        {{ person.adresse }}<br>
+        {{ person.code_postal }} {{ person.ville | titlecase }}
+      </td>
+    </tr>
+    <tr>
+      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Permis de conduire</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        N° {{ person.permis_numero }} (Obtenu le {{ person.permis_date | date:'dd/MM/yyyy' }})
+      </td>
+    </tr>
+    <tr>
+      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Identité nationale</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        <div><span class="font-medium">RN:</span> {{ person.numero_national }}</div>
+        <div><span class="font-medium">Carte Id:</span> {{ person.idcard_number }} (Validité: {{ person.idcard_validity | date:'dd/MM/yyyy' }})</div>
+      </td>
+    </tr>
+    <tr>
+      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 bg-gray-50">Infos persos</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        {{ person.nationality }}
+        <span *ngIf="person.marital_status_id"> — {{ getMaritalStatusLabel(person.marital_status_id) }}</span>
+        <span *ngIf="!person.marital_status_id"> — Non spécifié</span>
+      </td>
+    </tr>
+  </tbody>
+</ng-container>

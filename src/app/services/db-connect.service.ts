@@ -8,19 +8,25 @@ import { environment } from '../../environments/environment';
 
 export interface Person {
   id: number;
-  user_id?: string;
   nom: string;
   prenom: string;
   email: string;
+  genre?: string;
+  date_naissance?: string;
   telephone?: string;
   adresse?: string;
   code_postal?: string;
   ville?: string;
-  date_naissance?: string;
   permis_numero?: string;
   permis_date?: string;
-  genre?: string;
+  numero_national?: string; // Ajouté
+  idcard_number?: string; // Ajouté (correspond à numero_carte_identite dans le form)
+  idcard_validity?: string; // Ajouté (correspond à date_validite_ci dans le form)
+  nationality?: string;
+  marital_status_id?: number;
+  user_id?: string;
   folder_id?: boolean;
+  uid?: string;
 }
 
 export interface CorporateAccount {
@@ -330,6 +336,21 @@ export class DbConnectService {
    */
   saveContactForm(formData: ContactFormData): Observable<SupabaseResponse<ContactFormData>> {
     return from(this.supabase.insertData('contact_submissions', formData)) as Observable<SupabaseResponse<ContactFormData>>;
+  }
+
+  /**
+   * Enregistre un message (SMS ou email) envoyé dans la base de données.
+   * @param messageData Les données du message à enregistrer.
+   * @returns Une promesse qui se résout une fois le message sauvegardé.
+   */
+  public async saveMessage(messageData: any): Promise<void> {
+    const { error } = await this.supabase.supabase
+      .from('messages')
+      .insert([messageData]);
+
+    if (error) {
+      console.error('Erreur lors de la sauvegarde du message:', error);
+    }
   }
 
   /**
@@ -1331,8 +1352,9 @@ export class DbConnectService {
           id,
           created_at,
           preneur_id,
+          conducteur_id,
           statut,
-          preneur:personnes!devis_assurance_preneur_id_fkey ( nom, prenom ),
+          preneur:personnes!devis_assurance_preneur_id_fkey ( nom, prenom, uid ),
           vehicules ( type, marque, modele, annee )
         `, { count: 'exact' }) // On demande le compte total
       .order('created_at', { ascending: false })
@@ -1375,7 +1397,7 @@ export class DbConnectService {
           statut,
           batiment_adresse,
           batiment_type_maison,
-          preneur:personnes!habitation_quotes_preneur_id_fkey ( nom, prenom )
+          preneur:personnes!habitation_quotes_preneur_id_fkey ( nom, prenom, uid )
         `, { count: 'exact' })
       .order('created_at', { ascending: false })
       .range(rangeFrom, rangeTo);
@@ -1406,7 +1428,7 @@ export class DbConnectService {
 
     let query = this.supabase.supabase
       .from('obseques_quotes')
-      .select(`id, created_at, statut, nombre_assures, preneur_id, preneur:personnes!obseques_quotes_preneur_id_fkey ( nom, prenom )`, { count: 'exact' })
+      .select(`id, created_at, statut, nombre_assures, preneur_id, preneur:personnes!obseques_quotes_preneur_id_fkey ( nom, prenom, uid )`, { count: 'exact' })
       .order('created_at', { ascending: false })
       .range(rangeFrom, rangeTo);
 
@@ -1762,6 +1784,50 @@ export class DbConnectService {
     return from(promise);
   }
 
+  /**
+   * Met à jour les informations d'une personne dans la table 'personnes'.
+   * @param personId L'ID de la personne à mettre à jour.
+   * @param personData Un objet contenant les champs à mettre à jour (ex: { nom: 'NouveauNom', prenom: 'NouveauPrenom' }).
+   * @returns Un Observable avec le résultat de la mise à jour.
+   */
+  updatePerson(personId: number, personData: Partial<Person>): Observable<SupabaseResponse<Person>> {
+    return from(
+      this.supabase.supabase
+        .from('personnes')
+        .update(personData)
+        .eq('id', personId)
+        .select()
+        .single() // On s'attend à ce qu'une seule ligne soit mise à jour et retournée
+    ).pipe(
+      map(response => {
+        if (response.error) throw response.error;
+        return { data: response.data, error: null };
+      })
+    );
+  }
+
+  /**
+   * Récupère les données d'une personne par son ID.
+   * @param personId L'ID de la personne à récupérer.
+   * @returns Un Observable avec les données de la personne ou null si non trouvée.
+   */
+  getPersonById(personId: number): Observable<Person | null> {
+    return from(
+      this.supabase.supabase
+        .from('personnes')
+        .select('*')
+        .eq('id', personId)
+        .single() // Attend un seul résultat
+    ).pipe(
+      map(response => {
+        // L'erreur PGRST116 signifie "0 ligne retournée", ce qui est un cas normal si la personne n'existe pas.
+        if (response.error && response.error.code !== 'PGRST116') {
+          console.error(`Erreur lors de la récupération de la personne avec l'ID ${personId}:`, response.error);
+        }
+        return response.data as Person | null;
+      })
+    );
+  }
   /**
    * Cherche une personne par email. Si elle n'existe pas, la crée.
    * @param personData Les données de la personne.

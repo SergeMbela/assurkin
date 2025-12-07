@@ -37,21 +37,93 @@
         <table class="w-full text-sm text-left text-gray-600">
           <thead class="text-xs text-gray-700 uppercase bg-gray-100">
             <tr class="border-b">
-              <th scope="col" class="px-6 py-3">ID Devis</th>
-              <th scope="col" class="px-6 py-3">Preneur</th>
+              <th scope="col" class="px-6 py-3">ID</th>
+              <th scope="col" class="px-6 py-3">
+                <div class="flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 mr-1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m-7.5-2.963A3.686 3.686 0 0110.5 9.59a3.686 3.686 0 013.686 3.686zM12 6.591A2.25 2.25 0 0114.25 8.84a2.25 2.25 0 01-4.5 0A2.25 2.25 0 0112 6.591zM12 21a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72M6.318 18.72a9.094 9.094 0 013.741-.479 3 3 0 01-4.682-2.72m-7.5-2.963A3.686 3.686 0 013.5 9.59a3.686 3.686 0 013.686 3.686zM3 6.591A2.25 2.25 0 015.25 8.84a2.25 2.25 0 01-4.5 0A2.25 2.25 0 013 6.591z" />
+                  </svg>
+                  Preneur
+                </div>
+              </th>
               <!-- Colonne dynamique -->
-              <th scope="col" class="px-6 py-3">{{ ((activeTab$ | async) === 'auto' ? 'Véhicule' : 'Description') | titlecase }}</th>
-              <th scope="col" class="px-6 py-3">Date de la demande</th>
-              <th scope="col" class="px-6 py-3">Statut</th>
-              <th scope="col" class="px-6 py-3 no-print">Offre</th>
-              <th scope="col" class="px-6 py-3 no-print">Documents</th>
-              <th scope="col" class="px-6 py-3 no-print">Statistique</th>
+              <th scope="col" class="px-6 py-3">
+                <div class="flex items-center">
+                  <ng-container *ngIf="(activeTab$ | async) === 'auto'">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 mr-1.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.125-.504 1.125-1.125V14.25m-17.25 4.5h12.75m0 0v-4.125c0-.621-.504-1.125-1.125-1.125H11.25c-.621 0-1.125.504-1.125 1.125v4.125m0 0a2.25 2.25 0 100 4.5 2.25 2.25 0 000-4.5zm-10.875 0a2.25 2.25 0 100 4.5 2.25 2.25 0 000-4.5z" />
+                    </svg>
+                  </ng-container>
+                  {{ ((activeTab$ | async) === 'auto' ? 'Véhicule' : 'Description') | titlecase }}
+                </div>
+              </th>
+              <th scope="col" class="px-6 py-3">
+                <div class="flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 mr-1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Date
+                </div>
+              </th>
+              <th scope="col" class="px-6 py-3">
+                <div class="flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 mr-1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z" />
+                  </svg>
+                  Statut
+                </div>
+              </th>
+              <th scope="col" class="px-6 py-3 no-print">
+                <div class="flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 mr-1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                  </svg>
+                  Offre
+                </div>
+              </th>
+              <th scope="col" class="px-6 py-3 no-print">
+                <div class="flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 mr-1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" />
+                  </svg>
+                  Documents
+                </div>
+              </th>
+              <th scope="col" class="px-6 py-3 no-print">
+                <div class="flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 mr-1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                  </svg>
+                  Interactions
+                </div>
+              </th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let quote of vm.state.data.quotes" class="bg-white border-b hover:bg-gray-50 transition-colors duration-200">
               <td class="px-6 py-4 font-semibold text-gray-900 whitespace-nowrap">#{{ quote.id }}</td>
-              <td class="px-6 py-4">{{ quote.prenom || ''| titlecase  }} {{ quote.nom || '' | titlecase }}</td>
+              <td class="px-6 py-4">
+                <div class="flex items-center">
+                  <div class="flex items-center cursor-pointer group" (click)="openEditModal(quote, quote.preneur_id)">
+                    <svg class="w-4 h-4 mr-2 text-gray-400 group-hover:text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
+                    </svg>
+                    <!-- Icône de compte utilisateur si l'UID existe -->
+                    <svg *ngIf="quote.uid" class="w-4 h-4 mr-2 text-blue-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                      <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-5.5-2.5a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0zM10 12a5.99 5.99 0 00-4.793 2.39A6.483 6.483 0 0010 16.5a6.483 6.483 0 004.793-2.11A5.99 5.99 0 0010 12z" clip-rule="evenodd" />
+                    </svg>
+                    <span>{{ quote.prenom || ''| titlecase  }} {{ quote.nom || '' | titlecase }}</span>
+                  </div>
+                  <!-- Ajout du texte si le conducteur est différent du preneur -->
+                  <span *ngIf="isAutoQuote(quote) && quote.preneur_id !== quote.conducteur_id" (click)="openEditModal(quote, quote.conducteur_id)" class="ml-2 text-xs text-gray-500 font-normal flex items-center cursor-pointer group">
+                    (Conducteur principal)
+                    <svg class="w-3 h-3 ml-1 text-gray-400 group-hover:text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
+                    </svg>
+                  </span>
+                </div>
+              </td>
               <td class="px-6 py-4 truncate max-w-xs">
                 <ng-container *ngIf="isAutoQuote(quote)">
                   {{ quote.typeVehicule | titlecase  }} {{ quote.marqueVehicule | titlecase  }} {{ quote.modeleVehicule | titlecase  }}
@@ -76,7 +148,7 @@
                 <a [routerLink]="['/management/upload', (activeTab$ | async), quote.id, quote.preneur_id]" class="text-blue-600 hover:text-blue-800 font-medium">Gérer</a>
               </td>
               <td class="px-6 py-4 no-print">
-                <a [routerLink]="['/management/assurance-details', (activeTab$ | async), quote.id]" class="text-blue-600 hover:text-blue-800 font-medium">Voir statistique</a>
+                <a [routerLink]="['/messagerie', (activeTab$ | async), quote.id]" class="text-blue-600 hover:text-blue-800 font-medium">Accéder</a>
               </td>
             </tr>
           </tbody>
@@ -105,4 +177,156 @@
 
     </app-state-container>
   </ng-container>
+
+  <!-- ===== MODAL DE MODIFICATION DU PRENEUR ===== -->
+  <div *ngIf="isEditModalOpen && (nationalities$ | async)" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+    <div class="relative mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
+      <!-- Bouton de fermeture -->
+      <button type="button" (click)="closeEditModal()" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-full p-1">
+        <span class="sr-only">Fermer</span>
+        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
+      <div class="mt-3 text-center">
+        <h3 class="text-lg leading-6 font-medium text-gray-900 text-center">{{ editModalTitle }}</h3>
+        <div class="mt-4 px-2 py-3 max-h-[70vh] overflow-y-auto">
+          <form [formGroup]="preneurForm" (ngSubmit)="savePreneurChanges()">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="text-left">
+                <label for="prenom" class="block text-sm font-medium text-gray-700">Prénom</label>
+                <input type="text" id="prenom" formControlName="prenom" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+              </div>
+              <div class="text-left">
+                <label for="nom" class="block text-sm font-medium text-gray-700">Nom</label>
+                <input type="text" id="nom" formControlName="nom" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+              </div>
+            </div>
+
+            <div class="mt-4 text-left">
+              <label for="numero_national" class="block text-sm font-medium text-gray-700">Numéro National</label>
+              <input type="text" id="numero_national" formControlName="numero_national" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+              <div *ngIf="preneurForm.get('numero_national')?.hasError('belgianNationalNumber') && preneurForm.get('numero_national')?.touched" class="text-red-600 text-xs mt-1">
+                Le format du numéro national est invalide.
+              </div>
+            </div>
+
+            <div class="mt-4 text-left">
+              <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+              <input type="email" id="email" formControlName="email" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+            </div>
+
+            <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="text-left">
+                <label for="telephone" class="block text-sm font-medium text-gray-700">Téléphone</label>
+                <input type="tel" id="telephone" formControlName="telephone" appPhoneNumberMask class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+              </div>
+              <div class="text-left">
+                <label for="date_naissance" class="block text-sm font-medium text-gray-700">Date de naissance</label>
+                <input type="date" id="date_naissance" formControlName="date_naissance" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                <div *ngIf="preneurForm.get('date_naissance')?.hasError('birthDateMismatch') && preneurForm.get('date_naissance')?.touched" class="text-red-600 text-xs mt-1">
+                  La date de naissance ne correspond pas au numéro national.
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4 text-left">
+              <label for="adresse" class="block text-sm font-medium text-gray-700">Adresse</label>
+              <input type="text" id="adresse" formControlName="adresse" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+            </div>
+
+            <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="text-left">
+                <label for="code_postal" class="block text-sm font-medium text-gray-700">Code Postal</label>
+                <input type="text" id="code_postal" formControlName="code_postal" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+              </div>
+              <div class="text-left">
+                <label for="ville" class="block text-sm font-medium text-gray-700">Ville</label>                
+                <div class="relative mt-1">
+                  <select id="ville" formControlName="ville" class="focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 pl-3 pr-10 ring-1 ring-slate-200 shadow-sm disabled:bg-gray-100"
+                          [disabled]="(citiesForPostalCode$ | async)?.length === 0 || (isCitiesLoading$ | async) === true">
+                    <option value="" disabled>
+                      {{ (isCitiesLoading$ | async) ? 'Chargement...' : 'Sélectionnez une ville' }}
+                    </option>
+                    <option *ngFor="let city of (citiesForPostalCode$ | async)" [value]="city">
+                      {{ city }}
+                    </option>
+                  </select>
+                  <div *ngIf="isCitiesLoading$ | async" class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <!-- Icône de chargement SVG -->
+                    <svg class="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4 text-left">
+              <label for="nationality" class="block text-sm font-medium text-gray-700">Nationalité</label>
+              <div class="relative mt-1">
+                <select id="nationality" formControlName="nationality" class="focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 pl-3 pr-10 ring-1 ring-slate-200 shadow-sm disabled:bg-gray-100"
+                        [disabled]="(isNationalitiesLoading$ | async) === true">
+                  <option value="" disabled>
+                    {{ (isNationalitiesLoading$ | async) ? 'Chargement...' : 'Sélectionnez une nationalité' }}
+                  </option>
+                  <ng-container *ngIf="nationalities$ | async as nationalities">
+                    <option *ngFor="let nat of nationalities" [value]="nat.id">
+                      {{ nat.nationality }}
+                    </option>
+                  </ng-container>
+                </select>
+                <div *ngIf="isNationalitiesLoading$ | async" class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <svg class="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="text-left">
+                <label for="idcard_number" class="block text-sm font-medium text-gray-700">N° carte d'identité</label>
+                <input type="text" id="idcard_number" formControlName="idcard_number" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+              </div>
+              <div class="text-left">
+                <label for="idcard_validity" class="block text-sm font-medium text-gray-700">Date de validité</label>
+                <input type="date" id="idcard_validity" formControlName="idcard_validity" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+              </div>
+            </div>
+
+            <!-- Champs relatifs au permis de conduire (affichés uniquement pour l'onglet Auto) -->
+            <ng-container *ngIf="(activeTab$ | async) === 'auto'">
+              <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="text-left">
+                  <label for="permis_numero" class="block text-sm font-medium text-gray-700">Numéro de permis</label>
+                  <input type="text" id="permis_numero" formControlName="permis_numero" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                </div>
+                <div class="text-left">
+                  <label for="permis_date" class="block text-sm font-medium text-gray-700">Date d'obtention permis</label>
+                  <input type="date" id="permis_date" formControlName="permis_date" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+                </div>
+              </div>
+            </ng-container>
+
+
+
+            <div class="mt-6 items-center px-4 py-3 flex justify-end space-x-4 bg-gray-50 -mx-5 -mb-5 rounded-b-md">
+              <button type="button" (click)="closeEditModal()"
+                      class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                Annuler
+              </button>
+              <button type="submit" [disabled]="preneurForm.invalid"
+                      class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
+                Enregistrer
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
