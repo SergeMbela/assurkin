@@ -313,6 +313,11 @@ export interface UploadedFile {
   signed_pdf_url?: string;
 }
 
+export interface PostalCodeCount {
+  code_postal: string;
+  person_count: number;
+}
+
 export interface InfoRequestFormData {
   // Define properties for Info Request form
 }
@@ -2151,5 +2156,28 @@ export class DbConnectService {
    */
   getCurrentUser(): Observable<User | null> {
     return this.supabase.currentUser$;
+  }
+
+  /**
+   * Récupère le nombre de personnes par code postal.
+   * Appelle la fonction RPC `get_person_counts_by_postal_code` que vous devez créer dans Supabase.
+   * @returns Un Observable avec un tableau d'objets contenant le code postal et le nombre de personnes.
+   */
+  getPersonCountsByPostalCode(): Observable<PostalCodeCount[]> {
+    return from(
+      this.supabase.supabase.rpc('get_person_counts_by_postal_code')
+    ).pipe(
+      map(response => {
+        if (response.error) {
+          console.error('Erreur lors de l\'appel RPC get_person_counts_by_postal_code:', response.error);
+          throw response.error;
+        }
+        return (response.data as PostalCodeCount[]) || [];
+      }),
+      catchError(error => {
+        console.error('Erreur dans le pipe de getPersonCountsByPostalCode:', error);
+        return of([]); // Retourne un tableau vide en cas d'erreur.
+      })
+    );
   }
 }

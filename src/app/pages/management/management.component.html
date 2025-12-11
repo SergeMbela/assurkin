@@ -14,11 +14,23 @@
     </nav>
   </div>
 
-  <!-- Champ de recherche -->
-  <div class="mb-6 no-print">
-    <input type="text"
-           [formControl]="searchControl"
-           placeholder="Rechercher par nom, ID, description..."           class="w-full max-w-md mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+  <!-- Barre d'actions avec recherche et boutons -->
+  <div class="flex flex-wrap justify-between items-center gap-4 mb-6 no-print">
+    <!-- Champ de recherche -->
+    <div>
+      <input type="text"
+             [formControl]="searchControl"
+             placeholder="Rechercher par nom, ID, description..."
+             class="w-full max-w-md mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+    </div>
+
+    <!-- Boutons d'action -->
+    <div class="flex items-center space-x-2">
+      <a routerLink="/utilities/paiements" class="px-3 py-2 text-sm font-medium text-white bg-orange-500 rounded-md shadow-sm hover:bg-orange-600">Paiements</a>
+      <a routerLink="/utilities/statistiques" class="px-3 py-2 text-sm font-medium text-white bg-green-500 rounded-md shadow-sm hover:bg-green-600">Statistiques</a>
+      <a routerLink="/utilities/prospects" class="px-3 py-2 text-sm font-medium text-white bg-blue-500 rounded-md shadow-sm hover:bg-blue-600">Prospects</a>
+      <a routerLink="/utilities/parametres" class="px-3 py-2 text-sm font-medium text-white bg-gray-800 rounded-md shadow-sm hover:bg-gray-900">Paramètres</a>
+    </div>
   </div>
 
   <ng-container *ngIf="vm$ | async as vm">

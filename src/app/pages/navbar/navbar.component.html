@@ -17,12 +17,12 @@
             [routerLinkActiveOptions]="{exact: true}" (mouseenter)="onLinkHover($event)"
             class="text-gray-700 hover:text-indigo-600 transition h-16 inline-flex items-center">Accueil</a>
           <!-- Menu Mentions Légales Desktop -->
-          <div class="relative">
+          <div class="relative" (mouseenter)="showMentionsLegalesSubMenu = true" (mouseleave)="showMentionsLegalesSubMenu = false">
             <button #menuLink routerLinkActive="text-indigo-600"
-              (click)="showMentionsLegalesSubMenu = !showMentionsLegalesSubMenu" (mouseenter)="onLinkHover($event)"
+              (mouseenter)="onLinkHover($event)"
               aria-haspopup="true" [attr.aria-expanded]="showMentionsLegalesSubMenu"
               aria-controls="mentions-legales-submenu"
-              class="text-gray-700 hover:text-indigo-600 transition inline-flex items-center h-16">
+              class="text-gray-700 hover:text-indigo-600 transition inline-flex items-center h-16 cursor-default">
               Mentions légales
               <svg class="ml-1 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd"
@@ -30,8 +30,8 @@
                   clip-rule="evenodd" />
               </svg>
             </button>
-            <div *ngIf="showMentionsLegalesSubMenu" id="mentions-legales-submenu"
-              class="absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 transition-all duration-200 ease-in-out">
+            <div [ngClass]="{'opacity-100 visible': showMentionsLegalesSubMenu, 'opacity-0 invisible': !showMentionsLegalesSubMenu}"
+              id="mentions-legales-submenu" class="absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 transition-all duration-200 ease-in-out">
               <a routerLink="/mentions" routerLinkActive="bg-indigo-50" [routerLinkActiveOptions]="{exact: true}"
                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50">Vue d'ensemble</a>
               <a routerLink="/mentions/a-propos" routerLinkActive="bg-indigo-50" [attr.aria-current]="'page'"

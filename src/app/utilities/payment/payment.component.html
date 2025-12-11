@@ -1,0 +1,146 @@
+
+<div class="container mx-auto p-4 sm:p-6 lg:p-8">
+  <a routerLink="/management" class="inline-flex items-center text-indigo-600 hover:text-indigo-800 mb-4 group">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 transition-transform group-hover:-translate-x-1"
+      viewBox="0 0 20 20" fill="currentColor">
+      <path fill-rule="evenodd"
+        d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z"
+        clip-rule="evenodd" />
+    </svg>
+    Retour à la gestion
+  </a>
+  <h1 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-6">Gestion des Paiements</h1>
+
+  <!-- Barre d'onglets -->
+  <div class="border-b border-gray-200 mb-6">
+    <nav class="-mb-px flex space-x-6" aria-label="Tabs">
+      <!-- Note: Vous devrez ajouter une propriété `public activeTab: 'data' | 'chart' = 'data';` dans votre payment.component.ts -->
+      <button (click)="activeTab = 'data'"
+        [ngClass]="activeTab === 'data' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+        class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+        Données
+      </button>
+      <button (click)="activeTab = 'chart'"
+        [ngClass]="activeTab === 'chart' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+        class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+        Graphique
+      </button>
+    </nav>
+  </div>
+
+  <!-- Barre de recherche -->
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <input type="text"
+             placeholder="Rechercher par client, ID, montant..."
+             class="w-full max-w-md mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+    </div>
+  </div>
+
+  <!-- Contenu des onglets -->
+  <div [ngSwitch]="activeTab">
+    <!-- Onglet Données -->
+    <ng-container *ngSwitchCase="'data'">
+  <!-- 
+    Note: J'ai utilisé une structure similaire à votre management.component.
+    Vous devrez probablement créer un observable `vm$` dans votre payment.component.ts 
+    qui émettra un objet avec l'état (loading, error, data) et les informations de pagination.
+    Exemple de structure pour vm$:
+    {
+      state: { data: { payments: [...] }, loading: false, error: null },
+      pagination: { currentPage: 1, totalPages: 5, totalItems: 100, itemsPerPage: 20 }
+    }
+  -->
+
+  <!-- Conteneur d'état (à adapter avec votre logique) -->
+  <!-- <app-state-container [state]="vm.state" ...> -->
+
+    <!-- Cas où il n'y a aucune donnée -->
+    <!-- <div *ngIf="!vm.state.data || vm.state.data.payments.length === 0" class="text-center py-10 px-4 bg-gray-50 rounded-lg">
+      <p class="text-gray-500">Aucun paiement trouvé.</p>
+    </div> -->
+
+    <!-- Tableau des paiements -->
+    <div class="shadow-md rounded-lg overflow-x-auto">
+      <table class="w-full text-sm text-left text-gray-600">
+        <thead class="text-xs text-gray-700 uppercase bg-gray-100">
+          <tr class="border-b">
+            <th scope="col" class="px-6 py-3">ID Paiement</th>
+            <th scope="col" class="px-6 py-3">Date</th>
+            <th scope="col" class="px-6 py-3">Client</th>
+            <th scope="col" class="px-6 py-3">Devis Associé</th>
+            <th scope="col" class="px-6 py-3">Montant</th>
+            <th scope="col" class="px-6 py-3">Statut</th>
+            <th scope="col" class="px-6 py-3">Méthode</th>
+            <th scope="col" class="px-6 py-3">
+              <span class="sr-only">Actions</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Exemple de ligne de données. Vous devrez remplacer ceci par une boucle *ngFor -->
+          <!-- <tr *ngFor="let payment of vm.state.data.payments" class="bg-white border-b hover:bg-gray-50"> -->
+          <tr class="bg-white border-b hover:bg-gray-50">
+            <td class="px-6 py-4 font-semibold text-gray-900">PAY-12345</td>
+            <td class="px-6 py-4">15/07/2023 14:30</td>
+            <td class="px-6 py-4">Jean Dupont</td>
+            <td class="px-6 py-4">
+              <a href="#" class="text-blue-600 hover:underline">#AUTO-789</a>
+            </td>
+            <td class="px-6 py-4 font-medium">€125.50</td>
+            <td class="px-6 py-4">
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                Payé
+              </span>
+            </td>
+            <td class="px-6 py-4">Carte de crédit</td>
+            <td class="px-6 py-4 text-right">
+              <a href="#" class="font-medium text-blue-600 hover:underline">Détails</a>
+            </td>
+          </tr>
+          <tr class="bg-white border-b hover:bg-gray-50">
+            <td class="px-6 py-4 font-semibold text-gray-900">PAY-12346</td>
+            <td class="px-6 py-4">14/07/2023 11:00</td>
+            <td class="px-6 py-4">Marie Curie</td>
+            <td class="px-6 py-4">
+              <a href="#" class="text-blue-600 hover:underline">#HAB-456</a>
+            </td>
+            <td class="px-6 py-4 font-medium">€450.00</td>
+            <td class="px-6 py-4">
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                En attente
+              </span>
+            </td>
+            <td class="px-6 py-4">Virement</td>
+            <td class="px-6 py-4 text-right">
+              <a href="#" class="font-medium text-blue-600 hover:underline">Détails</a>
+            </td>
+          </tr>
+          <!-- Fin de l'exemple -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Contrôles de pagination (à adapter avec votre logique) -->
+    <div class="flex items-center justify-between mt-6">
+      <span class="text-sm text-gray-700">
+        Page <span class="font-semibold">1</span> sur <span class="font-semibold">10</span> (200 résultats)
+      </span>
+      <div class="inline-flex -space-x-px">
+        <button class="px-3 py-2 ml-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-100 hover:text-gray-700 disabled:opacity-50" disabled>Précédent</button>
+        <button class="px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-100 hover:text-gray-700">Suivant</button>
+      </div>
+    </div>
+
+    </ng-container>
+
+    <!-- Onglet Graphique -->
+    <ng-container *ngSwitchCase="'chart'">
+      <div class="bg-white shadow-md rounded-lg p-6 text-center">
+        <p class="text-gray-600">L'affichage des graphiques sera implémenté ici.</p>
+        <!-- Vous pouvez ajouter ici votre composant de graphique -->
+      </div>
+    </ng-container>
+  </div>
+  <!-- </app-state-container> -->
+</div>

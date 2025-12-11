@@ -40,6 +40,12 @@ export const routes: Routes = [
     { path: 'mentions-legales', component: MentionsLegalesComponent },
     { path: 'corporate', component: CorporateComponent },
 
+    // Routes pour les utilitaires (à créer)
+    { path: 'utilities/paiements', loadComponent: () => import('./utilities/payment/payment.component').then(m => m.PaymentComponent) },
+    { path: 'utilities/statistiques', loadComponent: () => import('./utilities/stat/stat.component').then(m => m.StatComponent) },
+    { path: 'utilities/prospects', loadComponent: () => import('./utilities/rs/rs.component').then(m => m.RsComponent) },
+    { path: 'utilities/parametres', loadComponent: () => import('./utilities/params/params.component').then(m => m.ParamsComponent) },
+
     // Nouvelles routes pour l'authentification
     { path: 'account', component: AccountComponent },
     { path: 'login', component: AccountLoginComponent },

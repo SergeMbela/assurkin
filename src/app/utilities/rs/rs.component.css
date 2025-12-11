@@ -1,0 +1,30 @@
+.map-wrapper {
+      position: relative;
+      height: 500px; /* Ajustez selon vos besoins */
+      width: 100%;
+    }
+    .map-container {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 100%;
+    }
+
+/*
+  On utilise ::ng-deep car les popups Mapbox sont ajoutées au body du document,
+  en dehors du scope du composant. Cela nous permet de styler ces éléments globaux
+  depuis notre fichier de style de composant.
+*/
+::ng-deep .assurkin-popup .mapboxgl-popup-content {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 0; /* On supprime le padding par défaut pour un contrôle total */
+  font-family: inherit; /* Hérite la police du reste de l'application */
+  max-width: 280px;
+}
+
+/* On ajoute le padding à notre conteneur interne pour un meilleur contrôle */
+::ng-deep .assurkin-popup .popup-content {
+  padding: 1rem; /* 16px */
+}
