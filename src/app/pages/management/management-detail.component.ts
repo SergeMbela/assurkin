@@ -21,7 +21,7 @@ import { ObsequesDetailsComponent } from './components/obseques/obseques-details
   selector: 'app-management-detail',
   standalone: true,
   imports: [
-    CommonModule, 
+    CommonModule,
     ReactiveFormsModule,
     RouterLink,
     FormsModule,
