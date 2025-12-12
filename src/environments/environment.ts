@@ -8,6 +8,7 @@ export const environment = {
     supabaseFunctionUrl: 'https://fqopliwvpuiprdegxytz.supabase.co',
     domain_name: 'assurkin.be',
     stripe_lien_paiement: 'https://assurkin.be/paiement/',
+    storage_bucket_clients: 'documents',
     storage_bucket: 'https://fqopliwvpuiprdegxytz.supabase.co/functions/v1/storage-upload',
     stripe_public_key: 'pk_test_51SbHOFCF57PhpQ6IkRFaNg06NIIThSlX2tf0aucAgm4LK4RqJkksCAxQoslBSQPfTdJjJHSXMLC6PnUlYp7PsvRf00rmMa9ypu',
     storageBucketPrefix: 'https://fqopliwvpuiprdegxytz.supabase.co/functions/v1/storage-upload',

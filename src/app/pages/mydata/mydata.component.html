@@ -34,6 +34,11 @@
           class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
           Mes Documents
         </button>
+        <button (click)="setView('televersement')"
+          [ngClass]="activeView === 'televersement' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+          class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+          Téléversement
+        </button>
         <button (click)="setView('paiements')"
           [ngClass]="activeView === 'paiements' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
           class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
@@ -95,7 +100,77 @@
       <div *ngIf="activeView === 'assurances'">
         <div class="bg-white p-8 rounded-lg shadow-lg">
           <h2 class="text-2xl font-bold mb-6 text-gray-700">Mes Assurances</h2>
-          <p class="text-gray-500">Le contenu pour la gestion des assurances sera affiché ici.</p>
+          
+          <!-- Sous-onglets pour les catégories d'assurance -->
+          <div class="border-b border-gray-200 mb-6">
+            <nav class="-mb-px flex space-x-6" aria-label="Insurance Tabs">
+              <button (click)="setInsuranceCategory('auto')"
+                [ngClass]="activeInsuranceCategory === 'auto' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                class="whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm">
+                Auto
+              </button>
+              <button (click)="setInsuranceCategory('habitation')"
+                [ngClass]="activeInsuranceCategory === 'habitation' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                class="whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm">
+                Habitation
+              </button>
+              <button (click)="setInsuranceCategory('obseques')"
+                [ngClass]="activeInsuranceCategory === 'obseques' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                class="whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm">
+                Obsèques
+              </button>
+            </nav>
+          </div>
+
+          <div *ngIf="contractsLoading" class="text-center py-4">
+            <svg class="animate-spin h-8 w-8 text-indigo-600 mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p class="text-gray-500">Chargement des contrats...</p>
+          </div>
+
+          <div *ngIf="!contractsLoading && contracts.length === 0" class="text-center py-8 bg-gray-50 rounded-lg">
+             <p class="text-gray-500">Aucun contrat d'assurance {{ activeInsuranceCategory }} trouvé.</p>
+             <a [routerLink]="'/particulier/' + activeInsuranceCategory" class="mt-4 inline-block text-indigo-600 hover:text-indigo-800 font-medium">Demander un devis</a>
+          </div>
+
+          <div *ngIf="!contractsLoading && contracts.length > 0" class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Désignation</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date d'effet</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
+                  <th scope="col" class="relative px-6 py-3">
+                    <span class="sr-only">Actions</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <tr *ngFor="let contract of contracts">
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm font-medium text-gray-900">{{ contract.denomination }}</div>
+                    <div class="text-sm text-gray-500">{{ contract.categorie }}</div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ contract.date_contract | date:'dd/MM/yyyy' }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full" 
+                          [ngClass]="{
+                            'bg-green-100 text-green-800': contract.statut === 'Validé' || contract.statut === 'Actif', 
+                            'bg-yellow-100 text-yellow-800': contract.statut === 'En attente' || contract.statut === 'Devis en attente',
+                            'bg-red-100 text-red-800': contract.statut === 'Refusé' || contract.statut === 'Résilié'
+                          }">
+                      {{ contract.statut }}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <a [routerLink]="['/assurance-details', activeInsuranceCategory, contract.id]" class="text-indigo-600 hover:text-indigo-900">Détails</a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
@@ -103,7 +178,163 @@
       <div *ngIf="activeView === 'documents'">
         <div class="bg-white p-8 rounded-lg shadow-lg">
           <h2 class="text-2xl font-bold mb-6 text-gray-700">Mes Documents</h2>
-          <p class="text-gray-500">La liste de vos documents sera affichée ici.</p>
+          
+          <div *ngIf="!documents || documents.length === 0" class="text-center py-8 bg-gray-50 rounded-lg">
+             <p class="text-gray-500">Aucun document disponible.</p>
+          </div>
+
+          <div *ngIf="documents && documents.length > 0" class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nom du fichier</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
+                  <th scope="col" class="relative px-6 py-3">
+                    <span class="sr-only">Actions</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <tr *ngFor="let doc of paginatedDocuments">
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-center">
+                      <i class="fas mr-3 text-lg" [ngClass]="getFileIcon(doc.file_name)"></i>
+                      <div class="text-sm font-medium text-gray-900" [title]="doc.file_name">{{ truncateFileName(doc.file_name) }}</div>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ doc.date_created | date:'dd/MM/yyyy' }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full" 
+                          [ngClass]="{
+                            'bg-green-100 text-green-800': doc.status === 'Validé' || doc.status === 'Signé', 
+                            'bg-yellow-100 text-yellow-800': !doc.status || doc.status === 'En attente',
+                            'bg-red-100 text-red-800': doc.status === 'Rejeté'
+                          }">
+                      {{ doc.status || 'En attente' }}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <a *ngIf="doc.signed_pdf_url" [href]="doc.signed_pdf_url" target="_blank" class="text-indigo-600 hover:text-indigo-900 mr-4">
+                      <i class="fas fa-file-pdf mr-1"></i> Voir le PDF
+                    </a>
+                    <button (click)="downloadDocument(doc)" class="text-blue-600 hover:text-blue-900 mr-4" title="Télécharger">
+                      <i class="fas fa-download"></i>
+                    </button>
+                    <button (click)="deleteDocument(doc)" class="text-red-600 hover:text-red-900" title="Supprimer">
+                      <i class="fas fa-trash-alt"></i>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- Pagination Controls -->
+            <div *ngIf="getTotalDocumentPages() > 1" class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 mt-4 rounded-b-lg">
+              <div class="flex-1 flex justify-between sm:hidden">
+                <button (click)="goToDocumentsPage(documentsCurrentPage - 1)" [disabled]="documentsCurrentPage === 1" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50">
+                  Précédent
+                </button>
+                <button (click)="goToDocumentsPage(documentsCurrentPage + 1)" [disabled]="documentsCurrentPage === getTotalDocumentPages()" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50">
+                  Suivant
+                </button>
+              </div>
+              <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                <div>
+                  <p class="text-sm text-gray-700">
+                    Affichage de
+                    <span class="font-medium">{{ (documentsCurrentPage - 1) * documentsItemsPerPage + 1 }}</span>
+                    à
+                    <span class="font-medium">{{ documentsCurrentPage * documentsItemsPerPage > documents.length ? documents.length : documentsCurrentPage * documentsItemsPerPage }}</span>
+                    sur
+                    <span class="font-medium">{{ documents.length }}</span>
+                    résultats
+                  </p>
+                </div>
+                <div>
+                  <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                    <button (click)="goToDocumentsPage(documentsCurrentPage - 1)" [disabled]="documentsCurrentPage === 1" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50">
+                      <span class="sr-only">Précédent</span>
+                      <i class="fas fa-chevron-left h-5 w-5"></i>
+                    </button>
+                    
+                    <ng-container *ngFor="let page of getDocumentPagesArray()">
+                      <button (click)="goToDocumentsPage(page)" 
+                              [ngClass]="{'z-10 bg-indigo-50 border-indigo-500 text-indigo-600': page === documentsCurrentPage, 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50': page !== documentsCurrentPage}"
+                              class="relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                        {{ page }}
+                      </button>
+                    </ng-container>
+
+                    <button (click)="goToDocumentsPage(documentsCurrentPage + 1)" [disabled]="documentsCurrentPage === getTotalDocumentPages()" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50">
+                      <span class="sr-only">Suivant</span>
+                      <i class="fas fa-chevron-right h-5 w-5"></i>
+                    </button>
+                  </nav>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Onglet Téléversement -->
+      <div *ngIf="activeView === 'televersement'">
+        <div class="bg-white p-8 rounded-lg shadow-lg">
+          <h2 class="text-2xl font-bold mb-6 text-gray-700">Téléversement</h2>
+          
+          <!-- Section d'upload -->
+          <div class="bg-gray-50 p-6 rounded-lg border border-gray-200 mb-8" *ngIf="documentTypes && documentTypes.length > 0">
+            <div class="space-y-4">
+              <div>
+                <p class="block text-sm font-medium text-gray-700 mb-2">Choisissez une catégorie</p>
+                <div class="flex flex-wrap gap-3">
+                  <button *ngFor="let type of documentTypes" 
+                          type="button"
+                          (click)="selectDocType(type.id)"
+                          [ngClass]="{
+                              'bg-indigo-600 text-white border-indigo-600': selectedDocTypeId === type.id,
+                              'bg-white text-gray-700 border-gray-300 hover:bg-gray-50': selectedDocTypeId !== type.id
+                          }"
+                          class="px-4 py-2 text-sm font-medium rounded-md border shadow-sm transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                      {{ type.Label }}
+                  </button>
+                </div>
+              </div>
+      
+              <div *ngIf="selectedDocTypeId">
+                <p class="block text-sm font-medium text-gray-700 mb-2">Sélectionnez votre fichier</p>
+                <label class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:border-indigo-900 focus:ring ring-indigo-300 disabled:opacity-25 transition ease-in-out duration-150 cursor-pointer" [class.opacity-50]="uploading">
+                  <i class="fas" [ngClass]="uploading ? 'fa-spinner fa-spin' : 'fa-cloud-upload-alt'"></i>
+                  <span class="ml-2">{{ uploading ? 'Envoi en cours...' : 'Choisir un fichier' }}</span>
+                  <input #fileInput type="file" class="hidden" (change)="onFileSelected($event)" [disabled]="uploading" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                </label>
+
+                <!-- Barre de progression -->
+                <div *ngIf="uploading" class="mt-4 w-full max-w-sm">
+                  <div class="w-full bg-gray-200 rounded-full h-2.5">
+                    <div class="bg-indigo-600 h-2.5 rounded-full animate-pulse" style="width: 100%"></div>
+                  </div>
+                  <p class="text-xs text-gray-500 mt-1">Téléversement en cours...</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section d'upload pour documents_clients -->
+          <div class="bg-blue-50 p-6 rounded-lg border border-blue-200 mb-8">
+            <h3 class="text-lg font-bold mb-4 text-blue-800">Documents Clients</h3>
+            <div class="space-y-4">
+              <div>
+                <p class="block text-sm font-medium text-blue-700 mb-2">Téléverser un document client</p>
+                <label class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-blue-900 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150 cursor-pointer" [class.opacity-50]="uploading">
+                  <i class="fas" [ngClass]="uploading ? 'fa-spinner fa-spin' : 'fa-cloud-upload-alt'"></i>
+                  <span class="ml-2">{{ uploading ? 'Envoi en cours...' : 'Choisir un fichier' }}</span>
+                  <input type="file" class="hidden" (change)="onFileSelected($event, 'documents_clients')" [disabled]="uploading" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                </label>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

@@ -301,15 +301,15 @@ export interface DocumentType {
 export interface UploadedFile {
   id: number;
   file_name: string;
-  path: string; // Renommé de file_path à path
-  id_quote?: number;
-  id_type?: number;
-  date_created: string; // Renommé de created_at à date_created
-  raisons?: string;
-  user_id: number; // Type integer, correspond à personnes.id
-  status?: string;
-  docusign_envelope_id?: number;
-  signed_pdf_url?: string;
+  path: string;
+  id_quote?: number | null;
+  id_type?: number | null;
+  date_created?: string | null;
+  raisons?: string | null;
+  user_id?: number | null;
+  status?: string | null;
+  docusign_envelope_id?: number | null;
+  signed_pdf_url?: string | null;
 }
 
 export interface PostalCodeCount {
@@ -959,7 +959,7 @@ export class DbConnectService {
    * @param personneId L'ID de la personne (de la table `personnes`).
    * @returns Un Observable avec la liste des documents.
    */
-  getUploadedFiles(personneId: number): Observable<UploadedFile[]> {
+  getDocuments(personneId: number): Observable<UploadedFile[]> {
     return from(
       this.supabase.supabase
         .from('uploaded_files')
@@ -973,6 +973,78 @@ export class DbConnectService {
           throw response.error;
         }
         return (response.data as UploadedFile[]) || [];
+      })
+    );
+  }
+
+  /**
+   * Téléverse un document pour un utilisateur dans le bucket approprié.
+   * @param file Le fichier à téléverser.
+   * @param personId L'ID de la personne (table personnes).
+   * @param userId L'ID de l'utilisateur (auth.users) pour le dossier de stockage.
+   * @param docTypeId L'ID du type de document (optionnel).
+   * @param bucketName Le nom du bucket Supabase cible (optionnel).
+   */
+  uploadDocument(file: File, personId: number, userId: string, docTypeId?: number | null, bucketName?: string): Observable<UploadedFile> {
+    // On utilise toujours l'ID complet (UUID) pour le dossier afin de respecter les politiques RLS (auth.uid())
+    const folderName = userId;
+    const targetBucket = bucketName || environment.storage_bucket_clients;
+
+    // Nettoyage du nom de fichier
+    const cleanFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const filePath = `${folderName}/${Date.now()}_${cleanFileName}`;
+
+    // 1. Upload vers Supabase Storage
+    return from(
+      this.supabase.supabase.storage
+        .from(targetBucket)
+        .upload(filePath, file)
+    ).pipe(
+      switchMap(uploadRes => {
+        if (uploadRes.error) throw uploadRes.error;
+
+        // 2. Insertion dans la base de données
+        const dbRecord: Partial<UploadedFile> = {
+          file_name: file.name,
+          path: filePath,
+          user_id: personId,
+          status: 'En attente',
+          date_created: new Date().toISOString(),
+          id_type: docTypeId
+        };
+
+        return from(this.supabase.insertData('uploaded_files', dbRecord));
+      }),
+      map(response => {
+        if (response.error) throw response.error;
+        return response.data as unknown as UploadedFile;
+      })
+    );
+  }
+
+  /**
+   * Supprime un document (fichier du stockage et enregistrement en base).
+   * @param fileId L'ID du fichier dans la table uploaded_files.
+   * @param filePath Le chemin du fichier dans le stockage.
+   * @param bucketName Le nom du bucket.
+   */
+  deleteDocument(fileId: number, filePath: string, bucketName: string): Observable<void> {
+    return from(
+      this.supabase.supabase.storage
+        .from(bucketName)
+        .remove([filePath])
+    ).pipe(
+      switchMap(storageRes => {
+        if (storageRes.error) throw storageRes.error;
+        return from(
+          this.supabase.supabase
+            .from('uploaded_files')
+            .delete()
+            .eq('id', fileId)
+        );
+      }),
+      map(dbRes => {
+        if (dbRes.error) throw dbRes.error;
       })
     );
   }
@@ -1278,20 +1350,28 @@ checkEmailExists(email: string): Observable<boolean> {
    */
   createUserStorageFolder(userId: string): Observable<any> {
     const folderName = userId.substring(0, 8);
-    const bucketName = environment.storageBucketPrefix; // Nom du bucket depuis l'environnement
+    const bucketName = environment.storage_bucket_clients; // Nom du bucket depuis l'environnement
     const placeholderFileName = '.emptyFolderPlaceholder';
     const filePath = `${folderName}/${placeholderFileName}`;
 
-    // Supabase crée les dossiers implicitement lors du téléversement d'un fichier.
-    // On téléverse donc un fichier vide pour forcer la création du dossier.
-    return from(
-      this.supabase.supabase.storage
-        .from(bucketName)
-        .upload(filePath, new Blob(['']), {
-          cacheControl: '3600',
-          upsert: false // Ne pas écraser si le fichier existe déjà
-        })
-    ).pipe(
+    // Vérifier si le dossier existe déjà en listant son contenu
+    return from(this.supabase.supabase.storage.from(bucketName).list(folderName)).pipe(
+      switchMap(res => {
+        if (res.data && res.data.length > 0) {
+          // Le dossier existe déjà, on retourne un succès simulé
+          return of({ data: res.data, error: null });
+        }
+        
+        // Le dossier n'existe pas, on téléverse le fichier placeholder
+        return from(
+          this.supabase.supabase.storage
+            .from(bucketName)
+            .upload(filePath, new Blob(['']), {
+              cacheControl: '3600',
+              upsert: false // Ne pas écraser si le fichier existe déjà
+            })
+        );
+      }),
       map(response => {
         if (response.error) {
           console.error(`Erreur lors de la création du dossier de stockage pour ${userId}:`, response.error);
