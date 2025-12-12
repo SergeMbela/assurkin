@@ -1,1 +1,60 @@
-<p>stat works!</p>
+<div class="container mx-auto p-4 sm:p-6 lg:p-8">
+  <!-- Lien de retour vers la page de management -->
+  <a routerLink="/management" class="inline-flex items-center text-indigo-600 hover:text-indigo-800 mb-4 group">
+    <svg class="w-5 h-5 mr-2 text-indigo-600 group-hover:text-indigo-800" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+    Retour à la gestion
+  </a>
+  <h1 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-6">Statistiques</h1>
+
+  <!-- Barre d'onglets -->
+  <div class="border-b border-gray-200 mb-6">
+    <nav class="-mb-px flex space-x-6 overflow-x-auto" aria-label="Tabs">
+      <button (click)="activeTab = 'prospects'" [ngClass]="activeTab === 'prospects' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+        Prospects
+      </button>
+      <button (click)="activeTab = 'automobile'" [ngClass]="activeTab === 'automobile' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+        Automobile
+      </button>
+      <button (click)="activeTab = 'habitation'" [ngClass]="activeTab === 'habitation' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+        Habitation
+      </button>
+      <button (click)="activeTab = 'obseques'" [ngClass]="activeTab === 'obseques' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+        Obsèques
+      </button>
+      <button (click)="activeTab = 'voyage'" [ngClass]="activeTab === 'voyage' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+        Voyage
+      </button>
+      <button (click)="activeTab = 'rc_familiale'" [ngClass]="activeTab === 'rc_familiale' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+        RC Familale
+      </button>
+      <button (click)="activeTab = 'solde_restant'" [ngClass]="activeTab === 'solde_restant' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+        Solde restant
+      </button>
+    </nav>
+  </div>
+
+  <!-- Contenu des onglets -->
+  <div>
+    <div [hidden]="activeTab !== 'prospects'">
+      <div class="bg-white shadow-md rounded-lg p-6 text-center"><p class="text-gray-600">Contenu pour Prospects à implémenter ici.</p></div>
+    </div>
+    <div [hidden]="activeTab !== 'automobile'">
+      <div class="bg-white shadow-md rounded-lg p-6 text-center"><p class="text-gray-600">Contenu pour Automobile à implémenter ici.</p></div>
+    </div>
+    <div [hidden]="activeTab !== 'habitation'">
+      <div class="bg-white shadow-md rounded-lg p-6 text-center"><p class="text-gray-600">Contenu pour Habitation à implémenter ici.</p></div>
+    </div>
+    <div [hidden]="activeTab !== 'obseques'">
+      <div class="bg-white shadow-md rounded-lg p-6 text-center"><p class="text-gray-600">Contenu pour Obsèques à implémenter ici.</p></div>
+    </div>
+    <div [hidden]="activeTab !== 'voyage'">
+      <div class="bg-white shadow-md rounded-lg p-6 text-center"><p class="text-gray-600">Contenu pour Voyage à implémenter ici.</p></div>
+    </div>
+    <div [hidden]="activeTab !== 'rc_familiale'">
+      <div class="bg-white shadow-md rounded-lg p-6 text-center"><p class="text-gray-600">Contenu pour RC Familale à implémenter ici.</p></div>
+    </div>
+    <div [hidden]="activeTab !== 'solde_restant'">
+      <div class="bg-white shadow-md rounded-lg p-6 text-center"><p class="text-gray-600">Contenu pour Solde restant à implémenter ici.</p></div>
+    </div>
+  </div>
+</div>
