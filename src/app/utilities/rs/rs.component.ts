@@ -1,4 +1,4 @@
-import { Component, Inject, OnDestroy, PLATFORM_ID, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, Inject, OnDestroy, PLATFORM_ID, AfterViewInit, ViewChild, ElementRef, ViewEncapsulation } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { environment } from 'src/environments/environment';
@@ -16,7 +16,8 @@ type SocialTab = typeof TABS[number];
   standalone: true,
   imports: [CommonModule, RouterLink],
   templateUrl: './rs.component.html',
-  styleUrl: './rs.component.css'
+  styleUrl: './rs.component.css',
+  encapsulation: ViewEncapsulation.None
 })
 export class RsComponent implements OnDestroy, AfterViewInit {
   // Le token est récupéré depuis le fichier d'environnement.
@@ -36,6 +37,7 @@ export class RsComponent implements OnDestroy, AfterViewInit {
 
   public activeTab: SocialTab = 'facebook';
   public isLoadingMap = false;
+  private isDestroyed = false;
 
   constructor(private placesService: PlacesService, @Inject(PLATFORM_ID) private platformId: object) { }
 
@@ -74,6 +76,8 @@ export class RsComponent implements OnDestroy, AfterViewInit {
 
     // 1. Import dynamique pour éviter l'erreur "window is not defined" en SSR
     const mapboxgl = await import('mapbox-gl');
+
+    if (this.isDestroyed) return;
 
     // 3. Initialisation de la carte
     this.map = new mapboxgl.Map({
@@ -207,6 +211,8 @@ export class RsComponent implements OnDestroy, AfterViewInit {
 
   ngOnDestroy(): void {
     // Nettoyage impératif pour éviter les fuites de mémoire WebGL
+    this.isDestroyed = true;
     this.map?.remove();
+    this.map = undefined;
   }
 }

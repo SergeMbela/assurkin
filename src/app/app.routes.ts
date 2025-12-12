@@ -37,7 +37,7 @@ export const routes: Routes = [
     { path: 'particulier/obseques', component: ObsequesComponent },
     { path: 'particulier/protection-juridique', component: AssuranceJuridiqueComponent },
     { path: 'particulier/annulation-voyage', component: AssuranceVoyageComponent },
-    { path: 'mentions-legales', component: MentionsLegalesComponent },
+    { path: 'mentions', component: MentionsLegalesComponent },
     { path: 'corporate', component: CorporateComponent },
 
     // Routes pour les utilitaires (à créer)

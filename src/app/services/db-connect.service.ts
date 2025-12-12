@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { from, Observable, defer, of, BehaviorSubject } from 'rxjs';
-import { map, switchMap, catchError } from 'rxjs/operators';
+import { map, switchMap, catchError, shareReplay } from 'rxjs/operators';
 import { PostgrestError, User } from '@supabase/supabase-js';
 import { SupabaseService } from './supabase.service';
 import { DevisAuto } from '../pages/mydata/mydata.component';
@@ -331,6 +331,8 @@ export interface SupabaseResponse<T> {
   providedIn: 'root'
 })
 export class DbConnectService {
+  // 1. Declare the private property here
+  private nationalities$: Observable<Nationality[]> | null = null;
   constructor(private supabase: SupabaseService) {}
 
 
@@ -981,23 +983,21 @@ export class DbConnectService {
    * @param email L'email à vérifier.
    * @returns Un Observable qui émet true si l'email existe, sinon false.
    */
-  checkEmailExists(email: string): Observable<boolean> {
-    return from(
-      this.supabase.supabase
-        .from('personnes')
-        .select('email', { count: 'exact', head: true }) // Optimisé pour ne vérifier que l'existence
-        .eq('email', email)
-    ).pipe(
-      map(response => {
-        // Si le count est supérieur à 0, l'email existe.
-        return (response.count ?? 0) > 0;
-      }),
-      catchError(error => {
-        console.error('Erreur lors de la vérification de l\'email:', error);
-        return of(false); // En cas d'erreur, on suppose que l'email n'existe pas pour ne pas bloquer l'utilisateur.
-      })
-    );
-  }
+checkEmailExists(email: string): Observable<boolean> {
+  return from(
+    this.supabase.supabase
+      .from('personnes')
+      .select('id', { count: 'exact', head: true }) // 'id' is lighter than 'email'
+      .eq('email', email)
+  ).pipe(
+    map(response => (response.count ?? 0) > 0),
+    catchError(error => {
+      console.error('Critical DB Error checking email:', error);
+      // It is often safer to throw here so the UI knows validation failed technically
+      throw error; 
+    })
+  );
+}
 
   /**
    * Vérifie si un numéro de permis existe déjà dans la table 'personnes'.
@@ -1587,20 +1587,19 @@ export class DbConnectService {
    * Récupère la liste de toutes les nationalités.
    * @returns Un Observable avec la liste des nationalités.
    */
-  getNationalities(): Observable<Nationality[]> {
-    const query = this.supabase.supabase
-      .from('nationalities')
-      .select('*')
-      .order('nationality', { ascending: true }); // Ordonne les nationalités par ordre alphabétique
-    return from(query).pipe(
-      map(response => {
-        if (response.error) {
-          console.error('Erreur lors de la récupération des nationalités:', response.error);
-          throw response.error;
-        }
-        return (response.data as Nationality[]) || [];
-      })
-    );
+getNationalities(): Observable<Nationality[]> {
+    if (!this.nationalities$) {
+      const query = this.supabase.supabase
+        .from('nationalities')
+        .select('*')
+        .order('nationality', { ascending: true });
+
+      this.nationalities$ = from(query).pipe(
+        map(response => (response.data as Nationality[]) || []),
+        shareReplay(1) // Cache the result
+      );
+    }
+    return this.nationalities$;
   }
 
   /**
