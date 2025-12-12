@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "assurkins": {
+    "assurkin": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -13,7 +13,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/assurkins",
+            "outputPath": "dist/assurkin",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": [
@@ -70,10 +70,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "assurkins:build:production"
+              "buildTarget": "assurkin:build:production"
             },
             "development": {
-              "buildTarget": "assurkins:build:development"
+              "buildTarget": "assurkin:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -108,7 +108,7 @@
         "deploy": {
           "builder": "angular-cli-ghpages:deploy",
           "options": {
-            "baseHref": "/assurkins/"
+            "baseHref": "/"
           }
         }
       }

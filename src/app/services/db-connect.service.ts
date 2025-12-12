@@ -3,7 +3,6 @@ import { from, Observable, defer, of, BehaviorSubject } from 'rxjs';
 import { map, switchMap, catchError, shareReplay } from 'rxjs/operators';
 import { PostgrestError, User } from '@supabase/supabase-js';
 import { SupabaseService } from './supabase.service';
-import { DevisAuto } from '../pages/mydata/mydata.component';
 import { environment } from '../../environments/environment';
 
 export interface Person {
@@ -1087,45 +1086,7 @@ checkEmailExists(email: string): Observable<boolean> {
       })
     );
   }
-  /**
-   * Récupère les devis d'assurance auto pour un utilisateur donné.
-   * @param userId L'ID de l'utilisateur connecté.
-   * @returns Un Observable avec un tableau de devis auto.
-   */
-  getDevisAuto(userId: string): Observable<DevisAuto[]> {
-    console.log(`[getDevisAuto] Récupération des devis pour l'ID utilisateur: ${userId}`);
-    const devis$ = from(
-      this.supabase.supabase
-        .from('devis_assurance')
-        .select(
-          `
-            id,
-            date_effet,
-            vehicules ( marque, modele ),
-            personnes!inner (
-              user_id
-            )
-          `
-        )
-        .eq('personnes.user_id', userId) // Filtre sur l'ID de l'utilisateur lié à la personne
-    ).pipe(
-      map(response => {
-        if (response.error) {
-          console.error('Erreur lors de la récupération des devis auto:', response.error);
-          throw response.error;
-        }
-        console.log('[getDevisAuto] Données brutes reçues de Supabase:', response.data);
-        // Le typage 'unknown' est une bonne pratique avant un cast forcé.
-        // Supabase retourne un objet pour les relations to-one, ce qui correspond maintenant à notre interface.
-        return response.data as unknown as DevisAuto[];
-      }),
-      catchError(error => {
-        console.error('Erreur dans le pipe de getDevisAuto:', error);
-        return of([]); // Retourne un tableau vide en cas d'erreur
-      })
-    );
-    return devis$;
-  }
+
 
   /**
    * Récupère les données d'une personne par son email.

@@ -47,3 +47,25 @@
 .social-icons a:hover {
     color: #adb5bd;
 }
+
+.scroll-to-top {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #4f46e5; /* Mauve (Indigo 600) */
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    transition: background-color 0.3s ease;
+}
+
+.scroll-to-top:hover {
+    background-color: #6366f1; /* Mauve plus clair (Indigo 500) pour le survol */
+}

@@ -204,7 +204,7 @@ export class MessagerieComponent implements OnInit {
         ${remarques ? `<p><strong>Remarques :</strong> ${remarques}</p>` : ''}
         <p>Vous pouvez effectuer le paiement en cliquant sur le lien ci-dessous :</p>
         <p><a href="${paymentLink}" style="padding: 10px 15px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px;">Payer maintenant</a></p>
-        <p>Cordialement,<br>L'équipe Assurkins</p>
+        <p>Cordialement,<br>L'équipe assurkin</p>
       `;
       const emailData: EmailData = { to: this.preneurDetails.email, subject: emailSubject, htmlContent: emailHtmlContent };
 

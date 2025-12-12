@@ -1,265 +1,129 @@
-<div class="container mx-auto p-4 py-16 sm:py-24">
-  <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+<div class="container mx-auto p-4 lg:p-8">
+  <!-- Indicateur de chargement -->
+  <div *ngIf="loading" class="text-center py-10">
+    <p class="text-gray-600">Chargement de vos données...</p>
+    <!-- Optionnel: vous pouvez ajouter une animation de chargement (spinner) ici -->
+  </div>
 
-    <!-- Colonne de gauche : Navigation -->
-    <div class="lg:col-span-1">
-      <div class="bg-white p-4 rounded-lg shadow-md">
-        <ul class="space-y-2">
-          <li>
-            <a (click)="setView('donnees')" class="flex items-center p-3 text-base font-bold text-gray-900 rounded-lg cursor-pointer group hover:shadow" [ngClass]="{'bg-gray-100 hover:bg-gray-200': activeView === 'donnees', 'hover:bg-gray-100': activeView !== 'donnees'}">
-              <i class="fas fa-user-circle w-6 h-6 text-gray-500"></i>
-              <span class="ml-3">Mes Données</span>
-            </a>
-          </li>
-          <li>
-            <a (click)="setView('habitation')" class="flex items-center p-3 text-base font-bold text-gray-900 rounded-lg cursor-pointer group hover:shadow" [ngClass]="{'bg-gray-100 hover:bg-gray-200': activeView === 'habitation', 'hover:bg-gray-100': activeView !== 'habitation'}">
-              <i class="fas fa-home w-6 h-6 text-gray-500"></i>
-              <span class="ml-3">Habitation</span>
-            </a>
-          </li>
-          <li>
-            <a (click)="setView('auto')" class="flex items-center p-3 text-base font-bold text-gray-900 rounded-lg cursor-pointer group hover:shadow" [ngClass]="{'bg-gray-100 hover:bg-gray-200': activeView === 'auto', 'hover:bg-gray-100': activeView !== 'auto'}">
-              <i class="fas fa-car w-6 h-6 text-gray-500"></i>
-              <span class="ml-3">Assurance Auto</span>
-            </a>
-          </li>
-          <li>
-            <a (click)="setView('obseques')" class="flex items-center p-3 text-base font-bold text-gray-900 rounded-lg cursor-pointer group hover:shadow" [ngClass]="{'bg-gray-100 hover:bg-gray-200': activeView === 'obseques', 'hover:bg-gray-100': activeView !== 'obseques'}">
-              <i class="fas fa-hand-holding-heart w-6 h-6 text-gray-500"></i>
-              <span class="ml-3">Obsèques</span>
-            </a>
-          </li>
-          <li>
-            <a (click)="setView('juridique')" class="flex items-center p-3 text-base font-bold text-gray-900 rounded-lg cursor-pointer group hover:shadow" [ngClass]="{'bg-gray-100 hover:bg-gray-200': activeView === 'juridique', 'hover:bg-gray-100': activeView !== 'juridique'}">
-              <i class="fas fa-balance-scale w-6 h-6 text-gray-500"></i>
-              <span class="ml-3">Protection Juridique</span>
-            </a>
-          </li>
-          <li>
-            <a (click)="setView('voyage')" class="flex items-center p-3 text-base font-bold text-gray-900 rounded-lg cursor-pointer group hover:shadow" [ngClass]="{'bg-gray-100 hover:bg-gray-200': activeView === 'voyage', 'hover:bg-gray-100': activeView !== 'voyage'}">
-              <i class="fas fa-plane-slash w-6 h-6 text-gray-500"></i>
-              <span class="ml-3">Annulation Voyage</span>
-            </a>
-          </li>
-          <li>
-            <a (click)="setView('documents')" class="flex items-center p-3 text-base font-bold text-gray-900 rounded-lg cursor-pointer group hover:shadow" [ngClass]="{'bg-gray-100 hover:bg-gray-200': activeView === 'documents', 'hover:bg-gray-100': activeView !== 'documents'}">
-              <i class="fas fa-folder w-6 h-6 text-gray-500"></i>
-              <span class="ml-3">Mes Documents</span>
-            </a>
-          </li>
-          <li>
-            <a (click)="setView('paiement')" class="flex items-center p-3 text-base font-bold text-gray-900 rounded-lg cursor-pointer group hover:shadow" [ngClass]="{'bg-gray-100 hover:bg-gray-200': activeView === 'paiement', 'hover:bg-gray-100': activeView !== 'paiement'}">
-              <i class="fas fa-credit-card w-6 h-6 text-gray-500"></i>
-              <span class="ml-3">Paiement</span>
-            </a>
-          </li>
-          <!-- Bouton de déconnexion -->
-          <li class="border-t pt-2 mt-2">
-            <a (click)="logout()" class="flex items-center p-3 text-base font-bold text-red-600 rounded-lg cursor-pointer hover:bg-red-50 group hover:shadow">
-              <i class="fas fa-sign-out-alt w-6 h-6 text-red-500"></i>
-              <span class="ml-3">Déconnexion</span>
-            </a>
-          </li>
-        </ul>
-      </div>
+  <!-- Affichage des données de l'utilisateur -->
+  <div *ngIf="!loading && person" class="max-w-4xl mx-auto">
+    <div class="flex justify-between items-center mb-8 border-b pb-4">
+      <h1 class="text-3xl font-bold text-gray-800">Mon Espace Client</h1>
+      <button (click)="logout()"
+        class="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 flex items-center">
+        <i class="fas fa-sign-out-alt mr-2"></i>
+        <span>Déconnexion</span>
+      </button>
     </div>
 
-    <!-- Colonne de droite : Contenu -->
-    <div class="lg:col-span-3">
-      <div class="bg-white p-8 rounded-lg shadow-md">
-        <!-- Section Mes Données -->
-        <div *ngIf="activeView === 'donnees'">
-          <div *ngIf="loading" class="text-center">
-            <p>Chargement des données...</p>
-          </div>
-          <div *ngIf="!loading && user">
-            <h2 class="text-2xl font-bold mb-6 text-gray-800">Mes Données Personnelles</h2>
-            <div class="space-y-4">
-              <div>
-                <h3 class="text-lg font-semibold text-gray-700">Adresse e-mail</h3>
-                <p class="text-gray-600">{{ user.email }}</p>
-              </div>
-              <div>
-                <h3 class="text-lg font-semibold text-gray-700">Dernière connexion</h3>
-                <p class="text-gray-600">{{ user.last_sign_in_at | date:'dd/MM/yyyy à HH:mm' }}</p>
-              </div>
-            </div>
-          </div>
-          <div *ngIf="!loading && !user" class="text-center text-gray-500"><p>Vous n'êtes pas connecté.</p></div>
-        </div>
+    <!-- Barre d'onglets -->
+    <div class="border-b border-gray-200 mb-6">
+      <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+        <button (click)="setView('donnees')"
+          [ngClass]="activeView === 'donnees' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+          class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+          Mes Données
+        </button>
+        <button (click)="setView('assurances')"
+          [ngClass]="activeView === 'assurances' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+          class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+          Assurances
+        </button>
+        <button (click)="setView('documents')"
+          [ngClass]="activeView === 'documents' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+          class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+          Mes Documents
+        </button>
+        <button (click)="setView('paiements')"
+          [ngClass]="activeView === 'paiements' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+          class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+          Mes Paiements
+        </button>
+      </nav>
+    </div>
 
-        <!-- Sections des contrats -->
-        <div *ngIf="activeView === 'auto' || activeView === 'habitation' || activeView === 'obseques'">
-          <h2 class="text-2xl font-bold mb-6 text-gray-800">Mes contrats {{ activeView | titlecase }}</h2>
-          <div *ngIf="contractsLoading" class="text-center"><p>Chargement des contrats...</p></div>
-          <div *ngIf="!contractsLoading && contracts.length > 0" class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Catégorie</th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ activeView === 'auto' ? 'Véhicule' : (activeView === 'habitation' ? 'Bâtiment' : 'Description') }}</th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Contrat</th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Validité</th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                </tr>
-              </thead>
-              <tbody class="bg-white divide-y divide-gray-200">
-                <tr *ngFor="let contract of contracts">
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ contract.categorie }}</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ contract.denomination }}</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ contract.date_contract | date:'dd/MM/yyyy' }}</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ contract.date_validite | date:'dd/MM/yyyy' }}</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full" [ngClass]="{'bg-green-100 text-green-800': contract.statut === 'accepté', 'bg-red-100 text-red-800': contract.statut === 'refusé', 'bg-yellow-100 text-yellow-800': contract.statut === 'en attente'}">{{ contract.statut }}</span></td>
-                  <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <!-- Liens mis à jour pour naviguer vers la route unifiée avec le state -->
-                    <a [routerLink]="['/assurance-details', contract.id]" [state]="{ type: activeView }"
-                       class="text-indigo-600 hover:text-indigo-900">Détails</a>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div *ngIf="!contractsLoading && contracts.length === 0" class="text-center text-gray-500"><p>Aucun contrat trouvé pour cette catégorie.</p></div>
-        </div>
-
-        <!-- Section Mes Documents -->
-        <div *ngIf="activeView === 'documents'">
-          <h2 class="text-2xl font-bold mb-6 text-gray-800">Mes Documents</h2>
-          <div *ngIf="documentsLoading" class="text-center"><p>Chargement des documents...</p></div>
-          <div *ngIf="!documentsLoading && documents.length > 0" class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nom du fichier</th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sujet</th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date d'ajout</th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                </tr>
-              </thead>
-              <tbody class="bg-white divide-y divide-gray-200">
-                <tr *ngFor="let doc of documents">
-                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    <i class="fas fa-file-alt mr-2 text-gray-500"></i>
-                    {{ doc.file_name }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ doc.raisons }}</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ doc.date_created | date:'dd/MM/yyyy' }}</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <a (click)="openDocument(doc)" title="Télécharger le document" class="text-indigo-600 hover:text-indigo-900 cursor-pointer">
-                      <i class="fas fa-download"></i>
-                    </a>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div *ngIf="!documentsLoading && documents.length === 0" class="text-center text-gray-500">
-            <p>Aucun document trouvé.</p>
-          </div>
-        </div>
-
-        <!-- Section Paiement -->
-        <div *ngIf="activeView === 'paiement'">
-          <h2 class="text-2xl font-bold mb-6 text-gray-800">Mes Paiements</h2>
-
-          <!-- Historique des demandes de paiement -->
-          <div class="mt-8">
-            <h3 class="text-xl font-semibold mb-4 text-gray-700">Historique des demandes de paiement</h3>
-            <div *ngIf="paymentRequestsLoading" class="text-center"><p>Chargement de l'historique...</p></div>
-            <div *ngIf="!paymentRequestsLoading && paymentRequests.length > 0" class="overflow-x-auto">
-              <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                  <tr>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sujet</th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Montant</th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Échéance</th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                  </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                  <tr *ngFor="let req of paymentRequests">
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ req.sujet }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ req.montant | currency:'EUR' }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ req.date_echeance | date:'dd/MM/yyyy' }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm">
-                      <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full" [ngClass]="{
-                        'bg-green-100 text-green-800': req.statut === 'paid',
-                        'bg-red-100 text-red-800': req.statut === 'failed' || req.statut === 'overdue',
-                        'bg-yellow-100 text-yellow-800': req.statut === 'pending',
-                        'bg-gray-100 text-gray-800': req.statut === 'cancelled'
-                      }">{{ req.statut | paymentStatus }}</span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <!-- Bouton pour initier le paiement -->
-                      <button *ngIf="req.statut === 'pending' || req.statut === 'overdue'" (click)="initiatePayment(req)" class="text-indigo-600 hover:text-indigo-900">Payer</button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <div *ngIf="!paymentRequestsLoading && paymentRequests.length === 0" class="text-center text-gray-500 bg-gray-50 p-4 rounded-lg"><p>Aucune demande de paiement trouvée.</p></div>
-          </div>
-          
-          <!-- Section du formulaire de paiement, visible uniquement si une demande est sélectionnée -->
-          <div *ngIf="selectedPaymentRequest" class="mt-8 border-t pt-6">
-            <h3 class="text-xl font-semibold mb-4 text-gray-700">Régler la demande : "{{ selectedPaymentRequest.sujet }}"</h3>
-            
-            <!-- Résumé de la facture à payer -->
-            <div class="bg-gray-50 p-4 rounded-lg shadow-sm flex items-center justify-between mb-6">
-              <div>
-                <p class="font-semibold text-gray-700">{{ selectedPaymentRequest.sujet }}</p>
-                <p class="text-sm text-gray-500">Échéance: {{ selectedPaymentRequest.date_echeance | date:'dd/MM/yyyy' }}</p>
-              </div>
-              <div class="text-right">
-                <p class="text-lg font-bold text-gray-800">{{ selectedPaymentRequest.montant | currency:'EUR' }}</p>
-              </div>
-            </div>
-
-            <!-- Formulaire de paiement Stripe Elements -->
+    <!-- Contenu des onglets -->
+    <div>
+      <!-- Onglet Mes Données -->
+      <div *ngIf="activeView === 'donnees'">
+        <div class="bg-white p-8 rounded-lg shadow-lg">
+          <h2 class="text-2xl font-bold mb-6 text-gray-700">Mes Données Personnelles</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+            <!-- Prénom & Nom -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Informations de la carte de crédit</label>
-              <ngx-stripe-card [options]="cardOptions" [elementsOptions]="elementsOptions"></ngx-stripe-card>
+              <p class="text-sm font-medium text-gray-500">Nom complet</p>
+              <p class="text-lg font-semibold text-gray-900">{{ person.prenom }} {{ person.nom }}</p>
             </div>
-
-            <div class="flex items-center gap-4 mt-4">
-              <button (click)="payWithStripe()" [disabled]="paymentLoading" class="flex-grow px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed">
-                {{ paymentLoading ? 'Paiement en cours...' : 'Payer ' + (selectedPaymentRequest.montant | currency:'EUR') }}
-              </button>
-              <button (click)="cancelPayment()" [disabled]="paymentLoading" class="px-4 py-2 bg-gray-200 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-300">Annuler</button>
+            <!-- Email -->
+            <div>
+              <p class="text-sm font-medium text-gray-500">Adresse e-mail</p>
+              <p class="text-lg font-semibold text-gray-900">{{ person.email }}</p>
             </div>
-
-            <!-- Message d'erreur -->
-            <p *ngIf="paymentError" class="text-sm mt-2 font-medium text-red-600">{{ paymentError }}</p>
+            <!-- Téléphone -->
+            <div>
+              <p class="text-sm font-medium text-gray-500">Téléphone</p>
+              <p class="text-lg font-semibold text-gray-900">{{ person.telephone || 'Non renseigné' }}</p>
+            </div>
+            <!-- Date de naissance -->
+            <div>
+              <p class="text-sm font-medium text-gray-500">Date de naissance</p>
+              <p class="text-lg font-semibold text-gray-900">{{ person.date_naissance ? (person.date_naissance | date:'dd/MM/yyyy') : 'Non renseignée' }}</p>
+            </div>
+            <!-- Adresse -->
+            <div class="md:col-span-2">
+              <p class="text-sm font-medium text-gray-500">Adresse</p>
+              <p class="text-lg font-semibold text-gray-900">
+                {{ person.adresse || 'Non renseignée' }}<br>
+                <span *ngIf="person.code_postal && person.ville">{{ person.code_postal }} {{ person.ville }}</span>
+              </p>
+            </div>
+            <!-- Numéro de permis -->
+            <div>
+              <p class="text-sm font-medium text-gray-500">Numéro de permis</p>
+              <p class="text-lg font-semibold text-gray-900">{{ person.permis_numero || 'Non renseigné' }}</p>
+            </div>
+            <!-- Date du permis -->
+            <div>
+              <p class="text-sm font-medium text-gray-500">Date du permis</p>
+              <p class="text-lg font-semibold text-gray-900">{{ person.permis_date ? (person.permis_date | date:'dd/MM/yyyy') : 'Non renseignée' }}</p>
+            </div>
           </div>
-          
-          <!-- Pop-up de succès de paiement -->
-          <div *ngIf="paymentSuccess" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center z-50" id="my-modal">
-            <div class="relative mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
-              <div class="mt-3 text-center">
-                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
-                  <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                  </svg>
-                </div>
-                <h3 class="text-lg leading-6 font-medium text-gray-900 mt-2">Paiement Réussi</h3>
-                <div class="mt-2 px-7 py-3">
-                  <p class="text-sm text-gray-500">{{ paymentSuccess }}</p>
-                </div>
-                <div class="items-center px-4 py-3">
-                  <button (click)="closeSuccessPopup()" class="px-4 py-2 bg-green-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300">
-                    Fermer
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
         </div>
+      </div>
 
+      <!-- Onglet Assurances -->
+      <div *ngIf="activeView === 'assurances'">
+        <div class="bg-white p-8 rounded-lg shadow-lg">
+          <h2 class="text-2xl font-bold mb-6 text-gray-700">Mes Assurances</h2>
+          <p class="text-gray-500">Le contenu pour la gestion des assurances sera affiché ici.</p>
+        </div>
+      </div>
+
+      <!-- Onglet Mes Documents -->
+      <div *ngIf="activeView === 'documents'">
+        <div class="bg-white p-8 rounded-lg shadow-lg">
+          <h2 class="text-2xl font-bold mb-6 text-gray-700">Mes Documents</h2>
+          <p class="text-gray-500">La liste de vos documents sera affichée ici.</p>
+        </div>
+      </div>
+
+      <!-- Onglet Mes Paiements -->
+      <div *ngIf="activeView === 'paiements'">
+        <div class="bg-white p-8 rounded-lg shadow-lg">
+          <h2 class="text-2xl font-bold mb-6 text-gray-700">Mes Paiements</h2>
+          <p class="text-gray-500">L'historique de vos paiements sera affiché ici.</p>
+        </div>
       </div>
     </div>
+  </div>
 
+  <!-- Cas où les données ne sont pas trouvées -->
+  <div *ngIf="!loading && !person" class="text-center text-gray-500 bg-gray-50 p-8 rounded-lg shadow-md max-w-md mx-auto mt-10">
+    <h2 class="text-xl font-bold mb-4 text-red-600">Erreur</h2>
+    <p>Impossible de charger vos informations personnelles.</p>
+    <p class="text-sm mt-2">Veuillez réessayer plus tard ou contacter le support si le problème persiste.</p>
+    <button (click)="logout()" class="mt-6 px-6 py-2 bg-indigo-600 text-white font-medium rounded-md hover:bg-indigo-700">
+      Se déconnecter
+    </button>
   </div>
 </div>

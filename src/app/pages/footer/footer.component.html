@@ -1,7 +1,6 @@
 <footer class="footer">
   <div class="container">
     <ul class="footer-nav">
-      <li><a routerLink="/">Accueil</a></li>
       <li><a routerLink="/particulier">Particulier</a></li>
       <li><a routerLink="/professionnel">Professionnel</a></li>
       <li><a routerLink="/contact">Contact</a></li>
@@ -13,6 +12,9 @@
       <a href="https://linkedin.com" target="_blank" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
       <a href="https://wa.me/32487757115" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
     </div>
-    <p class="copyright">&copy; 2024 Assurkins. Tous droits réservés.</p>
+    <button class="scroll-to-top" (click)="scrollToTop()" aria-label="Remonter en haut">
+      <i class="fas fa-arrow-up"></i>
+    </button>
+    <p class="copyright">&copy; 2024 assurkin. Tous droits réservés.</p>
   </div>
 </footer>

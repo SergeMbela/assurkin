@@ -50,7 +50,7 @@ export class AccountLoginComponent implements OnInit {
           this.errorMessage = 'Email ou mot de passe incorrect.';
           console.error(response.error);
         } else {
-          this.router.navigate(['/mydata']); // Redirige vers la page mydata en cas de succès
+          this.router.navigate(['/account']); // Redirige vers la page mydata en cas de succès
         }
       },
       error: (err) => {

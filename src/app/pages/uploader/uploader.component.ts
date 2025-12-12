@@ -439,7 +439,7 @@ export class UploaderComponent implements OnInit {
    * @param clientName Le prénom du client.
    */
   private async sendContractSms(phoneNumber: string, clientName: string): Promise<void> {
-    const message = `Bonjour ${clientName}, votre contrat est disponible dans votre espace client. Veuillez le signer. L'équipe Assurkins. ${environment.website}`;
+    const message = `Bonjour ${clientName}, votre contrat est disponible dans votre espace client. Veuillez le signer. L'équipe assurkin. ${environment.website}`;
     try {
       await this.sendsmsService.sendSms(phoneNumber, message);
       console.log('SMS de confirmation de contrat envoyé avec succès.');

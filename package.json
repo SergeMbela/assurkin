@@ -1,19 +1,19 @@
 {
-  "name": "assurkins",
+  "name": "assurkin",
   "version": "0.0.1",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
     "build:prod": "ng build --configuration production",
-    "build:ssr": "ng build && ng run assurkins:server",
+    "build:ssr": "ng build && ng run assurkin:server",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "test:ci": "ng test --watch=false --browsers=ChromeHeadless --code-coverage",
     "lint": "ng lint",
-    "serve:ssr": "node dist/assurkins/server/server.mjs",
-    "dev:ssr": "ng build && ng run assurkins:server && npm run serve:ssr",
-    "prerender": "ng run assurkins:prerender"
+    "serve:ssr": "node dist/assurkin/server/server.mjs",
+    "dev:ssr": "ng build && ng run assurkin:server && npm run serve:ssr",
+    "prerender": "ng run assurkin:prerender"
   },
   "private": true,
   "dependencies": {

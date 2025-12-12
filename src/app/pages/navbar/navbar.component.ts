@@ -14,7 +14,8 @@ export class NavbarComponent implements AfterViewInit {
   @ViewChild('scrollProgressBar') private scrollProgressBarRef!: ElementRef<HTMLDivElement>;
   @ViewChildren('menuLink', { read: ElementRef }) private menuLinks!: QueryList<ElementRef>;
 
-  menuOpen = false;
+  isMenuVisible = false;
+  showMenu = false;
   showParticulierSubMenu = false;
   showProfessionelSubMenu = false;
   showMentionsLegalesSubMenu = false;
@@ -37,6 +38,8 @@ export class NavbarComponent implements AfterViewInit {
       if (isPlatformBrowser(this.platformId)) {
         this.moveUnderlineToActiveLink();
       }
+      // Ferme le menu mobile après chaque navigation
+      this.closeMenu();
     });
   }
 
@@ -56,7 +59,25 @@ export class NavbarComponent implements AfterViewInit {
   }
 
   toggleMenu(): void {
-    this.menuOpen = !this.menuOpen;
+    if (this.isMenuVisible) {
+      this.closeMenu();
+    } else {
+      this.isMenuVisible = true;
+      // Léger délai pour permettre au *ngIf de s'exécuter avant de lancer l'animation
+      setTimeout(() => {
+        this.showMenu = true;
+      }, 10);
+    }
+  }
+
+  closeMenu(): void {
+    if (this.isMenuVisible) {
+      this.showMenu = false;
+      // Attendre la fin de l'animation avant de retirer l'élément du DOM
+      setTimeout(() => {
+        this.isMenuVisible = false;
+      }, 300); // Doit correspondre à la durée de la transition CSS
+    }
   }
 
   onLinkHover(event: MouseEvent): void {
