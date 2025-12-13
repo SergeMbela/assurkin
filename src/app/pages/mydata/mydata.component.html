@@ -303,12 +303,18 @@
               </div>
       
               <div *ngIf="selectedDocTypeId">
-                <p class="block text-sm font-medium text-gray-700 mb-2">Sélectionnez votre fichier</p>
-                <label class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:border-indigo-900 focus:ring ring-indigo-300 disabled:opacity-25 transition ease-in-out duration-150 cursor-pointer" [class.opacity-50]="uploading">
-                  <i class="fas" [ngClass]="uploading ? 'fa-spinner fa-spin' : 'fa-cloud-upload-alt'"></i>
-                  <span class="ml-2">{{ uploading ? 'Envoi en cours...' : 'Choisir un fichier' }}</span>
-                  <input #fileInput type="file" class="hidden" (change)="onFileSelected($event)" [disabled]="uploading" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
-                </label>
+                <p class="block text-sm font-medium text-gray-700 mb-2">Sélectionnez votre fichier ou glissez-déposez</p>
+                <div class="relative border-2 border-dashed border-gray-300 rounded-lg p-6 flex justify-center items-center hover:bg-gray-50 transition-colors" [class.opacity-50]="uploading">
+                  <div class="text-center">
+                    <i class="fas text-3xl text-gray-400 mb-2" [ngClass]="uploading ? 'fa-spinner fa-spin' : 'fa-cloud-upload-alt'"></i>
+                    <p class="text-sm text-gray-600">
+                      <span class="font-medium text-indigo-600 hover:text-indigo-500">Cliquez pour téléverser</span>
+                      ou glissez-déposez
+                    </p>
+                    <p class="text-xs text-gray-500 mt-1">PDF, JPG, PNG, DOC, DOCX</p>
+                  </div>
+                  <input #fileInput type="file" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" (change)="onFileSelected($event)" [disabled]="uploading" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                </div>
 
                 <!-- Barre de progression -->
                 <div *ngIf="uploading" class="mt-4 w-full max-w-sm">
@@ -326,12 +332,18 @@
             <h3 class="text-lg font-bold mb-4 text-blue-800">Documents Clients</h3>
             <div class="space-y-4">
               <div>
-                <p class="block text-sm font-medium text-blue-700 mb-2">Téléverser un document client</p>
-                <label class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-blue-900 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150 cursor-pointer" [class.opacity-50]="uploading">
-                  <i class="fas" [ngClass]="uploading ? 'fa-spinner fa-spin' : 'fa-cloud-upload-alt'"></i>
-                  <span class="ml-2">{{ uploading ? 'Envoi en cours...' : 'Choisir un fichier' }}</span>
-                  <input type="file" class="hidden" (change)="onFileSelected($event, 'documents_clients')" [disabled]="uploading" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
-                </label>
+                <p class="block text-sm font-medium text-blue-700 mb-2">Téléverser un document client ou glissez-déposez</p>
+                <div class="relative border-2 border-dashed border-blue-300 rounded-lg p-6 flex justify-center items-center hover:bg-blue-100 transition-colors" [class.opacity-50]="uploading">
+                  <div class="text-center">
+                    <i class="fas text-3xl text-blue-400 mb-2" [ngClass]="uploading ? 'fa-spinner fa-spin' : 'fa-cloud-upload-alt'"></i>
+                    <p class="text-sm text-blue-700">
+                      <span class="font-medium text-blue-800 hover:text-blue-900">Cliquez pour téléverser</span>
+                      ou glissez-déposez
+                    </p>
+                    <p class="text-xs text-blue-600 mt-1">PDF, JPG, PNG, DOC, DOCX</p>
+                  </div>
+                  <input type="file" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" (change)="onFileSelected($event, 'documents_clients')" [disabled]="uploading" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                </div>
               </div>
             </div>
           </div>

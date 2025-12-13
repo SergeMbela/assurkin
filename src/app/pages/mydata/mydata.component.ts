@@ -168,6 +168,21 @@ export class MydataComponent implements OnInit, OnDestroy {
         return;
       }
 
+      // Validation du type de fichier
+      const allowedTypes = [
+        'application/pdf',
+        'image/jpeg',
+        'image/png',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      ];
+
+      if (!allowedTypes.includes(file.type)) {
+        alert("Format de fichier non supporté. Veuillez utiliser un fichier PDF, une image (JPG, PNG) ou un document Word.");
+        input.value = '';
+        return;
+      }
+
       if (!specificBucket && !this.selectedDocTypeId) {
         // Ce cas ne devrait pas arriver avec la nouvelle UI, mais reste une sécurité.
         alert("Veuillez d'abord sélectionner une catégorie.");

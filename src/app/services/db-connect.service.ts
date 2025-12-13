@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { from, Observable, defer, of, BehaviorSubject } from 'rxjs';
 import { map, switchMap, catchError, shareReplay } from 'rxjs/operators';
 import { PostgrestError, User } from '@supabase/supabase-js';
@@ -332,7 +333,7 @@ export interface SupabaseResponse<T> {
 export class DbConnectService {
   // 1. Declare the private property here
   private nationalities$: Observable<Nationality[]> | null = null;
-  constructor(private supabase: SupabaseService) {}
+  constructor(private supabase: SupabaseService, private http: HttpClient) {}
 
 
   /**
@@ -994,15 +995,21 @@ export class DbConnectService {
     const cleanFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
     const filePath = `${folderName}/${Date.now()}_${cleanFileName}`;
 
-    // 1. Upload vers Supabase Storage
-    return from(
-      this.supabase.supabase.storage
-        .from(targetBucket)
-        .upload(filePath, file)
-    ).pipe(
-      switchMap(uploadRes => {
-        if (uploadRes.error) throw uploadRes.error;
+    const formData = new FormData();
+    formData.append('file', file);
 
+    const headers = new HttpHeaders({
+      'apikey': environment.supabaseKey,
+      'Authorization': `Bearer ${environment.supabaseKey}`
+    });
+
+    // 1. Upload vers Supabase Storage
+    return this.http.post(
+      `${environment.supabaseUrl}/storage/v1/object/${targetBucket}/${filePath}`,
+      formData,
+      { headers }
+    ).pipe(
+      switchMap(() => {
         // 2. Insertion dans la base de données
         const dbRecord: Partial<UploadedFile> = {
           file_name: file.name,
