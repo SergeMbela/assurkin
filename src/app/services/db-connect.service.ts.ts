@@ -474,7 +474,8 @@ export class DbConnectService {
 
     const promise = this.supabase.supabase
       .rpc('handle_new_corporate_user', rpcPayload)
-      .then(({ data, error }) => {
+      .then((res: any) => {
+        const { data, error } = res;
         if (error) {
           // Si une erreur survient, on la rejette pour qu'elle soit capturée par le bloc 'catch' de l'Observable.
           console.error('Erreur lors de l\'appel RPC handle_new_corporate_user:', error);
@@ -637,11 +638,6 @@ export class DbConnectService {
       })
     );
   }
-
-  /**
-   * Récupère les informations sensibles des utilisateurs (auth.users) via une fonction RPC sécurisée.
-   * Retourne : id, email, last_sign_in_at, created_at, providers.
-   */
 
 
   /**
@@ -1171,27 +1167,6 @@ checkEmailExists(email: string): Observable<boolean> {
     );
   }
 
-  /**
-   * Récupère la liste des personnes ayant un compte utilisateur (user_id non null).
-   * @returns Un Observable avec la liste des personnes.
-   */
-  getPeopleWithAccounts(): Observable<Person[]> {
-    return from(
-      this.supabase.supabase
-        .from('personnes')
-        .select('*')
-        .not('user_id', 'is', null)
-        .order('nom', { ascending: true })
-    ).pipe(
-      map(response => {
-        if (response.error) {
-          console.error('Erreur lors de la récupération des personnes avec compte:', response.error);
-          throw response.error;
-        }
-        return (response.data as Person[]) || [];
-      })
-    );
-  }
 
   /**
    * Récupère les données d'une personne par son email.
@@ -1281,6 +1256,13 @@ checkEmailExists(email: string): Observable<boolean> {
     ).pipe(
       map(response => {
         if (response.error) throw response.error;
+        if (response.error) {
+          console.warn(`[DbConnectService] Erreur lors de la récupération du devis auto ${devisId}:`);
+          //throw response.error;
+        }
+        if (!response.data) {
+          console.warn(`[DbConnectService] Aucune donnée trouvée pour le devis auto ${devisId}`);
+        }
         return response.data;
       })
     );
@@ -1305,6 +1287,13 @@ checkEmailExists(email: string): Observable<boolean> {
     ).pipe(
       map(response => {
         if (response.error) throw response.error;
+        if (response.error) {
+          console.warn(`[DbConnectService] Erreur lors de la récupération du devis auto ${devisId}:`);
+         // throw response.error;
+        }
+        if (!response.data) {
+          console.warn(`[DbConnectService] Aucune donnée trouvée pour le devis auto ${devisId}`);
+        }
         return response.data;
       })
     );
@@ -1329,6 +1318,13 @@ checkEmailExists(email: string): Observable<boolean> {
     ).pipe(
       map(response => {
         if (response.error) throw response.error;
+        if (response.error) {
+          console.warn(`[DbConnectService] Erreur lors de la récupération du devis obsèques ${devisId}:`);
+          //throw response.error;
+        }
+        if (!response.data) {
+          console.warn(`[DbConnectService] Aucune donnée trouvée pour le devis obsèques ${devisId}`);
+        }
         console.log(`[DbConnectService] Détails du devis obsèques reçus pour l'ID ${devisId}:`, response.data);
         return response.data;
       })
@@ -1350,6 +1346,13 @@ checkEmailExists(email: string): Observable<boolean> {
     ).pipe(
       map(response => {
         if (response.error) throw response.error;
+        if (response.error) {
+          console.warn(`[DbConnectService] Erreur lors de la récupération du devis habitation ${devisId}:`);
+        
+        }
+        if (!response.data) {
+          console.warn(`[DbConnectService] Aucune donnée trouvée pour le devis habitation ${devisId}`);
+        }
         return response.data;
       })
     );
@@ -1708,7 +1711,7 @@ getNationalities(): Observable<Nationality[]> {
     return from(
       this.supabase.supabase.rpc('get_quote_category_by_id', { p_quote_id: id })
     ).pipe(
-      map(response => {
+      map((response: SupabaseResponse<any>) => {
         if (response.error) {
           console.warn(
             `[DbConnectService] Erreur 500 probable dans 'getQuoteCategoryById' pour l'ID ${id}.`,
@@ -1717,8 +1720,15 @@ getNationalities(): Observable<Nationality[]> {
           );
           throw response.error;
         }
-        // La fonction RPC retourne un objet { category: '...' } ou null
-        return response.data ? response.data : null;
+
+        // Vérification de la structure de données retournée
+        if (response.data && typeof response.data === 'object' && 'category' in response.data) {
+          return (response.data as any).category as string;
+        } else if (typeof response.data === 'string') {
+          return response.data;
+        }
+
+        return null;
       }),
       catchError(error => {
         console.error('Erreur dans le pipe de getQuoteCategoryById:', error);
@@ -1759,7 +1769,8 @@ getNationalities(): Observable<Nationality[]> {
     // Appeler la fonction RPC de Supabase
     const promise = this.supabase.supabase
       .rpc('update_auto_quote_details', rpcPayload)
-      .then(({ data, error }) => {
+      .then((res: any) => {
+        const { data, error } = res;
         if (error) {
           console.warn(
             `[DbConnectService] Erreur 500 probable dans 'updateAutoQuote' pour l'ID ${quoteId}.`,
@@ -1795,7 +1806,8 @@ getNationalities(): Observable<Nationality[]> {
     };
     console.log('[DbConnectService] updateObsequesQuote payload:', rpcPayload);
 
-    const promise = this.supabase.supabase.rpc('update_obseques_quote', rpcPayload).then(({ data, error }) => {
+    const promise = this.supabase.supabase.rpc('update_obseques_quote', rpcPayload).then((res: any) => {
+      const { data, error } = res;
       if (error) {
         console.error(`[DbConnectService] Erreur RPC dans 'updateObsequesQuote' pour l'ID ${quoteId}.`, error);
         console.log('[DbConnectService] updateObsequesQuote payload:', rpcPayload);
@@ -1847,7 +1859,8 @@ getNationalities(): Observable<Nationality[]> {
 
     const promise = this.supabase.supabase
       .rpc('update_habitation_quote_details', rpcPayload)
-      .then(({ data, error }) => {
+      .then((res: any) => {
+        const { data, error } = res;
         if (error) {
           console.warn(
             `[DbConnectService] Erreur 500 probable dans 'updateHabitationQuote' pour l'ID ${quoteId}.`,
@@ -2052,7 +2065,8 @@ getNationalities(): Observable<Nationality[]> {
     // Utilise la méthode rpc() du client Supabase pour appeler une fonction de la BDD
     const promise = this.supabase.supabase
       .rpc('get_full_quote_details', { p_quote_id: id }) // 1. Nom de la fonction, 2. Paramètres
-      .then(({ data, error }) => {
+      .then((res: any) => {
+        const { data, error } = res;
         if (error) {
           console.warn(
             `[DbConnectService] Erreur 500 probable dans 'getFullQuoteDetails' pour l'ID ${id}.`,
@@ -2146,7 +2160,7 @@ getNationalities(): Observable<Nationality[]> {
 
     // 2. On transforme en Observable
     return from(request).pipe(
-      map((response) => {
+      map((response: SupabaseResponse<any[]>) => {
         // Gestion des erreurs fonctionnelles (renvoyées par Supabase dans l'objet response)
         if (response.error) {
           console.warn(
@@ -2157,8 +2171,13 @@ getNationalities(): Observable<Nationality[]> {
           throw response.error;
         }
 
-        // Cast explicite et sécurisation du retour
-        return (response.data as any[]) || [];
+        // Vérification que les données sont bien un tableau
+        if (Array.isArray(response.data)) {
+          return response.data;
+        }
+
+        console.warn(`[DbConnectService] getCsvData attendait un tableau, reçu: ${typeof response.data}`);
+        return [];
       }),
       // 3. Gestion globale des erreurs (Réseau ou RPC) via RxJS
       catchError((error) => {
@@ -2240,12 +2259,17 @@ getNationalities(): Observable<Nationality[]> {
     return from(
       this.supabase.supabase.rpc('get_person_counts_by_postal_code')
     ).pipe(
-      map(response => {
+      map((response: SupabaseResponse<PostalCodeCount[]>) => {
         if (response.error) {
           console.error('Erreur lors de l\'appel RPC get_person_counts_by_postal_code:', response.error);
           throw response.error;
         }
-        return (response.data as PostalCodeCount[]) || [];
+        
+        if (Array.isArray(response.data)) {
+          return response.data;
+        }
+
+        return [];
       }),
       catchError(error => {
         console.error('Erreur dans le pipe de getPersonCountsByPostalCode:', error);
@@ -2253,58 +2277,4 @@ getNationalities(): Observable<Nationality[]> {
       })
     );
   }
-
-  /**
-   * Récupère les informations sensibles des utilisateurs (auth.users) via une fonction RPC sécurisée.
-   * Retourne : id, email, last_sign_in_at, created_at, providers.
-   */
-  getAuthUsersInfo(): Observable<any[]> {
-    return from(
-      this.supabase.supabase.rpc('get_users_info')
-    ).pipe(
-      map(response => {
-        if (response.error) {
-          console.error('Erreur RPC get_users_info:', response.error);
-          throw response.error;
-        }
-        return response.data || [];
-      })
-    );
-  }
-
-  /**
-   * Supprime un utilisateur de la table auth.users via une fonction RPC.
-   * @param userId L'ID de l'utilisateur à supprimer.
-   */
-  deleteAuthUser(userId: string): Observable<void> {
-    return from(
-      this.supabase.supabase.rpc('delete_user_by_id', { p_user_id: userId })
-    ).pipe(
-      map(response => {
-        if (response.error) {
-          console.error('Erreur RPC delete_user_by_id:', response.error);
-          throw response.error;
-        }
-      })
-    );
-  }
-
-  /**
-   * Met à jour le mot de passe d'un utilisateur de la table auth.users via une fonction RPC.
-   * @param userId L'ID de l'utilisateur.
-   * @param newPassword Le nouveau mot de passe.
-   */
-  updateAuthUserPassword(userId: string, newPassword: string): Observable<void> {
-    return from(
-      this.supabase.supabase.rpc('update_user_password', { p_user_id: userId, p_new_password: newPassword })
-    ).pipe(
-      map(response => {
-        if (response.error) {
-          console.error('Erreur RPC update_user_password:', response.error);
-          throw response.error;
-        }
-      })
-    );
-  }
-  
 }

@@ -1,3 +1,5 @@
+import { url } from "inspector";
+
 export const environment = {
     production: false,
     dbConnect: 'https://fqopliwvpuiprdegxytz.supabase.co',
@@ -12,5 +14,7 @@ export const environment = {
     storage_bucket: 'https://fqopliwvpuiprdegxytz.supabase.co/functions/v1/storage-upload',
     stripe_public_key: 'pk_test_51SbHOFCF57PhpQ6IkRFaNg06NIIThSlX2tf0aucAgm4LK4RqJkksCAxQoslBSQPfTdJjJHSXMLC6PnUlYp7PsvRf00rmMa9ypu',
     storageBucketPrefix: 'https://fqopliwvpuiprdegxytz.supabase.co/functions/v1/storage-upload',
-    mapboxAccessToken:'pk.eyJ1IjoiYXNzdXJraW4iLCJhIjoiY21qMTZ0bXl0MGhuajNjcjd3a2FmMzVkcCJ9.wo_Z98iaQQ_iLZyUDBTMlQ'
+    mapboxAccessToken:'pk.eyJ1IjoiYXNzdXJraW4iLCJhIjoiY21qMTZ0bXl0MGhuajNjcjd3a2FmMzVkcCJ9.wo_Z98iaQQ_iLZyUDBTMlQ',
+    url_ombudsman: 'www.ombudsman-insurance.be',
+    email_ombudsman: 'info#ombudsman-insurance.be'      
 };

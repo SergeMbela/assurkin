@@ -1,5 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
@@ -40,6 +40,7 @@ export class CorporateComponent implements OnInit {
   private dbConnectService = inject(DbConnectService);
   private authService = inject(AuthService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   constructor() {}
 
@@ -67,6 +68,14 @@ export class CorporateComponent implements OnInit {
       password: ['', [Validators.required, Validators.minLength(6)]],
       passwordConfirm: ['', Validators.required]
     }, { validators: passwordsMatchValidator });
+
+    // Vérifier s'il y a un message d'erreur dans l'URL (ex: retour du Guard après lien expiré)
+    this.route.queryParams.subscribe(params => {
+      if (params['error']) {
+        // Petit délai pour s'assurer que l'interface est prête
+        setTimeout(() => this.showNotification(params['error'], 'error'), 500);
+      }
+    });
   }
 
   onLoginSubmit(): void {
