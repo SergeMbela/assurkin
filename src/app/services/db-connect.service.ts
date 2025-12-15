@@ -461,29 +461,38 @@ export class DbConnectService {
    * @returns Un Observable du résultat de l'insertion.
    */
   createCorporateAccount(accountData: CorporateAccount & { password?: string }): Observable<SupabaseResponse<any>> {
-    // IMPORTANT : L'ordre des clés doit correspondre EXACTEMENT à l'ordre des arguments de la fonction SQL.
-    const rpcPayload = {
-      user_email: accountData.email,
-      user_password: accountData.password,
-      user_nom: accountData.nom,
-      user_prenom: accountData.prenom,
-      user_fonction: accountData.fonction
-    };
-
-    console.log('[DbConnectService] Appel de la fonction RPC handle_new_corporate_user avec:', rpcPayload);
-
-    const promise = this.supabase.supabase
-      .rpc('handle_new_corporate_user', rpcPayload)
-      .then(({ data, error }) => {
-        if (error) {
-          // Si une erreur survient, on la rejette pour qu'elle soit capturée par le bloc 'catch' de l'Observable.
-          console.error('Erreur lors de l\'appel RPC handle_new_corporate_user:', error);
-          throw error;
+    // Utilisation du SDK Supabase Auth au lieu de la fonction RPC pour éviter l'erreur pgcrypto/gen_salt
+    return from(this.supabase.supabase.auth.signUp({
+      email: accountData.email,
+      password: accountData.password!,
+      options: {
+        data: {
+          nom: accountData.nom,
+          prenom: accountData.prenom,
+          fonction: accountData.fonction
         }
-        return data; // En cas de succès, on ne retourne que les données.
-      });
+      }
+    })).pipe(
+      switchMap(({ data, error }) => {
+        if (error) throw error;
+        if (!data.user) throw new Error('Erreur: Utilisateur non créé.');
 
-    return from(promise);
+        // Insertion du profil dans la table 'personnes'
+        const personData = {
+          user_id: data.user.id,
+          nom: accountData.nom,
+          prenom: accountData.prenom,
+          email: accountData.email
+          // Ajoutez 'fonction' ici si votre table 'personnes' a cette colonne
+        };
+
+        return from(this.supabase.supabase.from('personnes').insert(personData).select().single());
+      }),
+      map(response => {
+        if (response.error) throw response.error;
+        return { data: response.data, error: null };
+      })
+    );
   }
 
   /**

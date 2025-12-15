@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
 import { DbConnectService } from '../../services/db-connect.service';
 import { MailService } from '../../services/mail.service';
+import { EmailTemplateService } from '../../services/email-template.service';
 import { environment } from '../../../environments/environment';
 
 export function passwordsMatchValidator(control: AbstractControl): ValidationErrors | null {
@@ -30,21 +31,23 @@ export class CorporateComponent implements OnInit {
   loginForm!: FormGroup;
   resetPasswordForm!: FormGroup;
   isResettingPassword = false;
+  activeTab: 'login' | 'register' = 'login';
 
   // Propriétés pour la popup de notification
   showPopup = false;
   popupMessage = '';
   popupType: 'success' | 'error' = 'success';
   private popupTimeout: any;
-  
+
   private fb = inject(FormBuilder);
   private dbConnectService = inject(DbConnectService);
   private authService = inject(AuthService);
   private mailService = inject(MailService);
+  private emailTemplateService = inject(EmailTemplateService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
 
-  constructor() {}
+  constructor() { }
 
   ngOnInit(): void {
     // On échappe les points dans le nom de domaine pour le regex
@@ -104,7 +107,7 @@ export class CorporateComponent implements OnInit {
   onRegisterSubmit(): void {
     if (this.registerForm.invalid) {
       this.registerForm.markAllAsTouched();
-   
+
       return;
     }
 
@@ -114,16 +117,13 @@ export class CorporateComponent implements OnInit {
     this.dbConnectService.createCorporateAccount(accountData).subscribe({
       next: () => {
         // Envoi de l'email de bienvenue via SendGrid
+        const loginUrl = `${window.location.origin}/corporate`;
+        const htmlContent = this.emailTemplateService.getWelcomeEmail(accountData.prenom, accountData.nom, loginUrl);
+
         this.mailService.sendEmail({
           to: accountData.email,
           subject: 'Bienvenue sur Assurkin Corporate',
-          htmlContent: `
-            <div style="font-family: sans-serif;">
-              <h1>Bienvenue ${accountData.prenom} ${accountData.nom} !</h1>
-              <p>Votre compte Corporate a été créé avec succès.</p>
-              <p>Vous pouvez désormais vous connecter à votre espace en utilisant votre adresse email et votre mot de passe.</p>
-            </div>
-          `
+          htmlContent: htmlContent
         }).subscribe({
           error: (err) => console.error('Erreur lors de l\'envoi de l\'email de bienvenue:', err)
         });
@@ -168,15 +168,19 @@ export class CorporateComponent implements OnInit {
     this.isResettingPassword = show;
   }
 
+  setActiveTab(tab: 'login' | 'register'): void {
+    this.activeTab = tab;
+  }
+
   private showNotification(message: string, type: 'success' | 'error') {
     this.popupMessage = message;
     this.popupType = type;
     this.showPopup = true;
-    
+
     if (this.popupTimeout) {
       clearTimeout(this.popupTimeout);
     }
-    
+
     this.popupTimeout = setTimeout(() => {
       this.hideNotification();
     }, 5000);
