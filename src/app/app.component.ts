@@ -11,5 +11,5 @@ import { FooterComponent } from './pages/footer/footer.component';
   styles: [':host { display: flex; flex-direction: column; min-height: 100vh; } main { flex: 1; }']
 })
 export class AppComponent {
-  title = 'assurkin';
+  title = 'Bienvenue chez Assurkin';
 }
