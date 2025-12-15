@@ -39,6 +39,17 @@ export class HabitationFormComponent implements OnInit, OnChanges, OnDestroy {
     // C'est la correction clé pour s'assurer que tous les groupes (batiment, evaluation, etc.) existent.
     if (!this.parentForm) { 
       this.initializeForm();
+    } else {
+      // Si le formulaire parent est fourni mais incomplet, on ajoute le contrôle manquant pour éviter l'erreur
+      const evaluationGroup = this.parentForm.get('evaluation') as FormGroup;
+      if (evaluationGroup && !evaluationGroup.contains('valeurLibreContenu')) {
+        evaluationGroup.addControl('valeurLibreContenu', this.fb.control(null));
+      }
+
+      const garantiesGroup = this.parentForm.get('garantiesHabitation') as FormGroup;
+      if (garantiesGroup && !garantiesGroup.contains('compagnie_id')) {
+        garantiesGroup.addControl('compagnie_id', this.fb.control(null));
+      }
     }
 
     this.statuts$ = this.dbService.getAllStatuts();
