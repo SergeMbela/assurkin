@@ -289,6 +289,11 @@ export class ManagementComponent implements OnInit {
       );
     }
   }
+
+  logout(): void {
+    this.router.navigate(['/']);
+  }
+
   goToPage(page: number): void {
     this.currentPage$.next(page);
   }

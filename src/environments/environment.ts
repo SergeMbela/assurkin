@@ -16,5 +16,7 @@ export const environment = {
     storageBucketPrefix: 'https://fqopliwvpuiprdegxytz.supabase.co/functions/v1/storage-upload',
     mapboxAccessToken:'pk.eyJ1IjoiYXNzdXJraW4iLCJhIjoiY21qMTZ0bXl0MGhuajNjcjd3a2FmMzVkcCJ9.wo_Z98iaQQ_iLZyUDBTMlQ',
     url_ombudsman: 'www.ombudsman-insurance.be',
-    email_ombudsman: 'info#ombudsman-insurance.be'      
+    email_ombudsman: 'info#ombudsman-insurance.be' , 
+    appName: 'Assurkin',
+    appDomain: 'assurkin.be'
 };

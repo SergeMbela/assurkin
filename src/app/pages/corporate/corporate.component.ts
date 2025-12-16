@@ -7,6 +7,7 @@ import { DbConnectService } from '../../services/db-connect.service';
 import { MailService } from '../../services/mail.service';
 import { EmailTemplateService } from '../../services/email-template.service';
 import { environment } from '../../../environments/environment';
+import { emailDomainValidator } from '../../validators/email-domain.validators';
 
 export function passwordsMatchValidator(control: AbstractControl): ValidationErrors | null {
   const password = control.get('password');
@@ -32,6 +33,7 @@ export class CorporateComponent implements OnInit {
   resetPasswordForm!: FormGroup;
   isResettingPassword = false;
   activeTab: 'login' | 'register' = 'login';
+  readonly appDomain = environment.appDomain;
 
   // Propriétés pour la popup de notification
   showPopup = false;
@@ -50,18 +52,14 @@ export class CorporateComponent implements OnInit {
   constructor() { }
 
   ngOnInit(): void {
-    // On échappe les points dans le nom de domaine pour le regex
-    const domain = environment.domain_name.replace(/\./g, '\\.');
-    const emailPattern = new RegExp(`^[A-Za-z0-9._%+-]+@${domain}$`, 'i');
-
     this.loginForm = this.fb.group({
       // Ajout du validateur de pattern pour le domaine
-      email: ['', [Validators.required, Validators.email, Validators.pattern(emailPattern)]],
+      email: ['', [Validators.required, Validators.email, emailDomainValidator(environment.appDomain)]],
       password: ['', Validators.required]
     });
 
     this.resetPasswordForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email, Validators.pattern(emailPattern)]]
+      email: ['', [Validators.required, Validators.email]]
     });
 
     this.registerForm = this.fb.group({
@@ -69,7 +67,7 @@ export class CorporateComponent implements OnInit {
       prenom: ['', Validators.required],
       fonction: [''],
       // La contrainte de domaine est gérée par la DB, mais on peut l'ajouter ici aussi
-      email: ['', [Validators.required, Validators.email, Validators.pattern(emailPattern)]],
+      email: ['', [Validators.required, Validators.email, emailDomainValidator(environment.appDomain)]],
       password: ['', [Validators.required, Validators.minLength(6)]],
       passwordConfirm: ['', Validators.required]
     }, { validators: passwordsMatchValidator });
@@ -122,7 +120,7 @@ export class CorporateComponent implements OnInit {
 
         this.mailService.sendEmail({
           to: accountData.email,
-          subject: 'Bienvenue sur Assurkin Corporate',
+          subject: `Bienvenue sur ${environment.appName} Corporate`,
           htmlContent: htmlContent
         }).subscribe({
           error: (err) => console.error('Erreur lors de l\'envoi de l\'email de bienvenue:', err)
@@ -133,9 +131,11 @@ export class CorporateComponent implements OnInit {
       },
       error: (err) => {
         let errorMessage = `Erreur lors de la création du compte: ${err.message}`;
-        // On vérifie si l'erreur est due à un email déjà existant
-        if (err.message && err.message.includes('duplicate key value violates unique constraint')) {
+        // Personnalisation des messages d'erreur courants
+        if (err.message?.includes('duplicate key value violates unique constraint')) {
           errorMessage = 'Un compte avec cette adresse e-mail existe déjà.';
+        } else if (err.message?.includes("violates domain constraint")) { // Erreur hypothétique pour le domaine
+          errorMessage = `Seul le nom de domaine @${this.appDomain} est utilisable.`;
         }
         this.showNotification(errorMessage, 'error');
       }

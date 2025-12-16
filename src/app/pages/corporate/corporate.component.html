@@ -39,6 +39,7 @@
               class="text-red-600 text-xs mt-1">
               <div *ngIf="loginForm.get('email')?.errors?.['required']">L'adresse e-mail est requise.</div>
               <div *ngIf="loginForm.get('email')?.errors?.['email']">Adresse e-mail invalide.</div>
+              <div *ngIf="loginForm.get('email')?.errors?.['emailDomain']">Seul le nom de domaine &#64;{{ appDomain }} est utilisable.</div>
             </div>
           </div>
         </div>
@@ -115,7 +116,7 @@
             class="text-red-600 text-xs mt-1">
             <div *ngIf="registerForm.get('email')?.errors?.['required']">L'adresse e-mail est requise.</div>
             <div *ngIf="registerForm.get('email')?.errors?.['email']">Adresse e-mail invalide.</div>
-            <div *ngIf="registerForm.get('email')?.errors?.['pattern']">L'email doit se terminer par &#64;assurkin.be</div>
+            <div *ngIf="registerForm.get('email')?.errors?.['emailDomain']">Seul le nom de domaine &#64;{{ appDomain }} est utilisable.</div>
           </div>
         </div>
 
@@ -132,11 +133,6 @@
           </div>
         </div>
 
-        <!-- 
-          Le champ de confirmation n'est pas dans le formGroup car il n'est pas envoyé à la DB.
-          Sa validation doit être gérée manuellement dans la méthode onRegisterSubmit si nécessaire.
-          Pour une validation plus avancée, un validateur personnalisé peut être ajouté au FormGroup.
-        --> 
         <div>
           <label for="register-password-confirm" class="block text-sm font-medium text-gray-700">Confirmer le mot de
             passe</label>
@@ -172,7 +168,6 @@
               class="text-red-600 text-xs mt-1">
               <div *ngIf="resetPasswordForm.get('email')?.errors?.['required']">L'adresse e-mail est requise.</div>
               <div *ngIf="resetPasswordForm.get('email')?.errors?.['email']">Adresse e-mail invalide.</div>
-              <div *ngIf="resetPasswordForm.get('email')?.errors?.['pattern']">L'email doit appartenir au domaine de l'entreprise.</div>
             </div>
           </div>
         </div>
