@@ -2,13 +2,14 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormControl, AbstractControl } from '@angular/forms';
+import { Observable } from 'rxjs';
 import { switchMap, tap } from 'rxjs/operators';
 
 import { environment } from '../../../environments/environment';
 
 import { SendsmsService } from '../../services/sendsms.service';
 import { MailService, EmailData } from '../../services/mail.service';
-import { DbConnectService, Person } from '../../services/db-connect.service';
+import { DbConnectService, Person, Assureur, Commission } from '../../services/db-connect.service';
 import { PaymentService } from '../../services/payment.service';
 
 @Component({
@@ -25,11 +26,12 @@ export class MessagerieComponent implements OnInit {
   private dbService = inject(DbConnectService);
   private paymentService = inject(PaymentService);
 
-  activeTab: 'sms' | 'email' | 'payment' = 'sms';
+  activeTab: 'sms' | 'email' | 'payment' | 'commissions' = 'sms';
 
   smsForm!: FormGroup;
   emailForm!: FormGroup;
   paymentForm!: FormGroup;
+  commissionForm!: FormGroup;
 
   quoteId: number | null = null;
   quoteType: string | null = null;
@@ -39,6 +41,7 @@ export class MessagerieComponent implements OnInit {
   loading = false;
   successMessage: string | null = null;
   errorMessage: string | null = null;
+  payments: any[] = [];
 
   // Options pour le select du sujet de paiement
   paymentSubjects = [
@@ -47,6 +50,14 @@ export class MessagerieComponent implements OnInit {
     { value: 'regularisation', label: 'Régularisation' },
     { value: 'autre', label: 'Autre' }
   ];
+
+  commissionCategories = [
+    { value: 'commission_bancaire', label: 'Commission bancaire' },
+    { value: 'frais_dossier', label: 'Frais de dossier' },
+    { value: 'commission_assurance', label: "Commission d'assurance" }
+  ];
+
+  insuranceCompanies$: Observable<Assureur[]> | null = null;
 
   ngOnInit(): void {
     this.smsForm = this.fb.group({
@@ -67,10 +78,23 @@ export class MessagerieComponent implements OnInit {
       remarques: ['']
     });
 
+    this.commissionForm = this.fb.group({
+      categorie: ['', Validators.required],
+      montant: [null, [Validators.required, Validators.min(0.01)]],
+      dateEcheance: ['', Validators.required],
+      datePaiement: [''],
+      compagnie: ['']
+    });
+
+    this.insuranceCompanies$ = this.dbService.getAllAssureurs();
+
     this.route.paramMap.pipe(
       tap(params => {
         this.quoteId = Number(params.get('id'));
         this.quoteType = params.get('type');
+        if (this.activeTab === 'commissions' || this.activeTab === 'payment') {
+          this.loadPayments();
+        }
       }),
       switchMap(() => this.dbService.getFullQuoteDetails(this.quoteId!))
     ).subscribe(details => {
@@ -87,9 +111,12 @@ export class MessagerieComponent implements OnInit {
     });
   }
 
-  setActiveTab(tab: 'sms' | 'email' | 'payment'): void {
+  setActiveTab(tab: 'sms' | 'email' | 'payment' | 'commissions'): void {
     this.activeTab = tab;
     this.resetMessages();
+    if (tab === 'commissions' || tab === 'payment') {
+      this.loadPayments();
+    }
   }
 
   sendSms(): void {
@@ -221,6 +248,7 @@ export class MessagerieComponent implements OnInit {
       this.successMessage = 'La demande de paiement a été créée et envoyée avec succès par SMS et e-mail.';
       this.paymentForm.reset();
       this.paymentForm.get('sujet')?.setValue('');
+      this.loadPayments();
 
     } catch (error: any) {
       console.error("Erreur lors du processus de demande de paiement:", error);
@@ -228,6 +256,49 @@ export class MessagerieComponent implements OnInit {
     } finally {
       this.loading = false;
     }
+  }
+
+  saveCommission(): void {
+    if (this.commissionForm.invalid) {
+      this.commissionForm.markAllAsTouched();
+      return;
+    }
+    this.loading = true;
+    this.resetMessages();
+
+    const commissionData: Commission = {
+      quote_id: this.quoteId!,
+      quote_type: this.quoteType!,
+      categorie: this.commissionForm.value.categorie,
+      montant: this.commissionForm.value.montant,
+      date_echeance: this.commissionForm.value.dateEcheance,
+      date_paiement: this.commissionForm.value.datePaiement || null,
+      compagnie: this.commissionForm.value.compagnie
+    };
+
+    this.dbService.saveCommission(commissionData).subscribe({
+      next: () => {
+        this.successMessage = 'Commission enregistrée avec succès.';
+        this.commissionForm.reset();
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Erreur lors de l\'enregistrement de la commission:', err);
+        this.errorMessage = "Une erreur est survenue lors de l'enregistrement de la commission.";
+        this.loading = false;
+      }
+    });
+  }
+
+  loadPayments(): void {
+    if (!this.quoteId || !this.quoteType) return;
+
+    // Utilisation de 'any' pour contourner la vérification de type si la méthode n'est pas encore déclarée dans l'interface
+    (this.paymentService as any).getPaymentRequestsByQuote(this.quoteId, this.quoteType)
+      .subscribe({
+        next: (data: any[]) => this.payments = data,
+        error: (err: any) => console.error('Erreur chargement paiements', err)
+      });
   }
 
   private async saveMessageToDb(

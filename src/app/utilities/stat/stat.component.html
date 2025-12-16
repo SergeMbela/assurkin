@@ -9,52 +9,133 @@
   <!-- Barre d'onglets -->
   <div class="border-b border-gray-200 mb-6">
     <nav class="-mb-px flex space-x-6 overflow-x-auto" aria-label="Tabs">
-      <button (click)="activeTab = 'prospects'" [ngClass]="activeTab === 'prospects' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+      <button (click)="setActiveTab('prospects')" [ngClass]="activeTab === 'prospects' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
         Prospects
       </button>
-      <button (click)="activeTab = 'automobile'" [ngClass]="activeTab === 'automobile' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+      <button (click)="setActiveTab('automobile')" [ngClass]="activeTab === 'automobile' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
         Automobile
       </button>
-      <button (click)="activeTab = 'habitation'" [ngClass]="activeTab === 'habitation' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+      <button (click)="setActiveTab('habitation')" [ngClass]="activeTab === 'habitation' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
         Habitation
       </button>
-      <button (click)="activeTab = 'obseques'" [ngClass]="activeTab === 'obseques' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+      <button (click)="setActiveTab('obseques')" [ngClass]="activeTab === 'obseques' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
         Obsèques
       </button>
-      <button (click)="activeTab = 'voyage'" [ngClass]="activeTab === 'voyage' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+      <button (click)="setActiveTab('voyage')" [ngClass]="activeTab === 'voyage' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
         Voyage
       </button>
-      <button (click)="activeTab = 'rc_familiale'" [ngClass]="activeTab === 'rc_familiale' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+      <button (click)="setActiveTab('rc_familiale')" [ngClass]="activeTab === 'rc_familiale' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
         RC Familale
       </button>
-      <button (click)="activeTab = 'solde_restant'" [ngClass]="activeTab === 'solde_restant' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+      <button (click)="setActiveTab('solde_restant')" [ngClass]="activeTab === 'solde_restant' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
         Solde restant
       </button>
     </nav>
   </div>
 
   <!-- Contenu des onglets -->
-  <div>
-    <div [hidden]="activeTab !== 'prospects'">
-      <div class="bg-white shadow-md rounded-lg p-6 text-center"><p class="text-gray-600">Contenu pour Prospects à implémenter ici.</p></div>
+  <div *ngIf="loading" class="text-center py-10">
+    <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-indigo-500 border-t-transparent"></div>
+    <p class="mt-2 text-gray-500">Chargement des données...</p>
+  </div>
+
+  <div *ngIf="!loading && error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+    <strong class="font-bold">Erreur !</strong>
+    <span class="block sm:inline">{{ error }}</span>
+  </div>
+
+  <div *ngIf="!loading && !error">
+    
+    <!-- Filtre par année et Export -->
+    <div class="flex justify-end mb-4 space-x-4">
+      <button (click)="exportToCsv()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded inline-flex items-center transition-colors" [disabled]="tableData.length === 0" [ngClass]="{'opacity-50 cursor-not-allowed': tableData.length === 0}">
+        <svg class="fill-current w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M13 8V2H7v6H2l8 8 8-8h-5zM0 18h20v2H0v-2z"/></svg>
+        <span>Exporter CSV</span>
+      </button>
+
+      <div class="relative">
+        <select [(ngModel)]="selectedYear" (ngModelChange)="onYearChange()" class="block appearance-none w-full bg-white border border-gray-300 hover:border-gray-400 px-4 py-2 pr-8 rounded shadow leading-tight focus:outline-none focus:shadow-outline text-gray-700">
+          <option *ngFor="let year of availableYears" [value]="year">{{ year }}</option>
+        </select>
+        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+          <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+        </div>
+      </div>
     </div>
-    <div [hidden]="activeTab !== 'automobile'">
-      <div class="bg-white shadow-md rounded-lg p-6 text-center"><p class="text-gray-600">Contenu pour Automobile à implémenter ici.</p></div>
+    
+    <!-- Résumé et Graphique -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+      <!-- Carte Total -->
+      <div class="bg-white p-6 rounded-lg shadow-md lg:col-span-1 flex flex-col justify-center">
+        <h3 class="text-lg font-semibold text-gray-700 mb-2">Total Commissions</h3>
+        <p class="text-4xl font-bold text-indigo-600">{{ totalCommission | currency:'EUR':'symbol':'1.2-2':'fr' }}</p>
+        <p class="text-sm text-gray-500 mt-2">Sur la période affichée</p>
+        
+        <div class="mt-6 space-y-2">
+          <div *ngFor="let cat of commissionCategories" class="flex justify-between text-sm">
+            <span class="text-gray-600">{{ categoryLabels[cat] || cat }}</span>
+            <span class="font-medium">{{ commissionTotals[cat] | currency:'EUR':'symbol':'1.2-2':'fr' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Graphique à barres CSS -->
+      <div class="bg-white p-6 rounded-lg shadow-md lg:col-span-2">
+        <h3 class="text-lg font-semibold text-gray-700 mb-4">Évolution Mensuelle</h3>
+        <div class="h-64">
+          <canvas baseChart
+            [data]="barChartData"
+            [options]="barChartOptions"
+            [type]="barChartType">
+          </canvas>
+        </div>
+      </div>
     </div>
-    <div [hidden]="activeTab !== 'habitation'">
-      <div class="bg-white shadow-md rounded-lg p-6 text-center"><p class="text-gray-600">Contenu pour Habitation à implémenter ici.</p></div>
-    </div>
-    <div [hidden]="activeTab !== 'obseques'">
-      <div class="bg-white shadow-md rounded-lg p-6 text-center"><p class="text-gray-600">Contenu pour Obsèques à implémenter ici.</p></div>
-    </div>
-    <div [hidden]="activeTab !== 'voyage'">
-      <div class="bg-white shadow-md rounded-lg p-6 text-center"><p class="text-gray-600">Contenu pour Voyage à implémenter ici.</p></div>
-    </div>
-    <div [hidden]="activeTab !== 'rc_familiale'">
-      <div class="bg-white shadow-md rounded-lg p-6 text-center"><p class="text-gray-600">Contenu pour RC Familale à implémenter ici.</p></div>
-    </div>
-    <div [hidden]="activeTab !== 'solde_restant'">
-      <div class="bg-white shadow-md rounded-lg p-6 text-center"><p class="text-gray-600">Contenu pour Solde restant à implémenter ici.</p></div>
+
+    <!-- Tableau de données -->
+    <div class="bg-white shadow-md rounded-lg overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-700">Détail des Commissions</h3>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Échéance</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Catégorie</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Compagnie</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Montant</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr *ngFor="let item of tableData" class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {{ item.date_echeance | date:'dd/MM/yyyy' }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                {{ categoryLabels[item.categorie] || item.categorie }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {{ item.compagnie || '-' }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                {{ item.montant | currency:'EUR':'symbol':'1.2-2':'fr' }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm">
+                <span [ngClass]="item.date_paiement ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full">
+                  {{ item.date_paiement ? 'Payé' : 'En attente' }}
+                </span>
+              </td>
+            </tr>
+            <tr *ngIf="tableData.length === 0">
+              <td colspan="5" class="px-6 py-10 text-center text-gray-500">
+                Aucune donnée disponible pour cette catégorie.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </div>

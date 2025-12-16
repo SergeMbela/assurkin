@@ -26,11 +26,14 @@
     "@angular/platform-browser-dynamic": "^18.2.0",
     "@angular/platform-server": "^18.2.0",
     "@angular/router": "^18.2.0",
+    "@angular/cdk": "^18.2.0",
     "@angular/ssr": "^18.2.0",
     "@stripe/stripe-js": "^4.10.0",
-    "@supabase/supabase-js": "^2.44.4",
+    "@supabase/supabase-js": "2.44.4",
+    "chart.js": "^4.4.3",
     "express": "^4.19.2",
     "mapbox-gl": "^3.17.0",
+    "ng2-charts": "^7.0.0",
     "ngx-stripe": "^18.1.0",
     "papaparse": "^5.5.3",
     "rxjs": "^7.8.1",
@@ -69,5 +72,9 @@
   "engines": {
     "node": ">=18.19.0",
     "npm": ">=9.0.0"
+  }
+,
+  "overrides": {
+    "gh-pages": "^6.0.0"
   }
 }

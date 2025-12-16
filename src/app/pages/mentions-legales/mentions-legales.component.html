@@ -23,10 +23,10 @@
   </div>
   <div>
     <div [hidden]="activeTab !== 'vue-ensemble'">
-      <div class="bg-white shadow-md rounded-lg p-6 text-center"><p class="text-gray-600">Contenu pour Vue d'ensemble à implémenter ici.</p></div>
+      <div class="bg-white shadow-md rounded-lg p-6 text-center"><p class="text-gray-600 whitespace-pre-line">{{ content?.vueEnsemble || 'Contenu à venir.' }}</p></div>
     </div>
     <div [hidden]="activeTab !== 'a-propos'">
-      <div class="bg-white shadow-md rounded-lg p-6 text-center"><p class="text-gray-600">Contenu pour A propos de nous à implémenter ici.</p></div>
+      <div class="bg-white shadow-md rounded-lg p-6 text-center"><p class="text-gray-600 whitespace-pre-line">{{ content?.aPropos || 'Contenu à venir.' }}</p></div>
     </div>
     <div [hidden]="activeTab !== 'mifid'">
       <div class="bg-white shadow-md rounded-lg p-6 text-left relative min-h-[200px]">
@@ -36,17 +36,21 @@
             <p class="mt-2 text-gray-600">Chargement...</p>
           </div>
         </div>
-        <div class="text-gray-600" [innerHTML]="mifidContent"></div>
+        <div class="text-gray-600">
+          <div [innerHTML]="mifidContent"></div>
+          <p *ngIf="errorMessage" class="text-red-600 mb-4">{{ errorMessage }}</p>
+          <p *ngIf="!mifidContent && !loading && !errorMessage">Aucun contenu disponible pour le moment.</p>
+        </div>
       </div>
     </div>
     <div [hidden]="activeTab !== 'politique-confidentialite'">
-  
-  </div>
+      <div class="bg-white shadow-md rounded-lg p-6 text-center"><p class="text-gray-600 whitespace-pre-line">{{ content?.politiqueConfidentialite || 'Contenu à venir.' }}</p></div>
+    </div>
     <div [hidden]="activeTab !== 'politique-utilisation'">
-      <div class="bg-white shadow-md rounded-lg p-6 text-center"><p class="text-gray-600">Contenu pour Politique d'utilisation à implémenter ici.</p></div>
+      <div class="bg-white shadow-md rounded-lg p-6 text-center"><p class="text-gray-600 whitespace-pre-line">{{ content?.politiqueUtilisation || 'Contenu à venir.' }}</p></div>
     </div>
     <div [hidden]="activeTab !== 'conditions-generales'">
-      <div class="bg-white shadow-md rounded-lg p-6 text-center"><p class="text-gray-600">Contenu pour Conditions générales de vente à implémenter ici.</p></div>
+      <div class="bg-white shadow-md rounded-lg p-6 text-center"><p class="text-gray-600 whitespace-pre-line">{{ content?.conditionsGenerales || 'Contenu à venir.' }}</p></div>
     </div>
   </div>
 </div>

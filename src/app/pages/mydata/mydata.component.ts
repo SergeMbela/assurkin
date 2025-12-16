@@ -8,6 +8,7 @@ import { User } from '@supabase/supabase-js';
 
 import { AuthService } from '../../services/auth.service';
 import { DbConnectService, Person, Contrat, UploadedFile, DocumentType } from '../../services/db-connect.service';
+import { PaymentService } from '../../services/payment.service';
 import { environment } from '../../../environments/environment';
 
 @Component({
@@ -31,7 +32,8 @@ export class MydataComponent implements OnInit, OnDestroy {
   documentTypes: DocumentType[] = [];
   selectedDocTypeId: number | null = null;
   uploading = false;
-
+  payments: any[] = [];
+  paymentsLoading = false;
   @ViewChild('fileInput') fileInput!: ElementRef;
 
   private destroy$ = new Subject<void>();
@@ -39,6 +41,7 @@ export class MydataComponent implements OnInit, OnDestroy {
   constructor(
     private authService: AuthService,
     private dbConnectService: DbConnectService,
+    private paymentService: PaymentService,
     private router: Router,
     @Inject(PLATFORM_ID) private platformId: object
   ) {}
@@ -72,6 +75,8 @@ export class MydataComponent implements OnInit, OnDestroy {
           } else if (this.activeView === 'documents') {
             this.loadDocuments();
             this.loadDocumentTypes();
+          } else if (this.activeView === 'paiements') {
+            this.loadPayments();
           }
         });
     }
@@ -89,6 +94,8 @@ export class MydataComponent implements OnInit, OnDestroy {
     } else if (view === 'documents') {
       this.loadDocuments();
       this.loadDocumentTypes();
+    } else if (view === 'paiements') {
+      this.loadPayments();
     }
   }
 
@@ -110,6 +117,23 @@ export class MydataComponent implements OnInit, OnDestroy {
         error: (err) => {
           console.error('Erreur lors du chargement des contrats:', err);
           this.contractsLoading = false;
+        }
+      });
+  }
+
+  loadPayments() {
+    if (!this.user) return;
+    this.paymentsLoading = true;
+    this.paymentService.getPaymentRequestsForUser(this.user.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.payments = data;
+          this.paymentsLoading = false;
+        },
+        error: (err) => {
+          console.error('Erreur chargement paiements', err);
+          this.paymentsLoading = false;
         }
       });
   }

@@ -327,6 +327,27 @@ export interface SupabaseResponse<T> {
   error: PostgrestError | null;
 }
 
+export interface Commission {
+  id?: number;
+  created_at?: string;
+  quote_id: number;
+  quote_type: string;
+  categorie: string;
+  montant: number;
+  date_echeance: string;
+  date_paiement?: string | null;
+  compagnie?: string;
+}
+
+export interface Payment {
+  id: string;
+  amount: number;
+  date: string;
+  status: string;
+  description?: string;
+  invoice_url?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -358,6 +379,43 @@ export class DbConnectService {
     if (error) {
       console.error('Erreur lors de la sauvegarde du message:', error);
     }
+  }
+
+  /**
+   * Enregistre une commission dans la base de données.
+   * @param commission Les données de la commission.
+   * @returns Un Observable avec la commission créée.
+   */
+  saveCommission(commission: Commission): Observable<Commission> {
+    return from(this.supabase.supabase.from('commissions').insert(commission).select().single()).pipe(
+      map(response => {
+        if (response.error) throw response.error;
+        return response.data as Commission;
+      })
+    );
+  }
+
+  /**
+   * Récupère l'ensemble des commissions, éventuellement filtrées par type de devis.
+   * @param quoteType (Optionnel) Le type de devis pour filtrer les résultats (ex: 'auto', 'habitation').
+   * @returns Un Observable contenant la liste des commissions.
+   */
+  getAllCommissions(quoteType?: string): Observable<Commission[]> {
+    let query = this.supabase.supabase
+      .from('commissions')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (quoteType) {
+      query = query.eq('quote_type', quoteType);
+    }
+
+    return from(query).pipe(
+      map(response => {
+        if (response.error) throw response.error;
+        return (response.data as Commission[]) || [];
+      })
+    );
   }
 
   /**

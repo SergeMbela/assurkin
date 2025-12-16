@@ -1,7 +1,7 @@
 <div class="container mx-auto p-4 sm:p-6 lg:p-8">
   <div class="flex items-center justify-between mb-6">
     <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">
-      Messagerie pour le devis #{{ quoteId }}
+    Données #{{ quoteId }}
     </h1>
     <a [routerLink]="['/management']" class="text-blue-600 hover:text-blue-800 font-medium flex items-center">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
@@ -37,6 +37,14 @@
           <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
         </svg>
         Paiement
+      </button>
+      <button (click)="setActiveTab('commissions')"
+              [ngClass]="activeTab === 'commissions' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+              class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+        </svg>
+        Commissions
       </button>
     </nav>
   </div>
@@ -154,6 +162,105 @@
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
             {{ loading ? 'Envoi en cours...' : 'Envoyer la demande de paiement' }}
+          </button>
+        </div>
+      </form>
+
+      <!-- Historique des paiements -->
+      <div class="mt-10 border-t border-gray-200 pt-8">
+        <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Historique des paiements</h3>
+        <div class="flex flex-col">
+          <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+            <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
+              <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+                <table class="min-w-full divide-y divide-gray-200">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sujet</th>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Montant</th>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
+                    </tr>
+                  </thead>
+                  <tbody class="bg-white divide-y divide-gray-200">
+                    <tr *ngFor="let payment of payments">
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ payment.created_at | date:'dd/MM/yyyy HH:mm' }}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ payment.sujet }}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ payment.montant | currency:'EUR':'symbol':'1.2-2' }}</td>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full" [ngClass]="{'bg-green-100 text-green-800': payment.statut === 'paid', 'bg-yellow-100 text-yellow-800': payment.statut === 'pending', 'bg-red-100 text-red-800': payment.statut === 'failed'}">
+                          {{ payment.statut === 'pending' ? 'En attente' : (payment.statut === 'paid' ? 'Payé' : payment.statut) }}
+                        </span>
+                      </td>
+                    </tr>
+                    <tr *ngIf="!payments || payments.length === 0">
+                      <td colspan="4" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">Aucun paiement trouvé.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contenu de l'onglet Commissions -->
+    <div *ngIf="activeTab === 'commissions'">
+      <form [formGroup]="commissionForm" (ngSubmit)="saveCommission()">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Catégorie -->
+          <div class="mb-4">
+            <label for="comm-categorie" class="block text-sm font-medium text-gray-700">Catégorie</label>
+            <select id="comm-categorie" formControlName="categorie" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+              <option value="" disabled>Sélectionnez une catégorie</option>
+              <option *ngFor="let cat of commissionCategories" [value]="cat.value">{{ cat.label }}</option>
+            </select>
+            <div *ngIf="commissionForm.get('categorie')?.touched && commissionForm.get('categorie')?.hasError('required')" class="text-red-600 text-xs mt-1">La catégorie est requise.</div>
+          </div>
+
+          <!-- Montant -->
+          <div class="mb-4">
+            <label for="comm-montant" class="block text-sm font-medium text-gray-700">Montant</label>
+            <div class="relative mt-1">
+              <input type="number" id="comm-montant" formControlName="montant" class="pl-3 pr-12 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 ring-1 ring-slate-200 shadow-sm" placeholder="0.00">
+              <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                <span class="text-gray-500 sm:text-sm">EUR</span>
+              </div>
+            </div>
+            <div *ngIf="commissionForm.get('montant')?.touched && commissionForm.get('montant')?.hasError('required')" class="text-red-600 text-xs mt-1">Le montant est requis.</div>
+          </div>
+
+          <!-- Date d'échéance -->
+          <div class="mb-4">
+            <label for="comm-dateEcheance" class="block text-sm font-medium text-gray-700">Date d'échéance</label>
+            <input type="date" id="comm-dateEcheance" formControlName="dateEcheance" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+            <div *ngIf="commissionForm.get('dateEcheance')?.touched && commissionForm.get('dateEcheance')?.hasError('required')" class="text-red-600 text-xs mt-1">La date d'échéance est requise.</div>
+          </div>
+
+          <!-- Date de paiement -->
+          <div class="mb-4">
+            <label for="comm-datePaiement" class="block text-sm font-medium text-gray-700">Date de paiement</label>
+            <input type="date" id="comm-datePaiement" formControlName="datePaiement" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+          </div>
+
+          <!-- Compagnie d'assurance -->
+          <div class="mb-4 md:col-span-2">
+            <label for="comm-compagnie" class="block text-sm font-medium text-gray-700">Compagnie d'assurance</label>
+            <select id="comm-compagnie" formControlName="compagnie" class="mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 px-3 ring-1 ring-slate-200 shadow-sm">
+              <option value="" disabled>Sélectionnez une compagnie</option>
+              <option *ngFor="let company of insuranceCompanies$ | async" [value]="company.nom">{{ company.nom }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="text-right mt-4">
+          <button type="submit" [disabled]="commissionForm.invalid || loading" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
+            <svg *ngIf="loading" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            {{ loading ? 'Enregistrement...' : 'Enregistrer' }}
           </button>
         </div>
       </form>
