@@ -165,6 +165,11 @@ export class ManagementComponent implements OnInit {
   isCitiesLoading$ = new BehaviorSubject<boolean>(false);
   isNationalitiesLoading$ = new BehaviorSubject<boolean>(false);
 
+  // ===== PROPRIÉTÉS POUR LA POPUP DE NOTIFICATION =====
+  showNotificationPopup = false;
+  notificationPopupTitle = '';
+  notificationPopupMessage = '';
+
   ngOnInit(): void {
     this.initPreneurForm(); // Initialiser le formulaire
     this.isNationalitiesLoading$.next(true);
@@ -174,6 +179,58 @@ export class ManagementComponent implements OnInit {
     );
     if (isPlatformBrowser(this.platformId)) {
       this.setupPostalCodeListener(); // Ajout de l'écouteur pour le code postal
+      
+      // Initialiser et s'abonner au Realtime
+      this.dbConnectService.initializeRealtimeSubscriptions();
+      this.dbConnectService.onNewQuote$
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(event => {
+          const currentTab = this.activeTab$.value;
+          let shouldRefresh = false;
+
+          // Vérifier si la nouvelle donnée correspond à l'onglet actif
+          switch (event.table) {
+            case 'devis_assurance':
+              if (currentTab === 'auto') shouldRefresh = true;
+              break;
+            case 'habitation_quotes':
+              if (currentTab === 'habitation') shouldRefresh = true;
+              break;
+            case 'obseques_quotes':
+              if (currentTab === 'obseques') shouldRefresh = true;
+              break;
+            case 'rc_familiale_quotes':
+              if (currentTab === 'rc') shouldRefresh = true;
+              break;
+            case 'assu_voyage':
+              if (currentTab === 'voyage') shouldRefresh = true;
+              break;
+          }
+
+          if (shouldRefresh) {
+            console.log(`[ManagementComponent] Rafraîchissement de la vue suite à une nouvelle entrée dans ${event.table}`);
+            this.refreshCurrentView();
+          }
+
+          // Afficher la popup pour toute nouvelle entrée
+          this.notificationPopupTitle = 'Nouvelle demande reçue !';
+          this.showNotificationPopup = true;
+          
+          switch (event.table) {
+            case 'devis_assurance':
+              this.notificationPopupMessage = `Nouvelle offre AUTO de ${event.data.prenom || 'Client'} ${event.data.nom || ''}`;
+              break;
+            case 'habitation_quotes':
+              this.notificationPopupMessage = `Nouvelle offre HABITATION pour ${event.data.batiment_ville || 'une adresse'}`;
+              break;
+            case 'obseques_quotes':
+              this.notificationPopupMessage = 'Nouvelle demande OBSÈQUES reçue';
+              break;
+            default:
+              this.notificationPopupMessage = 'Une nouvelle entrée a été ajoutée.';
+          }
+        });
+
       const searchTerm$ = this.searchControl.valueChanges.pipe(
         startWith(''), // Émet une valeur initiale pour que le filtre s'applique au chargement
         debounceTime(300), // Attend 300ms après la dernière frappe
@@ -438,5 +495,9 @@ export class ManagementComponent implements OnInit {
   private refreshCurrentView(): void {
     const currentPage = this.currentPage$.value;
     this.currentPage$.next(currentPage);
+  }
+
+  closeNotificationPopup(): void {
+    this.showNotificationPopup = false;
   }
 }

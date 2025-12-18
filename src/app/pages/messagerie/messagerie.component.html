@@ -56,6 +56,9 @@
     <div *ngIf="successMessage" class="mb-4 p-4 text-sm text-green-700 bg-green-100 rounded-lg" role="alert">
       {{ successMessage }}
     </div>
+    <div *ngIf="warningMessage" class="mb-4 p-4 text-sm text-yellow-700 bg-yellow-100 rounded-lg" role="alert">
+      {{ warningMessage }}
+    </div>
     <div *ngIf="errorMessage" class="mb-4 p-4 text-sm text-red-700 bg-red-100 rounded-lg" role="alert">
       {{ errorMessage }}
     </div>
@@ -180,6 +183,8 @@
                       <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sujet</th>
                       <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Montant</th>
                       <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut Facture</th>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Facture</th>
                     </tr>
                   </thead>
                   <tbody class="bg-white divide-y divide-gray-200">
@@ -191,6 +196,25 @@
                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full" [ngClass]="{'bg-green-100 text-green-800': payment.statut === 'paid', 'bg-yellow-100 text-yellow-800': payment.statut === 'pending', 'bg-red-100 text-red-800': payment.statut === 'failed'}">
                           {{ payment.statut === 'pending' ? 'En attente' : (payment.statut === 'paid' ? 'Payé' : payment.statut) }}
                         </span>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full" [ngClass]="{'bg-green-100 text-green-800': payment.storecove_invoice_id, 'bg-gray-100 text-gray-800': !payment.storecove_invoice_id}">
+                          {{ payment.storecove_invoice_id ? 'Envoyée' : 'Non envoyée' }}
+                        </span>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <button *ngIf="payment.storecove_invoice_id" (click)="downloadInvoice(payment)" class="text-indigo-600 hover:text-indigo-900 flex items-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                          PDF
+                        </button>
+                        <button *ngIf="!payment.storecove_invoice_id" (click)="retryInvoice(payment)" class="text-orange-600 hover:text-orange-900 flex items-center text-xs" title="Générer la facture">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                          </svg>
+                          Réessayer
+                        </button>
                       </td>
                     </tr>
                     <tr *ngIf="!payments || payments.length === 0">

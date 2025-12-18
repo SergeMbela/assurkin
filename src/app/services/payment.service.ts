@@ -42,6 +42,7 @@ export interface PaymentRequest {
   paid_at?: string | null;
   transaction_id?: string | null;
   uid_user?: string | null;
+  storecove_invoice_id?: string | null;
 }
 
 @Injectable({
@@ -63,9 +64,10 @@ export class PaymentService {
    * Cette méthode récupère d'abord le jeton d'authentification de l'utilisateur actuel et l'inclut
    * dans l'en-tête de la requête pour autoriser l'appel à la fonction.
    * @param amount Le montant du paiement en centimes.
+   * @param metadata Données supplémentaires à attacher à l'intention de paiement (ex: payment_request_id).
    * @returns Un Observable qui émet un objet contenant le `clientSecret` de Stripe.
    */
-  createPaymentIntent(amount: number): Observable<PaymentIntent> {
+  createPaymentIntent(amount: number, metadata: any = {}): Observable<PaymentIntent> {
     // Utilise un stream RxJS pour gérer l'asynchronisme de la récupération de session.
     return from(this.supabase.supabase.auth.getSession()).pipe(
       switchMap(sessionResponse => {
@@ -76,7 +78,7 @@ export class PaymentService {
         }
         // Crée les en-têtes HTTP avec le jeton d'authentification.
         const headers = new HttpHeaders().set('Authorization', `Bearer ${session.access_token}`);
-        return this.http.post<PaymentIntent>(this.apiUrl, { amount }, { headers });
+        return this.http.post<PaymentIntent>(this.apiUrl, { amount, metadata }, { headers });
       })
     );
   }
@@ -110,6 +112,22 @@ export class PaymentService {
       .from('payment_requests')
       .select('*')
       .eq('uid_user', userId)
+      .order('created_at', { ascending: false })
+    ).pipe(map(response => response.data as PaymentRequest[] || []));
+  }
+
+  /**
+   * Récupère les demandes de paiement liées à un devis spécifique.
+   * @param quoteId L'ID du devis.
+   * @param quoteType Le type de devis.
+   * @returns Un Observable avec la liste des demandes de paiement.
+   */
+  getPaymentRequestsByQuote(quoteId: number, quoteType: string): Observable<PaymentRequest[]> {
+    return from(this.supabase.supabase
+      .from('payment_requests')
+      .select('*')
+      .eq('quote_id', quoteId)
+      .eq('quote_type', quoteType)
       .order('created_at', { ascending: false })
     ).pipe(map(response => response.data as PaymentRequest[] || []));
   }

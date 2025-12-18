@@ -59,7 +59,7 @@ export class CorporateComponent implements OnInit {
     });
 
     this.resetPasswordForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]]
+      email: ['', [Validators.required, Validators.email, emailDomainValidator(environment.appDomain)]]
     });
 
     this.registerForm = this.fb.group({

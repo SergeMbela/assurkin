@@ -1,14 +1,17 @@
 import { Component, OnInit, OnDestroy, Inject, PLATFORM_ID, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Subject, of, lastValueFrom } from 'rxjs';
 import { takeUntil, tap, switchMap, catchError } from 'rxjs/operators';
 import { User } from '@supabase/supabase-js';
+import { loadStripe, Stripe, StripeElements } from '@stripe/stripe-js';
 
 import { AuthService } from '../../services/auth.service';
 import { DbConnectService, Person, Contrat, UploadedFile, DocumentType } from '../../services/db-connect.service';
-import { PaymentService } from '../../services/payment.service';
+import { PaymentService, PaymentRequest } from '../../services/payment.service';
+import { StorecoveService } from '../../services/storecove.service';
+import { MailService } from '../../services/mail.service';
 import { environment } from '../../../environments/environment';
 
 @Component({
@@ -32,8 +35,27 @@ export class MydataComponent implements OnInit, OnDestroy {
   documentTypes: DocumentType[] = [];
   selectedDocTypeId: number | null = null;
   uploading = false;
-  payments: any[] = [];
+  payments: PaymentRequest[] = [];
   paymentsLoading = false;
+  successPaymentRequestId: number | null = null;
+  successPaymentRequest: PaymentRequest | null | undefined = null;
+
+  // Variables pour le paiement Stripe
+  isPaymentModalOpen = false;
+  stripeClientSecret: string | null = null;
+  showPaymentSuccessModal = false;
+  selectedPaymentRequest: PaymentRequest | null = null;
+  isPaymentIntentLoading = false;
+  stripe: Stripe | null = null;
+  elements: StripeElements | null = null;
+  isPaymentProcessing = false;
+
+  // Propriétés pour la popup de notification
+  showPopup = false;
+  popupMessage = '';
+  popupType: 'success' | 'error' = 'success';
+  private popupTimeout: any;
+
   @ViewChild('fileInput') fileInput!: ElementRef;
 
   private destroy$ = new Subject<void>();
@@ -42,12 +64,42 @@ export class MydataComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private dbConnectService: DbConnectService,
     private paymentService: PaymentService,
+    private storecoveService: StorecoveService,
+    private mailService: MailService,
     private router: Router,
+    private route: ActivatedRoute,
     @Inject(PLATFORM_ID) private platformId: object
   ) {}
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
+      this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe(params => {
+        if (params['redirect_status'] === 'succeeded') {
+          this.successPaymentRequestId = params['payment_request_id'] ? Number(params['payment_request_id']) : null;
+          this.mailService.sendEmail({
+            to: 'developer@assurkin.be',
+            subject: 'Nouveau paiement reçu',
+            htmlContent: `<p>Un paiement a été effectué avec succès.</p>`
+          }).subscribe({
+            next: () => {
+              // Nettoyer les paramètres de l'URL pour éviter les doublons au rafraîchissement
+              this.router.navigate([], {
+                relativeTo: this.route,
+                queryParams: { redirect_status: null, payment_intent: null, payment_intent_client_secret: null, payment_request_id: null },
+                queryParamsHandling: 'merge',
+                replaceUrl: true
+              });
+              this.showPaymentSuccessModal = true;
+            },
+            error: (err) => {
+              console.error('Erreur lors de l\'envoi de l\'email de confirmation de paiement', err);
+              // Même si l'email échoue, le paiement a réussi
+              this.showPaymentSuccessModal = true;
+            }
+          });
+        }
+      });
+
       this.authService.currentUser$
         .pipe(
           takeUntil(this.destroy$),
@@ -130,6 +182,10 @@ export class MydataComponent implements OnInit, OnDestroy {
         next: (data) => {
           this.payments = data;
           this.paymentsLoading = false;
+          // Si on revient d'un paiement réussi, on cherche le paiement correspondant pour la modale
+          if (this.successPaymentRequestId) {
+            this.successPaymentRequest = this.payments.find(p => p.id === this.successPaymentRequestId);
+          }
         },
         error: (err) => {
           console.error('Erreur chargement paiements', err);
@@ -384,6 +440,162 @@ export class MydataComponent implements OnInit, OnDestroy {
       this.router.navigate(['/login']);
     } catch (error) {
       console.error('Logout error:', error);
+    }
+  }
+
+  openPaymentModal(payment: PaymentRequest) {
+    this.selectedPaymentRequest = payment;
+    this.isPaymentIntentLoading = true;
+    
+    // Conversion en centimes (x100) car Stripe attend des centimes pour l'EUR
+    const amountInCents = Math.round(payment.montant * 100);
+
+    this.paymentService.createPaymentIntent(amountInCents, { payment_request_id: payment.id })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: async (res) => {
+          this.stripeClientSecret = res.clientSecret;
+          this.isPaymentModalOpen = true;
+          this.isPaymentIntentLoading = false;
+
+          // Initialisation de Stripe
+          if (!this.stripe) {
+            this.stripe = await loadStripe(environment.stripe_public_key);
+          }
+
+          if (this.stripe && this.stripeClientSecret) {
+            // Petit délai pour s'assurer que la div #stripe-payment-element est rendue par le *ngIf
+            setTimeout(() => {
+              this.elements = this.stripe!.elements({ clientSecret: this.stripeClientSecret!, appearance: { theme: 'stripe' } });
+              const paymentElement = this.elements.create('payment');
+              paymentElement.mount('#stripe-payment-element');
+            }, 100);
+          }
+        },
+        error: (err) => {
+          console.error('Erreur création intention paiement:', err);
+          this.isPaymentIntentLoading = false;
+          alert('Erreur lors de l\'initialisation du paiement.');
+        }
+      });
+  }
+
+  async confirmPayment() {
+    if (!this.stripe || !this.elements || !this.selectedPaymentRequest) return;
+    
+    this.isPaymentProcessing = true;
+
+    // Construit l'URL de retour avec l'ID de la demande de paiement
+    const returnUrl = new URL(window.location.href);
+    returnUrl.searchParams.set('payment_request_id', this.selectedPaymentRequest.id.toString());
+
+    const { error } = await this.stripe.confirmPayment({
+      elements: this.elements,
+      confirmParams: {
+        // Redirection vers la même page après paiement pour gérer le succès
+        return_url: returnUrl.toString(), 
+      },
+    });
+
+    if (error) {
+      this.isPaymentProcessing = false;
+      this.showNotification(error.message || 'Une erreur est survenue lors du paiement.', 'error');
+    } else {
+      // Le client sera redirigé, pas besoin de changer l'état ici
+    }
+  }
+
+  closePaymentModal() {
+    this.isPaymentModalOpen = false;
+    this.stripeClientSecret = null;
+    this.selectedPaymentRequest = null;
+    this.elements = null;
+    this.isPaymentProcessing = false;
+  }
+
+  closePaymentSuccessModal() {
+    this.showPaymentSuccessModal = false;
+    this.successPaymentRequest = null;
+    this.successPaymentRequestId = null;
+  }
+
+  downloadInvoice(payment: PaymentRequest) {
+    if (!payment?.storecove_invoice_id) return;
+    
+    // On utilise une notification pour indiquer le début du téléchargement
+    this.showNotification("Téléchargement de la facture en cours...", 'success');
+
+    this.storecoveService.downloadInvoice(payment.storecove_invoice_id).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `facture_${payment.storecove_invoice_id}.pdf`;
+        link.click();
+        window.URL.revokeObjectURL(url);
+      },
+      error: (err: any) => {
+        console.error('Erreur téléchargement facture', err);
+        this.showNotification("Impossible de télécharger la facture.", 'error');
+      }
+    });
+  }
+
+  printInvoice(payment: PaymentRequest) {
+    if (!payment?.storecove_invoice_id) return;
+
+    this.showNotification("Préparation de l'impression...", 'success');
+
+    this.storecoveService.downloadInvoice(payment.storecove_invoice_id).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const printWindow = window.open(url, '_blank');
+        if (printWindow) {
+            printWindow.onload = () => {
+                printWindow.print();
+            };
+        }
+        setTimeout(() => window.URL.revokeObjectURL(url), 60000);
+      },
+      error: (err: any) => {
+        console.error('Erreur impression facture', err);
+        this.showNotification("Impossible de récupérer la facture pour impression.", 'error');
+      }
+    });
+  }
+
+  showNotification(message: string, type: 'success' | 'error') {
+    this.popupMessage = message;
+    this.popupType = type;
+    this.showPopup = true;
+    if (this.popupTimeout) clearTimeout(this.popupTimeout);
+    this.popupTimeout = setTimeout(() => this.hideNotification(), 5000);
+  }
+
+  hideNotification() {
+    this.showPopup = false;
+    if (this.popupTimeout) clearTimeout(this.popupTimeout);
+  }
+
+  getPaymentStatusLabel(status: string | undefined): string {
+    switch (status) {
+      case 'pending': return 'En attente';
+      case 'paid': return 'Payé';
+      case 'failed': return 'Échoué';
+      case 'cancelled': return 'Annulé';
+      case 'overdue': return 'En retard';
+      default: return status || 'Inconnu';
+    }
+  }
+
+  getPaymentStatusClass(status: string | undefined): string {
+    switch (status) {
+      case 'paid': return 'bg-green-100 text-green-800';
+      case 'pending': return 'bg-yellow-100 text-yellow-800';
+      case 'failed':
+      case 'overdue': return 'bg-red-100 text-red-800';
+      case 'cancelled': return 'bg-gray-100 text-gray-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   }
 }

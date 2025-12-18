@@ -15,6 +15,7 @@ import { AccountCreationComponent } from './pages/account-creation/account-creat
 import { MydataComponent } from './pages/mydata/mydata.component';
 import { AccountPasswordLostComponent } from "./pages/account-password-lost/account-password-lost.component";
 import { AccountPasswordResetComponent } from "./pages/account-password-reset/account-password-reset.component";
+import { UpdatePasswordComponent } from './pages/update-password/update-password.component';
 import { authGuard } from './auth.guard';
 import { CreateuseraccountComponent } from './pages/createuseraccount/createuseraccount.component';
 //Page details assurance
@@ -52,6 +53,7 @@ export const routes: Routes = [
     { path: 'create-account', component: AccountCreationComponent },
     { path: 'lost-password', component: AccountPasswordLostComponent },
     { path: 'reset-password', component: AccountPasswordResetComponent },
+    { path: 'update-password', component: UpdatePasswordComponent },
     { path: 'mydata', component: MydataComponent, canActivate: [authGuard] },
     { path: 'createuseraccount', component: CreateuseraccountComponent },
     // Détails assurance (le :id est un paramètre dynamique)

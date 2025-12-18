@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { from, Observable, defer, of, BehaviorSubject } from 'rxjs';
+import { from, Observable, defer, of, BehaviorSubject, Subject } from 'rxjs';
 import { map, switchMap, catchError, shareReplay } from 'rxjs/operators';
 import { PostgrestError, User } from '@supabase/supabase-js';
 import { SupabaseService } from './supabase.service';
@@ -327,12 +327,19 @@ export interface SupabaseResponse<T> {
   error: PostgrestError | null;
 }
 
+export interface RealtimeNotification {
+  table: string;
+  data: any;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class DbConnectService {
   // 1. Declare the private property here
   private nationalities$: Observable<Nationality[]> | null = null;
+  public onNewQuote$ = new Subject<RealtimeNotification>();
+  private realtimeInitialized = false;
   constructor(private supabase: SupabaseService, private http: HttpClient) {}
 
 
@@ -2276,5 +2283,20 @@ getNationalities(): Observable<Nationality[]> {
         return of([]); // Retourne un tableau vide en cas d'erreur.
       })
     );
+  }
+
+  /**
+   * Initialise les souscriptions en temps réel.
+   */
+  initializeRealtimeSubscriptions(): void {
+    if (this.realtimeInitialized) return;
+    this.realtimeInitialized = true;
+    const tables = ['devis_assurance', 'habitation_quotes', 'obseques_quotes', 'assu_voyage', 'rc_familiale_quotes'];
+    tables.forEach(table => {
+      this.supabase.supabase.channel(`public:${table}`)
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: table }, (payload) => {
+          this.onNewQuote$.next({ table, data: payload.new });
+        }).subscribe();
+    });
   }
 }

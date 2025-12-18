@@ -11,6 +11,7 @@ import { SendsmsService } from '../../services/sendsms.service';
 import { MailService, EmailData } from '../../services/mail.service';
 import { DbConnectService, Person, Assureur, Commission } from '../../services/db-connect.service';
 import { PaymentService } from '../../services/payment.service';
+import { StorecoveService } from '../../services/storecove.service';
 
 @Component({
   selector: 'app-messagerie',
@@ -25,6 +26,7 @@ export class MessagerieComponent implements OnInit {
   private mailService = inject(MailService);
   private dbService = inject(DbConnectService);
   private paymentService = inject(PaymentService);
+  private storecoveService = inject(StorecoveService);
 
   activeTab: 'sms' | 'email' | 'payment' | 'commissions' = 'sms';
 
@@ -40,6 +42,7 @@ export class MessagerieComponent implements OnInit {
 
   loading = false;
   successMessage: string | null = null;
+  warningMessage: string | null = null;
   errorMessage: string | null = null;
   payments: any[] = [];
 
@@ -209,6 +212,32 @@ export class MessagerieComponent implements OnInit {
         uid_user: this.currentUserUid ?? undefined
       });
 
+      // Génération de la facture via Storecove (appel asynchrone à l'Edge Function)
+      const invoiceData = {
+        paymentRequestId: newPaymentRequest.id,
+        customer: {
+          id: this.preneurDetails.id,
+          name: `${this.preneurDetails.prenom} ${this.preneurDetails.nom}`,
+          email: this.preneurDetails.email,
+          address: this.preneurDetails.adresse,
+          postalCode: this.preneurDetails.code_postal,
+          city: this.preneurDetails.ville
+        },
+        invoiceDetails: {
+          amount: montant,
+          description: sujetLabel,
+          dueDate: dateEcheance
+        }
+      };
+      
+      this.storecoveService.createInvoice(invoiceData).subscribe({
+        next: (res) => console.log('Facture Storecove initiée:', res),
+        error: (err) => {
+          console.error('Erreur création facture Storecove:', err);
+          this.warningMessage = "La demande est envoyée, mais la facture n'a pas pu être générée automatiquement (API indisponible).";
+        }
+      });
+
       // 2. Construire les liens de paiement avec le nouvel UID
       const paymentLink = `${environment.stripe_lien_paiement}/paiement/${newPaymentRequest.uid}`;
       const shortPaymentLink = `${environment.stripe_lien_paiement}/p/${newPaymentRequest.uid}`; // Pour le SMS
@@ -293,12 +322,74 @@ export class MessagerieComponent implements OnInit {
   loadPayments(): void {
     if (!this.quoteId || !this.quoteType) return;
 
-    // Utilisation de 'any' pour contourner la vérification de type si la méthode n'est pas encore déclarée dans l'interface
-    (this.paymentService as any).getPaymentRequestsByQuote(this.quoteId, this.quoteType)
+    this.paymentService.getPaymentRequestsByQuote(this.quoteId, this.quoteType)
       .subscribe({
         next: (data: any[]) => this.payments = data,
         error: (err: any) => console.error('Erreur chargement paiements', err)
       });
+  }
+
+  downloadInvoice(payment: any): void {
+    if (!payment.storecove_invoice_id) return;
+    
+    this.loading = true;
+    this.storecoveService.downloadInvoice(payment.storecove_invoice_id).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `facture_${payment.storecove_invoice_id}.pdf`;
+        link.click();
+        window.URL.revokeObjectURL(url);
+        this.loading = false;
+      },
+      error: (err: any) => {
+        console.error('Erreur téléchargement facture', err);
+        this.errorMessage = "Impossible de télécharger la facture.";
+        this.loading = false;
+      }
+    });
+  }
+
+  retryInvoice(payment: any): void {
+    if (!this.preneurDetails) {
+      this.errorMessage = "Impossible de réessayer la facture : détails du preneur manquants.";
+      return;
+    }
+
+    this.loading = true;
+    this.resetMessages();
+
+    const invoiceData = {
+      paymentRequestId: payment.id,
+      customer: {
+        id: this.preneurDetails.id,
+        name: `${this.preneurDetails.prenom} ${this.preneurDetails.nom}`,
+        email: this.preneurDetails.email,
+        address: this.preneurDetails.adresse,
+        postalCode: this.preneurDetails.code_postal,
+        city: this.preneurDetails.ville
+      },
+      invoiceDetails: {
+        amount: payment.montant,
+        description: payment.sujet,
+        dueDate: payment.date_echeance
+      }
+    };
+
+    this.storecoveService.createInvoice(invoiceData).subscribe({
+      next: (res) => {
+        console.log('Facture Storecove régénérée:', res);
+        this.successMessage = "La facture a été générée avec succès.";
+        this.loadPayments();
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Erreur régénération facture Storecove:', err);
+        this.warningMessage = "Échec de la régénération de la facture. Veuillez vérifier les logs.";
+        this.loading = false;
+      }
+    });
   }
 
   private async saveMessageToDb(
@@ -328,6 +419,7 @@ export class MessagerieComponent implements OnInit {
 
   private resetMessages(): void {
     this.successMessage = null;
+    this.warningMessage = null;
     this.errorMessage = null;
   }
 
