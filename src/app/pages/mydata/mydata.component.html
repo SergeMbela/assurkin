@@ -395,11 +395,30 @@
             <p class="text-gray-500">Chargement des paiements...</p>
           </div>
 
+          <!-- Filtre par statut -->
+          <div class="flex justify-end mb-4" *ngIf="!paymentsLoading && payments && payments.length > 0">
+            <div class="inline-flex items-center">
+              <label for="paymentStatusFilter" class="mr-2 text-sm font-medium text-gray-700">Filtrer :</label>
+              <select id="paymentStatusFilter" [(ngModel)]="paymentStatusFilter" (ngModelChange)="onPaymentFilterChange()" class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md border">
+                <option value="all">Tous</option>
+                <option value="pending">En attente</option>
+                <option value="paid">Payé</option>
+                <option value="overdue">En retard</option>
+                <option value="failed">Échoué</option>
+                <option value="cancelled">Annulé</option>
+              </select>
+            </div>
+          </div>
+
           <div *ngIf="!paymentsLoading && (!payments || payments.length === 0)" class="text-center py-8 bg-gray-50 rounded-lg">
              <p class="text-gray-500">Aucun historique de paiement disponible.</p>
           </div>
 
-          <div *ngIf="!paymentsLoading && payments && payments.length > 0" class="overflow-x-auto">
+          <div *ngIf="!paymentsLoading && payments && payments.length > 0 && filteredPayments.length === 0" class="text-center py-8 bg-gray-50 rounded-lg">
+             <p class="text-gray-500">Aucun paiement ne correspond au filtre sélectionné.</p>
+          </div>
+
+          <div *ngIf="!paymentsLoading && filteredPayments.length > 0" class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
               <thead class="bg-gray-50">
                 <tr>
@@ -413,7 +432,7 @@
                 </tr>
               </thead>
               <tbody class="bg-white divide-y divide-gray-200">
-                <tr *ngFor="let payment of payments">
+                <tr *ngFor="let payment of paginatedPayments">
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ payment.created_at | date:'dd/MM/yyyy' }}</td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ payment.sujet || 'Paiement' }}</td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ payment.montant | currency:'EUR':'symbol':'1.2-2' }}</td>
@@ -438,6 +457,52 @@
                 </tr>
               </tbody>
             </table>
+
+            <!-- Pagination Controls for Payments -->
+            <div *ngIf="getTotalPaymentPages() > 1" class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 mt-4 rounded-b-lg">
+              <div class="flex-1 flex justify-between sm:hidden">
+                <button (click)="goToPaymentsPage(paymentsCurrentPage - 1)" [disabled]="paymentsCurrentPage === 1" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50">
+                  Précédent
+                </button>
+                <button (click)="goToPaymentsPage(paymentsCurrentPage + 1)" [disabled]="paymentsCurrentPage === getTotalPaymentPages()" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50">
+                  Suivant
+                </button>
+              </div>
+              <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                <div>
+                  <p class="text-sm text-gray-700">
+                    Affichage de
+                    <span class="font-medium">{{ (paymentsCurrentPage - 1) * paymentsItemsPerPage + 1 }}</span>
+                    à
+                    <span class="font-medium">{{ paymentsCurrentPage * paymentsItemsPerPage > filteredPayments.length ? filteredPayments.length : paymentsCurrentPage * paymentsItemsPerPage }}</span>
+                    sur
+                    <span class="font-medium">{{ filteredPayments.length }}</span>
+                    résultats
+                  </p>
+                </div>
+                <div>
+                  <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                    <button (click)="goToPaymentsPage(paymentsCurrentPage - 1)" [disabled]="paymentsCurrentPage === 1" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50">
+                      <span class="sr-only">Précédent</span>
+                      <i class="fas fa-chevron-left h-5 w-5"></i>
+                    </button>
+                    
+                    <ng-container *ngFor="let page of getPaymentPagesArray()">
+                      <button (click)="goToPaymentsPage(page)" 
+                              [ngClass]="{'z-10 bg-indigo-50 border-indigo-500 text-indigo-600': page === paymentsCurrentPage, 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50': page !== paymentsCurrentPage}"
+                              class="relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                        {{ page }}
+                      </button>
+                    </ng-container>
+
+                    <button (click)="goToPaymentsPage(paymentsCurrentPage + 1)" [disabled]="paymentsCurrentPage === getTotalPaymentPages()" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50">
+                      <span class="sr-only">Suivant</span>
+                      <i class="fas fa-chevron-right h-5 w-5"></i>
+                    </button>
+                  </nav>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

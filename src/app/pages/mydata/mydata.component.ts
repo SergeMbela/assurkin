@@ -6,7 +6,6 @@ import { Subject, of, lastValueFrom } from 'rxjs';
 import { takeUntil, tap, switchMap, catchError } from 'rxjs/operators';
 import { User } from '@supabase/supabase-js';
 import { loadStripe, Stripe, StripeElements } from '@stripe/stripe-js';
-
 import { AuthService } from '../../services/auth.service';
 import { DbConnectService, Person, Contrat, UploadedFile, DocumentType } from '../../services/db-connect.service';
 import { PaymentService, PaymentRequest } from '../../services/payment.service';
@@ -37,6 +36,10 @@ export class MydataComponent implements OnInit, OnDestroy {
   uploading = false;
   payments: PaymentRequest[] = [];
   paymentsLoading = false;
+  paymentStatusFilter: string = 'all';
+  paginatedPayments: PaymentRequest[] = [];
+  paymentsCurrentPage: number = 1;
+  paymentsItemsPerPage: number = 5;
   successPaymentRequestId: number | null = null;
   successPaymentRequest: PaymentRequest | null | undefined = null;
 
@@ -174,15 +177,17 @@ export class MydataComponent implements OnInit, OnDestroy {
   }
 
   loadPayments() {
-    if (!this.user) return;
+    if (!this.person) return;
     this.paymentsLoading = true;
-    this.paymentService.getPaymentRequestsForUser(this.user.id)
+    this.paymentService.getPaymentRequestsByPreneur(this.person.id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (data) => {
           this.payments = data;
           this.paymentsLoading = false;
-          // Si on revient d'un paiement réussi, on cherche le paiement correspondant pour la modale
+          this.paymentsCurrentPage = 1;
+          this.updatePaginatedPayments();
+          
           if (this.successPaymentRequestId) {
             this.successPaymentRequest = this.payments.find(p => p.id === this.successPaymentRequestId);
           }
@@ -450,7 +455,7 @@ export class MydataComponent implements OnInit, OnDestroy {
     // Conversion en centimes (x100) car Stripe attend des centimes pour l'EUR
     const amountInCents = Math.round(payment.montant * 100);
 
-    this.paymentService.createPaymentIntent(amountInCents, { payment_request_id: payment.id })
+    this.paymentService.createPaymentIntent(amountInCents, { payment_request_id: payment.id.toString() })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: async (res) => {
@@ -475,7 +480,7 @@ export class MydataComponent implements OnInit, OnDestroy {
         error: (err) => {
           console.error('Erreur création intention paiement:', err);
           this.isPaymentIntentLoading = false;
-          alert('Erreur lors de l\'initialisation du paiement.');
+          this.showNotification('Impossible d\'initialiser le paiement. Veuillez réessayer plus tard.', 'error');
         }
       });
   }
@@ -499,7 +504,31 @@ export class MydataComponent implements OnInit, OnDestroy {
 
     if (error) {
       this.isPaymentProcessing = false;
-      this.showNotification(error.message || 'Une erreur est survenue lors du paiement.', 'error');
+      
+      let errorMessage = error.message || 'Une erreur est survenue lors du paiement.';
+
+      // Traduction des messages d'erreur courants pour une meilleure expérience utilisateur
+      if (error.type === 'card_error' || error.type === 'validation_error') {
+        switch (error.code) {
+          case 'card_declined':
+            errorMessage = "Votre carte a été refusée. Veuillez contacter votre banque.";
+            break;
+          case 'expired_card':
+            errorMessage = "Votre carte a expiré.";
+            break;
+          case 'incorrect_cvc':
+            errorMessage = "Le code de sécurité (CVC) est incorrect.";
+            break;
+          case 'processing_error':
+            errorMessage = "Une erreur est survenue lors du traitement de la carte. Veuillez réessayer.";
+            break;
+          case 'insufficient_funds':
+            errorMessage = "Fonds insuffisants sur la carte.";
+            break;
+        }
+      }
+      
+      this.showNotification(errorMessage, 'error');
     } else {
       // Le client sera redirigé, pas besoin de changer l'état ici
     }
@@ -597,5 +626,37 @@ export class MydataComponent implements OnInit, OnDestroy {
       case 'cancelled': return 'bg-gray-100 text-gray-800';
       default: return 'bg-gray-100 text-gray-800';
     }
+  }
+
+  get filteredPayments(): PaymentRequest[] {
+    if (this.paymentStatusFilter === 'all') {
+      return this.payments;
+    }
+    return this.payments.filter(p => p.statut === this.paymentStatusFilter);
+  }
+
+  onPaymentFilterChange() {
+    this.paymentsCurrentPage = 1;
+    this.updatePaginatedPayments();
+  }
+
+  updatePaginatedPayments() {
+    const filtered = this.filteredPayments;
+    const startIndex = (this.paymentsCurrentPage - 1) * this.paymentsItemsPerPage;
+    const endIndex = startIndex + this.paymentsItemsPerPage;
+    this.paginatedPayments = filtered.slice(startIndex, endIndex);
+  }
+
+  goToPaymentsPage(page: number) {
+    this.paymentsCurrentPage = page;
+    this.updatePaginatedPayments();
+  }
+
+  getTotalPaymentPages(): number {
+    return Math.ceil(this.filteredPayments.length / this.paymentsItemsPerPage);
+  }
+
+  getPaymentPagesArray(): number[] {
+    return Array(this.getTotalPaymentPages()).fill(0).map((x, i) => i + 1);
   }
 }

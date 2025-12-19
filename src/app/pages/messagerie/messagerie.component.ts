@@ -96,7 +96,7 @@ export class MessagerieComponent implements OnInit {
         this.quoteId = Number(params.get('id'));
         this.quoteType = params.get('type');
         if (this.activeTab === 'commissions' || this.activeTab === 'payment') {
-          this.loadPayments();
+
         }
       }),
       switchMap(() => this.dbService.getFullQuoteDetails(this.quoteId!))
@@ -118,7 +118,7 @@ export class MessagerieComponent implements OnInit {
     this.activeTab = tab;
     this.resetMessages();
     if (tab === 'commissions' || tab === 'payment') {
-      this.loadPayments();
+ 
     }
   }
 
@@ -199,89 +199,44 @@ export class MessagerieComponent implements OnInit {
     const { sujet, montant, dateEcheance, remarques } = this.paymentForm.value;
     const sujetLabel = this.paymentSubjects.find(s => s.value === sujet)?.label || sujet;
 
+    const payload = {
+      quote_id: this.quoteId!,
+      quote_type: this.quoteType!,
+      montant: montant,
+      sujet: sujetLabel,
+      remarques: remarques,
+      date_echeance: dateEcheance,
+      uid_user: this.currentUserUid || undefined,
+      preneur_uid: this.preneurDetails!.id
+    };
+
     try {
-      // 1. Créer la demande de paiement dans la base de données
-      const newPaymentRequest = await this.paymentService.createPaymentRequest({
-        quote_id: this.quoteId!,
-        quote_type: this.quoteType!,
-    
-        montant: montant,
-        sujet: sujetLabel,
-        remarques: remarques,
-        date_echeance: dateEcheance,
-        uid_user: this.currentUserUid ?? undefined
-      });
+      const newPayment = await this.paymentService.createPaymentRequest(payload);
+      this.payments.unshift(newPayment);
 
-      // Génération de la facture via Storecove (appel asynchrone à l'Edge Function)
-      const invoiceData = {
-        paymentRequestId: newPaymentRequest.id,
-        customer: {
-          id: this.preneurDetails.id,
-          name: `${this.preneurDetails.prenom} ${this.preneurDetails.nom}`,
-          email: this.preneurDetails.email,
-          address: this.preneurDetails.adresse,
-          postalCode: this.preneurDetails.code_postal,
-          city: this.preneurDetails.ville
-        },
-        invoiceDetails: {
-          amount: montant,
-          description: sujetLabel,
-          dueDate: dateEcheance
-        }
-      };
-      
-      this.storecoveService.createInvoice(invoiceData).subscribe({
-        next: (res) => console.log('Facture Storecove initiée:', res),
-        error: (err) => {
-          console.error('Erreur création facture Storecove:', err);
-          this.warningMessage = "La demande est envoyée, mais la facture n'a pas pu être générée automatiquement (API indisponible).";
-        }
-      });
-
-      // 2. Construire les liens de paiement avec le nouvel UID
-      const paymentLink = `${environment.stripe_lien_paiement}/paiement/${newPaymentRequest.uid}`;
-      const shortPaymentLink = `${environment.stripe_lien_paiement}/p/${newPaymentRequest.uid}`; // Pour le SMS
-
-      // 3. Construire le contenu des messages
-      let smsMessage = `Paiement requis: ${montant}€ pour "${sujetLabel}" (devis ${this.quoteId}). Échéance: ${new Date(dateEcheance).toLocaleDateString('fr-BE')}. Payer: ${paymentLink}`;
-      if (smsMessage.length > 160) {
-        smsMessage = `Paiement requis: ${montant}€ pour "${sujetLabel}" (devis ${this.quoteId}). Échéance: ${new Date(dateEcheance).toLocaleDateString('fr-BE')}. Payer: ${shortPaymentLink}`;
-      }
-
-      const emailSubject = `Demande de paiement pour votre devis N°${this.quoteId}`;
-      const emailHtmlContent = `
-        <p>Bonjour ${this.preneurDetails.prenom || ''},</p>
-        <p>Une demande de paiement de <strong>${montant}€</strong> a été émise pour votre devis N°${this.quoteId}.</p>
-        <ul>
-          <li><strong>Sujet :</strong> ${sujetLabel}</li>
-          <li><strong>Montant :</strong> ${montant}€</li>
-          <li><strong>Date d'échéance :</strong> ${new Date(dateEcheance).toLocaleDateString('fr-BE')}</li>
-        </ul>
-        ${remarques ? `<p><strong>Remarques :</strong> ${remarques}</p>` : ''}
-        <p>Vous pouvez effectuer le paiement en cliquant sur le lien ci-dessous :</p>
-        <p><a href="${paymentLink}" style="padding: 10px 15px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px;">Payer maintenant</a></p>
-        <p>Cordialement,<br>L'équipe assurkin</p>
+      // Envoi de l'email de notification
+      const emailContent = `
+        <p>Bonjour ${this.preneurDetails.prenom} ${this.preneurDetails.nom},</p>
+        <p>Une nouvelle demande de paiement a été créée pour votre dossier ${this.quoteType} #${this.quoteId}.</p>
+        <p><strong>Objet :</strong> ${sujetLabel}</p>
+        <p><strong>Montant à régler :</strong> ${montant} €</p>
+        <p><strong>Date limite :</strong> ${new Date(dateEcheance).toLocaleDateString()}</p>
+        ${remarques ? `<p><strong>Note :</strong> ${remarques}</p>` : ''}
+        <p>Rendez-vous dans votre espace client pour effectuer le règlement.</p>
+        <p>Cordialement,<br>L'équipe Assurkin</p>
       `;
-      const emailData: EmailData = { to: this.preneurDetails.email, subject: emailSubject, htmlContent: emailHtmlContent };
 
-      // 4. Envoyer les communications et sauvegarder leur statut
-      await Promise.all([
-        this.smsService.sendSms(this.preneurDetails.telephone, smsMessage).then(() =>
-          this.saveMessageToDb('sms', 'sent', { recipient: this.preneurDetails!.telephone!, content: smsMessage, subject: `Demande de paiement: ${sujetLabel}` })
-        ),
-        this.mailService.sendEmail(emailData).toPromise().then(() =>
-          this.saveMessageToDb('email', 'sent', { recipient: emailData.to, subject: emailData.subject, content: emailData.htmlContent })
-        )
-      ]);
+      await this.mailService.sendEmail({
+        to: this.preneurDetails.email,
+        subject: `Demande de paiement - Dossier #${this.quoteId}`,
+        htmlContent: emailContent
+      }).toPromise();
 
-      this.successMessage = 'La demande de paiement a été créée et envoyée avec succès par SMS et e-mail.';
+      this.successMessage = "Demande de paiement enregistrée et envoyée avec succès.";
       this.paymentForm.reset();
-      this.paymentForm.get('sujet')?.setValue('');
-      this.loadPayments();
-
-    } catch (error: any) {
-      console.error("Erreur lors du processus de demande de paiement:", error);
-      this.errorMessage = error.message || "Une erreur est survenue lors de la création ou de l'envoi de la demande de paiement.";
+    } catch (err: any) {
+      console.error('Erreur lors de la création de la demande de paiement:', err);
+      this.errorMessage = "Une erreur est survenue lors de l'enregistrement de la demande.";
     } finally {
       this.loading = false;
     }
@@ -319,15 +274,7 @@ export class MessagerieComponent implements OnInit {
     });
   }
 
-  loadPayments(): void {
-    if (!this.quoteId || !this.quoteType) return;
 
-    this.paymentService.getPaymentRequestsByQuote(this.quoteId, this.quoteType)
-      .subscribe({
-        next: (data: any[]) => this.payments = data,
-        error: (err: any) => console.error('Erreur chargement paiements', err)
-      });
-  }
 
   downloadInvoice(payment: any): void {
     if (!payment.storecove_invoice_id) return;
@@ -381,7 +328,7 @@ export class MessagerieComponent implements OnInit {
       next: (res) => {
         console.log('Facture Storecove régénérée:', res);
         this.successMessage = "La facture a été générée avec succès.";
-        this.loadPayments();
+    
         this.loading = false;
       },
       error: (err) => {
