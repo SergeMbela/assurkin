@@ -42,6 +42,7 @@ export class MydataComponent implements OnInit, OnDestroy {
   paymentsItemsPerPage: number = 5;
   successPaymentRequestId: number | null = null;
   successPaymentRequest: PaymentRequest | null | undefined = null;
+  paymentResultStatus: 'success' | 'error' = 'success';
 
   // Variables pour le paiement Stripe
   isPaymentModalOpen = false;
@@ -77,7 +78,9 @@ export class MydataComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe(params => {
-        if (params['redirect_status'] === 'succeeded') {
+        const redirectStatus = params['redirect_status'];
+        if (redirectStatus === 'succeeded') {
+          this.paymentResultStatus = 'success';
           this.successPaymentRequestId = params['payment_request_id'] ? Number(params['payment_request_id']) : null;
           this.mailService.sendEmail({
             to: 'developer@assurkin.be',
@@ -100,6 +103,15 @@ export class MydataComponent implements OnInit, OnDestroy {
               this.showPaymentSuccessModal = true;
             }
           });
+        } else if (redirectStatus === 'failed') {
+          this.paymentResultStatus = 'error';
+          this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: { redirect_status: null, payment_intent: null, payment_intent_client_secret: null, payment_request_id: null },
+            queryParamsHandling: 'merge',
+            replaceUrl: true
+          });
+          this.showPaymentSuccessModal = true;
         }
       });
 

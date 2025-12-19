@@ -14,11 +14,30 @@
 
   <!-- Contenu principal -->
   <div *ngIf="!loading && !errorMessage">
+    
+    <!-- Barre de recherche -->
+    <div class="flex justify-end mb-4" *ngIf="payments.length > 0">
+      <div class="relative w-full max-w-xs">
+        <input type="text" 
+               [ngModel]="searchTerm" 
+               (ngModelChange)="onSearchChange($event)"
+               class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" 
+               placeholder="Rechercher par sujet ou montant">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <i class="fas fa-search text-gray-400"></i>
+        </div>
+      </div>
+    </div>
+
     <div *ngIf="payments.length === 0" class="text-center py-8 bg-gray-50 rounded-lg">
       <p class="text-gray-500">Aucune demande de paiement trouvée.</p>
     </div>
 
-    <div *ngIf="payments.length > 0" class="overflow-x-auto bg-white shadow-md rounded-lg">
+    <div *ngIf="payments.length > 0 && paginatedPayments.length === 0" class="text-center py-8 bg-gray-50 rounded-lg">
+      <p class="text-gray-500">Aucun résultat ne correspond à votre recherche.</p>
+    </div>
+
+    <div *ngIf="paginatedPayments.length > 0" class="overflow-x-auto bg-white shadow-md rounded-lg">
       <table class="min-w-full leading-normal">
         <thead>
           <tr>
@@ -43,7 +62,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let payment of payments">
+          <tr *ngFor="let payment of paginatedPayments">
             <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
               {{ payment.created_at | date:'dd/MM/yyyy HH:mm' }}
             </td>
@@ -78,6 +97,52 @@
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <!-- Pagination Controls -->
+    <div *ngIf="getTotalPages() > 1" class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 mt-4 rounded-b-lg shadow-md">
+      <div class="flex-1 flex justify-between sm:hidden">
+        <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50">
+          Précédent
+        </button>
+        <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === getTotalPages()" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50">
+          Suivant
+        </button>
+      </div>
+      <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+        <div>
+          <p class="text-sm text-gray-700">
+            Affichage de
+            <span class="font-medium">{{ (currentPage - 1) * itemsPerPage + 1 }}</span>
+            à
+            <span class="font-medium">{{ currentPage * itemsPerPage > filteredPayments.length ? filteredPayments.length : currentPage * itemsPerPage }}</span>
+            sur
+            <span class="font-medium">{{ filteredPayments.length }}</span>
+            résultats
+          </p>
+        </div>
+        <div>
+          <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+            <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50">
+              <span class="sr-only">Précédent</span>
+              <i class="fas fa-chevron-left h-5 w-5"></i>
+            </button>
+            
+            <ng-container *ngFor="let page of getPagesArray()">
+              <button (click)="goToPage(page)" 
+                      [ngClass]="{'z-10 bg-indigo-50 border-indigo-500 text-indigo-600': page === currentPage, 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50': page !== currentPage}"
+                      class="relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                {{ page }}
+              </button>
+            </ng-container>
+
+            <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === getTotalPages()" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50">
+              <span class="sr-only">Suivant</span>
+              <i class="fas fa-chevron-right h-5 w-5"></i>
+            </button>
+          </nav>
+        </div>
+      </div>
     </div>
   </div>
 </div>

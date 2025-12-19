@@ -45,7 +45,8 @@ export class MentionsLegalesComponent implements OnInit {
       if (MentionsLegalesComponent.cachedData) {
         data = MentionsLegalesComponent.cachedData;
       } else {
-        data = await firstValueFrom(this.http.get('/assets/data/mifid.json'));
+        data = await firstValueFrom(this.http.get('https://fqopliwvpuiprdegxytz.supabase.co/storage/v1/object/public/store_json/mentions-legales.json'));
+        console.warn('Mifid data loaded from HTTP');
         MentionsLegalesComponent.cachedData = data;
       }
       this.content = data;
@@ -63,6 +64,8 @@ export class MentionsLegalesComponent implements OnInit {
         console.warn(`URL demandée en échec : ${e.url}`);
         if (e.status === 404) {
           this.errorMessage = "Le fichier de contenu est introuvable.";
+        } else if (e.status === 200) {
+          this.errorMessage = "Le fichier chargé n'est pas un JSON valide.";
         } else {
           this.errorMessage = `Impossible de charger le contenu (Erreur ${e.status}).`;
         }

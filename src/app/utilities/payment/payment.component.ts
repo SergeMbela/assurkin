@@ -1,5 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { PaymentService, PaymentRequest } from '../../services/payment.service';
 import { AuthService } from '../../services/auth.service';
 import { MailService } from '../../services/mail.service';
@@ -9,7 +10,7 @@ import { of, lastValueFrom } from 'rxjs';
 @Component({
   selector: 'app-payment',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './payment.component.html',
 })
 export class PaymentComponent implements OnInit {
@@ -18,9 +19,15 @@ export class PaymentComponent implements OnInit {
   private mailService = inject(MailService);
 
   payments: PaymentRequest[] = [];
+  filteredPayments: PaymentRequest[] = [];
   loading = true;
   errorMessage: string | null = null;
   sendingEmailId: number | null = null;
+  
+  paginatedPayments: PaymentRequest[] = [];
+  currentPage: number = 1;
+  itemsPerPage: number = 15;
+  searchTerm: string = '';
 
   ngOnInit() {
     this.authService.currentUser$.pipe(
@@ -34,7 +41,10 @@ export class PaymentComponent implements OnInit {
     ).subscribe({
       next: (data) => {
         this.payments = data;
+        this.filteredPayments = data;
         this.loading = false;
+        this.currentPage = 1;
+        this.updatePaginatedPayments();
       },
       error: (err) => {
         console.error('Erreur chargement historique paiements', err);
@@ -109,5 +119,41 @@ export class PaymentComponent implements OnInit {
     } finally {
       this.sendingEmailId = null;
     }
+  }
+
+  onSearchChange(searchValue: string) {
+    this.searchTerm = searchValue;
+    this.currentPage = 1;
+
+    if (!this.searchTerm) {
+      this.filteredPayments = this.payments;
+    } else {
+      const term = this.searchTerm.toLowerCase();
+      this.filteredPayments = this.payments.filter(p => 
+        p.sujet.toLowerCase().includes(term) || 
+        p.montant.toString().includes(term) ||
+        (p.quote_type + ' #' + p.quote_id).toLowerCase().includes(term)
+      );
+    }
+    this.updatePaginatedPayments();
+  }
+
+  updatePaginatedPayments() {
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    this.paginatedPayments = this.filteredPayments.slice(startIndex, endIndex);
+  }
+
+  goToPage(page: number) {
+    this.currentPage = page;
+    this.updatePaginatedPayments();
+  }
+
+  getTotalPages(): number {
+    return Math.ceil(this.filteredPayments.length / this.itemsPerPage);
+  }
+
+  getPagesArray(): number[] {
+    return Array(this.getTotalPages()).fill(0).map((x, i) => i + 1);
   }
 }
