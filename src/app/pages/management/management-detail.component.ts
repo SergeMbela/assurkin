@@ -37,7 +37,7 @@ import { ObsequesDetailsComponent } from './components/obseques/obseques-details
 })
 export class ManagementDetailComponent implements OnInit, OnDestroy {
 
-  quoteDetails$!: Observable<{ [key: string]: any }>;
+  quoteDetails$!: Observable<any>;
   private quoteDetails: any; // Pour stocker les détails actuels
   quoteType: string | null = null;
   quoteId: number | null = null;
@@ -748,7 +748,7 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
       if (this.showMainDriverSection) {
         payload.p_conducteur = formValue['conducteurPrincipal']!;
       }
-      this.executeUpdate(this.dbService.updateAutoQuote(this.quoteId!, payload));
+        this.executeUpdate(this.dbService.updateAutoQuote(this.quoteId!, payload));
 
     } else if (this.quoteType === 'obseques') {
       const assuresValue = (this.quoteUpdateForm.get('assures.assures') as FormArray).value.map((assure: any) => ({
@@ -769,7 +769,7 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
           compagnie_id: formValue.assures?.insuranceCompany
         }
       };
-      this.executeUpdate(this.dbService.updateObsequesQuote(this.quoteId!, payload));
+        this.executeUpdate(this.dbService.updateObsequesQuote(this.quoteId!, payload));
     } else if (this.quoteType === 'habitation') {
         const payload: HabitationQuoteUpdatePayload = {
             p_preneur: formValue["preneurAssurance"]!,

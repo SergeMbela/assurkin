@@ -32,6 +32,9 @@ export class StatComponent implements OnInit {
   // Données pour le graphique et le tableau
   monthlyStats: { month: string, total: number, count: number }[] = [];
   tableData: Commission[] = [];
+  paginatedTableData: Commission[] = [];
+  currentPage: number = 1;
+  itemsPerPage: number = 10;
   allCommissions: Commission[] = []; // Stocke toutes les commissions récupérées
   totalCommission = 0;
   loading = true;
@@ -128,6 +131,9 @@ export class StatComponent implements OnInit {
     // Tri des résultats par montant décroissant
     this.tableData = filtered.sort((a, b) => b.montant - a.montant);
     
+    this.currentPage = 1;
+    this.updatePaginatedTableData();
+    
     this.calculateTotals(filtered);
     this.calculateMonthlyStats(filtered);
   }
@@ -169,6 +175,25 @@ export class StatComponent implements OnInit {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  }
+
+  updatePaginatedTableData() {
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    this.paginatedTableData = this.tableData.slice(startIndex, endIndex);
+  }
+
+  goToPage(page: number) {
+    this.currentPage = page;
+    this.updatePaginatedTableData();
+  }
+
+  getTotalPages(): number {
+    return Math.ceil(this.tableData.length / this.itemsPerPage);
+  }
+
+  getPagesArray(): number[] {
+    return Array(this.getTotalPages()).fill(0).map((x, i) => i + 1);
   }
 
   private calculateTotals(commissions: Commission[]): void {

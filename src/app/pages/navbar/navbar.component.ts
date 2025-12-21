@@ -2,7 +2,6 @@ import { Component, ViewChild, ElementRef, ViewChildren, QueryList, AfterViewIni
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterLink, RouterLinkActive, NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
-
 @Component({
   selector: 'app-navbar',
   standalone: true,
@@ -26,7 +25,7 @@ export class NavbarComponent implements AfterViewInit {
     private router: Router,
     private cdr: ChangeDetectorRef,
     @Inject(PLATFORM_ID) private platformId: object
-  ) {}
+  ) { }
 
   ngAfterViewInit(): void {
     // Positionne le trait sur l'élément actif au chargement et après chaque navigation
@@ -51,9 +50,7 @@ export class NavbarComponent implements AfterViewInit {
       const scrollTop = element.scrollTop || body.scrollTop;
       const scrollHeight = element.scrollHeight || body.scrollHeight;
       const clientHeight = element.clientHeight;
-
       const scrollPercent = (scrollTop / (scrollHeight - clientHeight)) * 100;
-
       this.scrollProgressBarRef.nativeElement.style.width = `${scrollPercent}%`;
     }
   }

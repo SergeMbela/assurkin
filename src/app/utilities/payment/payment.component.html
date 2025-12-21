@@ -1,5 +1,38 @@
 <div class="container mx-auto px-4 py-8">
+  <div class="mb-4">
+    <a routerLink="/management" class="inline-flex items-center text-gray-600 hover:text-indigo-600 transition-colors">
+      <i class="fas fa-arrow-left mr-2"></i> Retour vers Management
+    </a>
+  </div>
   <h2 class="text-2xl font-bold mb-6 text-gray-800">Historique des demandes de paiement créées</h2>
+
+  <!-- Résumé statistique -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6" *ngIf="!loading && !errorMessage">
+    <div class="bg-white overflow-hidden shadow rounded-lg border-l-4 border-green-500">
+      <div class="px-4 py-5 sm:p-6">
+        <dt class="text-sm font-medium text-gray-500 truncate">Total Payé</dt>
+        <dd class="mt-1 text-3xl font-semibold text-gray-900">{{ totalPaid | currency:'EUR':'symbol':'1.2-2' }}</dd>
+      </div>
+    </div>
+    <div class="bg-white overflow-hidden shadow rounded-lg border-l-4 border-yellow-500">
+      <div class="px-4 py-5 sm:p-6">
+        <dt class="text-sm font-medium text-gray-500 truncate">Total En Attente</dt>
+        <dd class="mt-1 text-3xl font-semibold text-gray-900">{{ totalPending | currency:'EUR':'symbol':'1.2-2' }}</dd>
+      </div>
+    </div>
+  </div>
+
+  <!-- Onglets -->
+  <div class="border-b border-gray-200 mb-6">
+    <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+      <button (click)="activeTab = 'history'" [class.border-indigo-500]="activeTab === 'history'" [class.text-indigo-600]="activeTab === 'history'" [class.border-transparent]="activeTab !== 'history'" [class.text-gray-500]="activeTab !== 'history'" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm hover:text-gray-700 hover:border-gray-300 transition-colors focus:outline-none">
+        Historique
+      </button>
+      <button (click)="activeTab = 'chart'" [class.border-indigo-500]="activeTab === 'chart'" [class.text-indigo-600]="activeTab === 'chart'" [class.border-transparent]="activeTab !== 'chart'" [class.text-gray-500]="activeTab !== 'chart'" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm hover:text-gray-700 hover:border-gray-300 transition-colors focus:outline-none">
+        Graphique
+      </button>
+    </nav>
+  </div>
 
   <!-- Indicateur de chargement -->
   <div *ngIf="loading" class="text-center py-8">
@@ -14,9 +47,21 @@
 
   <!-- Contenu principal -->
   <div *ngIf="!loading && !errorMessage">
+    <div *ngIf="activeTab === 'history'">
     
     <!-- Barre de recherche -->
-    <div class="flex justify-end mb-4" *ngIf="payments.length > 0">
+    <div class="flex justify-between items-center mb-4" *ngIf="payments.length > 0">
+      <div class="flex space-x-2">
+        <button (click)="exportToCsv()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded inline-flex items-center transition-colors shadow-sm">
+          <i class="fas fa-file-csv mr-2"></i>
+          <span>Exporter CSV</span>
+        </button>
+        <button *ngIf="searchTerm" (click)="clearFilter()" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded inline-flex items-center transition-colors shadow-sm">
+          <i class="fas fa-times mr-2"></i>
+          <span>Effacer filtre</span>
+        </button>
+      </div>
+
       <div class="relative w-full max-w-xs">
         <input type="text" 
                [ngModel]="searchTerm" 
@@ -141,6 +186,73 @@
               <i class="fas fa-chevron-right h-5 w-5"></i>
             </button>
           </nav>
+        </div>
+      </div>
+    </div>
+    </div>
+
+    <div *ngIf="activeTab === 'chart'">
+      <div class="flex justify-end mb-4">
+        <div class="relative">
+          <select [(ngModel)]="selectedYear" (ngModelChange)="onYearChange()" class="block appearance-none w-full bg-white border border-gray-300 hover:border-gray-400 px-4 py-2 pr-8 rounded shadow leading-tight focus:outline-none focus:shadow-outline text-gray-700">
+            <option *ngFor="let year of availableYears" [value]="year">{{ year }}</option>
+          </select>
+          <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+            <i class="fas fa-chevron-down text-xs"></i>
+          </div>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Graphique Bar (Évolution mensuelle) -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+          <h3 class="text-lg font-semibold text-gray-700 mb-4">Évolution Mensuelle des Paiements</h3>
+          <div class="h-64 relative">
+            <canvas baseChart [data]="barChartData" [options]="barChartOptions" [type]="barChartType" (chartClick)="onBarChartClick($event)"></canvas>
+          </div>
+        </div>
+
+        <!-- Graphique Pie (Par Sujet) -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+          <h3 class="text-lg font-semibold text-gray-700 mb-4">Répartition par Sujet</h3>
+          <div class="h-64 relative">
+            <canvas baseChart [data]="pieChartData" [options]="pieChartOptions" [type]="pieChartType" (chartClick)="onPieChartClick($event)"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de confirmation -->
+  <div *ngIf="showConfirmModal" class="fixed z-50 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" (click)="closeConfirmModal()"></div>
+      <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+      <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+          <div class="sm:flex sm:items-start">
+            <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-indigo-100 sm:mx-0 sm:h-10 sm:w-10">
+              <i class="fas fa-envelope text-indigo-600"></i>
+            </div>
+            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+              <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                Confirmer l'envoi du rappel
+              </h3>
+              <div class="mt-2">
+                <p class="text-sm text-gray-500">
+                  Êtes-vous sûr de vouloir envoyer un rappel de paiement par e-mail pour le dossier 
+                  <span class="font-bold">{{ paymentToRemind?.quote_type }} #{{ paymentToRemind?.quote_id }}</span> ?
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+          <button type="button" (click)="confirmResend()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm">
+            Envoyer
+          </button>
+          <button type="button" (click)="closeConfirmModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+            Annuler
+          </button>
         </div>
       </div>
     </div>

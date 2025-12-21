@@ -1756,22 +1756,42 @@ getNationalities(): Observable<Nationality[]> {
    * @param id L'ID du devis.
    * @returns Un Observable avec les Détails de l'offre.
    */
-  getQuoteDetails(type: string, id: number): Observable<any> {
+  getQuoteDetails(type: string, id: number | string): Observable<any> {
     switch (type) {
       case 'auto':
-        return this.getDevisDetails(id);
+        return this.getDevisDetails(id as number);
       case 'habitation':
-        return this.getHabitationQuoteDetails(id);
+        return this.getHabitationQuoteDetails(id as number);
       case 'obseques':
-        return this.getObsequesQuoteDetails(id); // Correction: retour direct de l'observable
+        return this.getObsequesQuoteDetails(id as number);
       case 'voyage':
-        return this.getVoyageQuoteDetails(id);
+        return this.getVoyageQuoteDetails(id as number);
       case 'rc': // Ajout d'un cas distinct pour 'rc'
-        return this.getRcQuoteDetails(id);
+        return this.getRcQuoteDetails(id as number);
+      case 'professionnel':
+        return this.getCompanyDetails(id as string);
       default:
         console.error(`Type de devis inconnu dans getQuoteDetails: ${type}`);
         return of(null); // Retourne un observable de null pour les types inconnus.
     }
+  }
+
+  /**
+   * Récupère les détails d'une société par son ID (UUID).
+   */
+  getCompanyDetails(id: string): Observable<any> {
+    return from(
+      this.supabase.supabase
+        .from('companies')
+        .select('*')
+        .eq('id', id)
+        .single()
+    ).pipe(
+      map(response => {
+        if (response.error) throw response.error;
+        return response.data;
+      })
+    );
   }
 
   /**
@@ -1935,6 +1955,30 @@ getNationalities(): Observable<Nationality[]> {
       });
 
     return from(promise);
+  }
+
+  /**
+   * Met à jour les informations d'une société.
+   * @param companyId L'ID de la société (UUID).
+   * @param companyData Les données à mettre à jour.
+   */
+  updateCompany(companyId: string, companyData: any): Observable<{ success: boolean, error?: any, data?: any }> {
+    return from(
+      this.supabase.supabase
+        .from('companies')
+        .update(companyData)
+        .eq('id', companyId)
+        .select()
+        .single()
+    ).pipe(
+      map(response => {
+        if (response.error) {
+          console.error(`Erreur lors de la mise à jour de la société ${companyId}:`, response.error);
+          return { success: false, error: response.error };
+        }
+        return { success: true, data: response.data };
+      })
+    );
   }
 
   /**
@@ -2401,5 +2445,48 @@ getNationalities(): Observable<Nationality[]> {
         })
         .subscribe();
     });
+  }
+
+  /**
+   * Enregistre une entreprise belge via la fonction RPC register_belgian_company.
+   * @param companyData Les données de l'entreprise (p_name, p_legal_form, etc.).
+   * @returns Un Observable avec le résultat de l'insertion.
+   */
+  registerCompany(companyData: any): Observable<any> {
+    return from(this.supabase.supabase.rpc('register_belgian_company', companyData)).pipe(
+      map(response => {
+        if (response.error) throw response.error;
+        return response.data;
+      })
+    );
+  }
+
+  /**
+   * Récupère toutes les sociétés enregistrées pour le tableau de bord.
+   * @param searchTerm Le terme de recherche (nom ou numéro d'entreprise).
+   * @param page La page actuelle.
+   * @param itemsPerPage Le nombre d'éléments par page.
+   */
+  getAllCompanies(searchTerm: string, page: number, itemsPerPage: number): Observable<{ data: any[], count: number | null }> {
+    const rangeFrom = (page - 1) * itemsPerPage;
+    const rangeTo = rangeFrom + itemsPerPage - 1;
+
+    let query = this.supabase.supabase
+      .from('companies')
+      .select('*', { count: 'exact' })
+      .order('created_at', { ascending: false })
+      .range(rangeFrom, rangeTo);
+
+    if (searchTerm) {
+      const searchPattern = `%${searchTerm}%`;
+      query = query.or(`name.ilike.${searchPattern},enterprise_number.ilike.${searchPattern}`);
+    }
+
+    return from(query).pipe(
+      map(response => ({
+        data: response.data || [],
+        count: response.count
+      }))
+    );
   }
 }

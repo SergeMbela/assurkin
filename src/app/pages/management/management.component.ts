@@ -7,11 +7,11 @@ import { PhoneNumberMaskDirective } from '../../directives/phone-number-mask.dir
 import { ManagementService, DataState, AutoQuoteSummary, HabitationQuoteSummary, ObsequesQuoteSummary, VoyageQuoteSummary, RcQuoteSummary } from '../../services/management.service';
 
 import { Observable, combineLatest, BehaviorSubject, of, Subject } from 'rxjs';
-import { map, startWith, shareReplay, tap, switchMap, debounceTime, distinctUntilChanged, takeUntil, finalize } from 'rxjs/operators';
+import { map, startWith, shareReplay, tap, switchMap, debounceTime, distinctUntilChanged, takeUntil, finalize, catchError } from 'rxjs/operators';
 import { StateContainerComponent } from '../../state-container.component';
 
 import { formatBelgianPhoneNumber } from '../../directives/phone-number.utils'; // Import the utility function
-type QuoteType = 'auto' | 'habitation' | 'obseques' | 'rc' | 'voyage';
+type QuoteType = 'auto' | 'habitation' | 'obseques' | 'rc' | 'voyage' | 'professionnel';
 // Un type d'union pour représenter n'importe quel résumé de devis.
 export type AnyQuoteSummary = (AutoQuoteSummary | HabitationQuoteSummary | ObsequesQuoteSummary | VoyageQuoteSummary | RcQuoteSummary) & {
   // Assurer que les champs du preneur sont optionnels sur le type d'union
@@ -135,7 +135,8 @@ export class ManagementComponent implements OnInit {
     { id: 'habitation', label: 'Habitation' },
     { id: 'obseques', label: 'Obsèques' },
     { id: 'rc', label: 'RC Familiale' },
-    { id: 'voyage', label: 'Voyage' }
+    { id: 'voyage', label: 'Voyage' },
+    { id: 'professionnel', label: 'Professionnel' }
   ];
   activeTab$ = new BehaviorSubject<QuoteType>('auto');
 
@@ -261,6 +262,29 @@ export class ManagementComponent implements OnInit {
             case 'voyage':
               apiCall$ = this.managementService.getVoyageQuotesState(searchTerm || '', currentPage, this.itemsPerPage);
               break;
+            case 'professionnel':
+              // Appel direct au service DB pour les sociétés, mappé vers le format attendu par le tableau
+              apiCall$ = this.dbConnectService.getAllCompanies(searchTerm || '', currentPage, this.itemsPerPage).pipe(
+                map(response => ({
+                  loading: false,
+                  data: {
+                    quotes: response.data.map((c: any) => ({
+                      id: c.id,
+                      nom: c.name, // Nom de la société comme nom
+                      prenom: '', 
+                      description: `${c.legal_form} - ${c.enterprise_number}`, // Description affichée dans la colonne centrale
+                      dateDemande: c.created_at,
+                      statut: 'Enregistré', // Statut par défaut
+                      // Champs additionnels pour éviter les erreurs de type si nécessaire
+                    } as AnyQuoteSummary)),
+                    totalItems: response.count || 0
+                  },
+                  error: null
+                })),
+                startWith({ loading: true, data: null, error: null }),
+                catchError(err => of({ loading: false, error: err, data: null }))
+              );
+              break;
             default:
               apiCall$ = of({ data: { quotes: [], totalItems: 0 }, loading: false, error: null });
           }
@@ -364,7 +388,7 @@ export class ManagementComponent implements OnInit {
    * Navigue vers la page de détail d'un devis.
    * @param id L'ID du devis.
    */
-  viewDetails(id: number): void {
+  viewDetails(id: number | string): void {
     // Navigue vers la nouvelle page de détails sous /management.
     // On passe le type de l'onglet actif dans le state.
     const quoteType = this.activeTab$.value;

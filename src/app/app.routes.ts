@@ -19,19 +19,21 @@ import { UpdatePasswordComponent } from './pages/update-password/update-password
 import { authGuard } from './auth.guard';
 import { CreateuseraccountComponent } from './pages/createuseraccount/createuseraccount.component';
 //Page details assurance
-import { DetailsAssuranceComponent } from './pages/details-assurance/details-assurance.component';
 import { DashboardComponent } from './pages/intranet/dashboard/dashboard.component';
 import { AutoManagementComponent } from './pages/intranet/dashboard/auto-management.component';
 import { ManagementComponent } from './pages/management/management.component';
 import { AssurancesDetailsComponent } from './pages/assurances-details/assurances-details.component';
 import { ManagementDetailComponent } from './pages/management/management-detail.component';
 import { CorporateComponent } from './pages/corporate/corporate.component';
+//Page Compagnies
+import {CompaniesComponent}from './pages/companies/companies.component'
 
 export const routes: Routes = [
 
     // Routes existantes
     { path: 'accueil', component: AccueilComponent },
     { path: 'contact', component: FormContactComponent },
+    // Routes existantes pour les formulaires d'assurance
     { path: 'particulier/auto', component: FormAutoComponent },
     { path: 'particulier/habitation', component: FormHabitationComponent },
     { path: 'particulier/rc-familale', component: FormRcComponent },
@@ -40,6 +42,10 @@ export const routes: Routes = [
     { path: 'particulier/annulation-voyage', component: AssuranceVoyageComponent },
     { path: 'mentions', component: MentionsLegalesComponent },
     { path: 'corporate', component: CorporateComponent },
+    // Routes existantes pour les formulaires d'assurance professionnel
+    { path: 'professionnel/cie', component: CompaniesComponent },
+    { path: 'professionnel/cie', component: CompaniesComponent },
+    { path: 'professionnel/cie', component: CompaniesComponent },
 
     // Routes pour les utilitaires (à créer)
     { path: 'utilities/paiements', loadComponent: () => import('./utilities/payment/payment.component').then(m => m.PaymentComponent) },
@@ -47,6 +53,8 @@ export const routes: Routes = [
     { path: 'utilities/prospects', loadComponent: () => import('./utilities/rs/rs.component').then(m => m.RsComponent) },
     { path: 'utilities/parametres', loadComponent: () => import('./utilities/params/params.component').then(m => m.ParamsComponent) },
 
+    // Routes pour les compagnies
+    { path: 'professionnel/data', loadComponent: () => import('./pages/companies/companies.component').then(m => m.CompaniesComponent) },
     // Nouvelles routes pour l'authentification
     { path: 'account', component: AccountComponent },
     { path: 'login', component: AccountLoginComponent },
