@@ -1,0 +1,73 @@
+<div class="drivers-container">
+  <div class="header">
+    <h3>Liste des chauffeurs</h3>
+    <button (click)="initAdd()" *ngIf="!showForm" class="btn btn-primary">Ajouter un chauffeur</button>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger">
+    {{ error }}
+  </div>
+
+  <div *ngIf="isLoading" class="loading">
+    Chargement...
+  </div>
+
+  <!-- Form Section -->
+  <div *ngIf="showForm" class="driver-form card p-3 mb-3">
+    <h4>Ajouter un chauffeur</h4>
+    
+    <div class="row mb-2">
+      <div class="col-md-6">
+        <label>Prénom *</label>
+        <input [(ngModel)]="currentDriver.first_name" class="form-control" placeholder="Prénom">
+      </div>
+      <div class="col-md-6">
+        <label>Nom *</label>
+        <input [(ngModel)]="currentDriver.last_name" class="form-control" placeholder="Nom">
+      </div>
+    </div>
+
+    <div class="row mb-2">
+      <div class="col-md-6">
+        <label>Date de naissance</label>
+        <input type="date" [(ngModel)]="currentDriver.birth_date" class="form-control">
+      </div>
+    </div>
+
+    <div class="row mb-2">
+      <div class="col-md-6">
+        <label>Numéro de permis *</label>
+        <input [(ngModel)]="currentDriver.license_number" class="form-control" placeholder="Numéro de permis">
+      </div>
+      <div class="col-md-6">
+        <label>Date du permis</label>
+        <input type="date" [(ngModel)]="currentDriver.license_date" class="form-control">
+      </div>
+    </div>
+
+    <div class="mt-3">
+      <button (click)="saveDriver()" [disabled]="isLoading" class="btn btn-success me-2">Enregistrer</button>
+      <button (click)="cancelForm()" class="btn btn-secondary">Annuler</button>
+    </div>
+  </div>
+
+  <div *ngIf="!showForm && !isLoading && !error" class="drivers-list">
+    <div *ngIf="drivers.length === 0" class="alert alert-info">
+      Aucun chauffeur enregistré.
+    </div>
+
+    <div *ngFor="let driver of drivers" class="card mb-2 p-3">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h5 class="mb-1">{{ driver.first_name }} {{ driver.last_name }}</h5>
+          <p class="mb-1 text-muted">
+            Né(e) le: {{ driver.birth_date | date:'dd/MM/yyyy' }}
+          </p>
+          <small>
+            Permis: {{ driver.license_number }} ({{ driver.license_date | date:'dd/MM/yyyy' }})
+          </small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

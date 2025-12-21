@@ -42,19 +42,22 @@
     Retour à la liste
   </a>
   <div *ngIf="quoteDetails$ | async as details; else loadingTpl">
-    <h1 class="text-2xl font-bold mb-4">Détails de l'offre #{{ quoteId }} - {{ quoteType | titlecase }}</h1>
+    <h1 class="text-2xl font-bold mb-4">
+      <ng-container *ngIf="quoteType === 'professionnel'; else defaultTitle">
+        Société : {{ details.name }} <span *ngIf="details.enterprise_number" class="text-lg font-normal text-gray-600 ml-2">(BCE: {{ details.enterprise_number }})</span>
+      </ng-container>
+      <ng-template #defaultTitle>
+        Détails de l'offre #{{ quoteId }} - {{ quoteType | titlecase }}
+      </ng-template>
+    </h1>
 
     <div class="mb-6 border-b border-gray-200">
       <nav class="-mb-px flex space-x-6" aria-label="Tabs">
-        <button (click)="activeTab = 'form'"
-          [ngClass]="activeTab === 'form' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+        <button *ngFor="let tab of tabs"
+          (click)="activeTab = tab.id"
+          [ngClass]="activeTab === tab.id ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
           class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
-          Formulaire
-        </button>
-        <button (click)="activeTab = 'text'"
-          [ngClass]="activeTab === 'text' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-          class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
-          Fiche
+          {{ tab.label }}
         </button>
       </nav>
     </div>
@@ -122,6 +125,47 @@
           </div>
         </div>
       </ng-container>
+
+      <!-- Onglets Professionnels -->
+      <ng-container *ngSwitchCase="'chauffeurs'">
+        <!-- Intégration du composant de gestion des chauffeurs -->
+        <!-- On utilise $any() pour contourner le typage strict car quoteId peut être number|string -->
+        <app-company-drivers [companyId]="$any(quoteId)"></app-company-drivers>
+      </ng-container>
+
+      <ng-container *ngSwitchCase="'vehicules'">
+        <app-company-vehicles [companyId]="$any(quoteId)"></app-company-vehicles>
+      </ng-container>
+
+      <ng-container *ngSwitchCase="'habitations'">
+        <app-company-buildings [companyId]="$any(quoteId)"></app-company-buildings>
+      </ng-container>
+
+      <ng-container *ngSwitchCase="'rc'">
+        <div class="bg-white shadow-md rounded-lg p-6">
+          <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Responsabilité Civile</h3>
+          <p class="text-gray-500">Section RC (à implémenter)</p>
+        </div>
+      </ng-container>
+
+      <!-- Onglets Communs (Contrats / Documents) -->
+      <ng-container *ngSwitchCase="'contrats'">
+        <div class="bg-white shadow-md rounded-lg p-6">
+          <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Gestion des contrats</h3>
+          <!-- Intégrer ici le formulaire de contrat existant si nécessaire -->
+          <p class="text-gray-500">Section contrats...</p>
+        </div>
+      </ng-container>
+
+      <ng-container *ngSwitchCase="'documents'">
+        <div class="bg-white shadow-md rounded-lg p-6">
+          <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Documents</h3>
+          <div class="text-center py-4">
+             <a [routerLink]="['/management/upload', quoteType, quoteId, 0]" class="text-blue-600 hover:underline">Gérer les documents</a>
+          </div>
+        </div>
+      </ng-container>
+
     </div>
   </div>
   <ng-template #loadingTpl>Chargement des Détails de l'offre...</ng-template>

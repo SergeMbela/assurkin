@@ -1795,6 +1795,25 @@ getNationalities(): Observable<Nationality[]> {
   }
 
   /**
+   * Récupère les chauffeurs d'une entreprise.
+   * @param companyId L'ID de l'entreprise (UUID).
+   */
+  getCompanyDrivers(companyId: string): Observable<any[]> {
+    return from(
+      this.supabase.supabase
+        .from('company_drivers')
+        .select('*')
+        .eq('company_id', companyId)
+        .order('last_name', { ascending: true })
+    ).pipe(
+      map(response => {
+        if (response.error) throw response.error;
+        return response.data || [];
+      })
+    );
+  }
+
+  /**
    * Récupère la catégorie d'un devis en fonction de son ID en interrogeant une fonction SQL.
    * @param id L'ID du devis.
    * @returns Un Observable avec la catégorie du devis ('auto', 'habitation', etc.) ou null.
@@ -1955,30 +1974,6 @@ getNationalities(): Observable<Nationality[]> {
       });
 
     return from(promise);
-  }
-
-  /**
-   * Met à jour les informations d'une société.
-   * @param companyId L'ID de la société (UUID).
-   * @param companyData Les données à mettre à jour.
-   */
-  updateCompany(companyId: string, companyData: any): Observable<{ success: boolean, error?: any, data?: any }> {
-    return from(
-      this.supabase.supabase
-        .from('companies')
-        .update(companyData)
-        .eq('id', companyId)
-        .select()
-        .single()
-    ).pipe(
-      map(response => {
-        if (response.error) {
-          console.error(`Erreur lors de la mise à jour de la société ${companyId}:`, response.error);
-          return { success: false, error: response.error };
-        }
-        return { success: true, data: response.data };
-      })
-    );
   }
 
   /**

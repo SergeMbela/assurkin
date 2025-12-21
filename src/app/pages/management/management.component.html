@@ -57,7 +57,7 @@
         <table class="w-full text-sm text-left text-gray-600">
           <thead class="text-xs text-gray-700 uppercase bg-gray-100">
             <tr class="border-b">
-              <th scope="col" class="px-6 py-3">ID</th>
+              <th scope="col" class="px-6 py-3" *ngIf="(activeTab$ | async) !== 'professionnel'">ID</th>
               <th scope="col" class="px-6 py-3">
                 <div class="flex items-center">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 mr-1.5">
@@ -122,7 +122,7 @@
           </thead>
           <tbody>
             <tr *ngFor="let quote of vm.state.data.quotes" class="bg-white border-b hover:bg-gray-50 transition-colors duration-200">
-              <td class="px-6 py-4 font-semibold text-gray-900 whitespace-nowrap">#{{ quote.id }}</td>
+              <td class="px-6 py-4 font-semibold text-gray-900 whitespace-nowrap" *ngIf="(activeTab$ | async) !== 'professionnel'">#{{ quote.id }}</td>
               <td class="px-6 py-4">
                 <div class="flex items-center">
                   <div class="flex items-center cursor-pointer group" (click)="openEditModal(quote, quote.preneur_id)">

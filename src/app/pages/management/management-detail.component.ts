@@ -16,6 +16,9 @@ import { HabitationDetailsComponent } from './components/habitation/habitation-d
 import { getCompanyName, getStatutClass } from './display-helpers'; // Import des fonctions utilitaires
 import { ObsequesFormComponent } from './components/obseques/obseques-form.component';
 import { ObsequesDetailsComponent } from './components/obseques/obseques-details.component';
+import { CompanyDriversComponent } from './components/company-drivers/company-drivers.component';
+import { CompanyVehiclesComponent } from './components/company-vehicles/company-vehicles.component';
+import { CompanyBuildingsComponent } from '../../components/company-buildings/company-buildings.component';
 
 @Component({
   selector: 'app-management-detail',
@@ -30,7 +33,10 @@ import { ObsequesDetailsComponent } from './components/obseques/obseques-details
     HabitationFormComponent,
     HabitationDetailsComponent,
     ObsequesFormComponent,
-    ObsequesDetailsComponent
+    ObsequesDetailsComponent,
+    CompanyDriversComponent,
+    CompanyVehiclesComponent,
+    CompanyBuildingsComponent
   ],
   templateUrl: './management-detail.component.html',
   styleUrls: []
@@ -40,8 +46,10 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
   quoteDetails$!: Observable<any>;
   private quoteDetails: any; // Pour stocker les détails actuels
   quoteType: string | null = null;
-  quoteId: number | null = null;
-  activeTab: 'form' | 'text' = 'form';
+  quoteId: number | string | null = null;
+  activeTab: string = 'form';
+  tabs: { id: string, label: string }[] = [];
+  drivers$: Observable<any[]> = of([]);
   csvData$: Observable<any[]> = of([]);
 
   // Propriétés pour la popup de notification
@@ -504,9 +512,20 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
     return this.route.paramMap.pipe(
       switchMap(params => {
         this.quoteType = params.get('type');
-        this.quoteId = Number(params.get('id'));
+        const idParam = params.get('id');
+        
+        if (this.quoteType === 'professionnel') {
+          this.quoteId = idParam; // UUID est une chaîne
+        } else {
+          this.quoteId = Number(idParam);
+        }
+
+        this.updateTabs();
 
         if (this.quoteType && this.quoteId) {
+          if (this.quoteType === 'professionnel') {
+            this.drivers$ = this.dbService.getCompanyDrivers(this.quoteId as string);
+          }
           return this.dbService.getQuoteDetails(this.quoteType, this.quoteId);
         }
         console.warn('[ManagementDetailComponent] Missing quote type or ID in route parameters.');
@@ -557,6 +576,26 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
         return of(null);
       })
     );
+  }
+
+  updateTabs() {
+    if (this.quoteType === 'professionnel') {
+      this.tabs = [
+        { id: 'chauffeurs', label: 'Chauffeurs' },
+        { id: 'vehicules', label: 'Véhicules' },
+        { id: 'habitations', label: 'Habitations' },
+        { id: 'rc', label: 'RC' },
+        { id: 'contrats', label: 'Contrats' },
+        { id: 'documents', label: 'Documents' }
+      ];
+      this.activeTab = 'chauffeurs';
+    } else {
+      this.tabs = [
+        { id: 'form', label: 'Formulaire' },
+        { id: 'text', label: 'Fiche' }
+      ];
+      this.activeTab = 'form';
+    }
   }
 
   selectMarque(marque: any) {
@@ -632,7 +671,7 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
 
     // Crée un observable qui gère le téléversement. S'il n'y a pas de fichiers, il émet un tableau vide.
     const upload$ = (filesToUpload.length > 0)
-      ? this.uploaderService.uploadContractFiles(filesToUpload, this.quoteId, this.quoteType).pipe(
+      ? this.uploaderService.uploadContractFiles(filesToUpload, this.quoteId as any, this.quoteType).pipe(
           toArray() // Collecte tous les résultats de téléversement en un seul tableau
         )
       : of([]); // Émet un tableau vide s'il n'y a pas de fichiers
@@ -648,7 +687,7 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
         console.log('Fichiers téléversés avec succès:', successfulPaths);
         // Prépare les données à sauvegarder dans votre base de données.
         const contractPayload: ContractPayload = {
-          quote_id: this.quoteId!,
+          quote_id: this.quoteId as any,
           quote_type: this.quoteType!,
           compagnie_id: contractValue.compagnie_id!,
           date_contrat: contractValue.date_contrat!,
@@ -748,7 +787,7 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
       if (this.showMainDriverSection) {
         payload.p_conducteur = formValue['conducteurPrincipal']!;
       }
-        this.executeUpdate(this.dbService.updateAutoQuote(this.quoteId!, payload));
+        this.executeUpdate(this.dbService.updateAutoQuote(this.quoteId as number, payload));
 
     } else if (this.quoteType === 'obseques') {
       const assuresValue = (this.quoteUpdateForm.get('assures.assures') as FormArray).value.map((assure: any) => ({
@@ -769,7 +808,7 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
           compagnie_id: formValue.assures?.insuranceCompany
         }
       };
-        this.executeUpdate(this.dbService.updateObsequesQuote(this.quoteId!, payload));
+        this.executeUpdate(this.dbService.updateObsequesQuote(this.quoteId as number, payload));
     } else if (this.quoteType === 'habitation') {
         const payload: HabitationQuoteUpdatePayload = {
             p_preneur: formValue["preneurAssurance"]!,
@@ -796,7 +835,7 @@ export class ManagementDetailComponent implements OnInit, OnDestroy {
                 compagnie_id: formValue['garantiesHabitation']?.insuranceCompany
             }
         };
-        this.executeUpdate(this.dbService.updateHabitationQuote(this.quoteId!, payload));
+        this.executeUpdate(this.dbService.updateHabitationQuote(this.quoteId as number, payload));
     
     // NOTE: La logique de mise à jour pour 'rc' et 'voyage' n'est pas encore implémentée.
     } else {

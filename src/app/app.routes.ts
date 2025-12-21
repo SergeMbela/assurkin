@@ -43,9 +43,7 @@ export const routes: Routes = [
     { path: 'mentions', component: MentionsLegalesComponent },
     { path: 'corporate', component: CorporateComponent },
     // Routes existantes pour les formulaires d'assurance professionnel
-    { path: 'professionnel/cie', component: CompaniesComponent },
-    { path: 'professionnel/cie', component: CompaniesComponent },
-    { path: 'professionnel/cie', component: CompaniesComponent },
+    { path: 'professionnel/cie', loadComponent: () => import('./pages/management/components/company-drivers/company-drivers.component').then(m => m.CompanyDriversComponent) },
 
     // Routes pour les utilitaires (à créer)
     { path: 'utilities/paiements', loadComponent: () => import('./utilities/payment/payment.component').then(m => m.PaymentComponent) },
@@ -55,6 +53,8 @@ export const routes: Routes = [
 
     // Routes pour les compagnies
     { path: 'professionnel/data', loadComponent: () => import('./pages/companies/companies.component').then(m => m.CompaniesComponent) },
+    { path: 'professionnel/cie/:id/buildings', loadComponent: () => import('./components/company-buildings/company-buildings.component').then(m => m.CompanyBuildingsComponent) },
+    { path: 'professionnel/cie/:id/drivers', loadComponent: () => import('./pages/management/components/company-drivers/company-drivers.component').then(m => m.CompanyDriversComponent) },
     // Nouvelles routes pour l'authentification
     { path: 'account', component: AccountComponent },
     { path: 'login', component: AccountLoginComponent },
