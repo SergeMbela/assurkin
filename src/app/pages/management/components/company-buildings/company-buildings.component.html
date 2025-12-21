@@ -1,7 +1,7 @@
 <div class="buildings-container">
   <div class="flex justify-between items-center mb-6">
     <h3 class="text-2xl font-bold text-gray-800">Bâtiments</h3>
-    <button (click)="initAdd()" *ngIf="!showForm" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">Add Building</button>
+    <button (click)="initAdd()" *ngIf="!showForm" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">Ajouter un bâtiment</button>
   </div>
 
   <div *ngIf="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
@@ -17,30 +17,30 @@
     <h4 class="text-xl font-semibold mb-4 text-gray-800">{{ isEditing ? 'Edit' : 'Add' }} Bâtiments</h4>
     
     <div class="mb-4">
-      <label class="block text-sm font-medium text-gray-700 mb-1">Addresse *</label>
-      <input [(ngModel)]="currentBuilding.address" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Address">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Adresse *</label>
+      <input [(ngModel)]="currentBuilding.address" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Adressz">
     </div>
     
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">Code postal</label>
-        <input [(ngModel)]="currentBuilding.postal_code" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Postal Code">
+        <input [(ngModel)]="currentBuilding.postal_code" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="code postal">
       </div>
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">City</label>
-        <input [(ngModel)]="currentBuilding.city" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="City">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Ville</label>
+        <input [(ngModel)]="currentBuilding.city" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ville">
       </div>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">Pays</label>
-        <input [(ngModel)]="currentBuilding.country" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Country">
+        <input [(ngModel)]="currentBuilding.country" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Pays">
       </div>
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
         <select [(ngModel)]="currentBuilding.building_type" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-          <option value="">Select Type</option>
+          <option value="">Selectionnez un type</option>
           <option value="Bureau">Bureau</option>
           <option value="Entrepôt">Entrepôt</option>
           <option value="Résidentiel">Résidentiel</option>
@@ -52,11 +52,11 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">Surface  (m²)</label>
-        <input type="number" [(ngModel)]="currentBuilding.surface_area" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Surface Area">
+        <input type="number" [(ngModel)]="currentBuilding.surface_area" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Surface">
       </div>
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">Année de construction</label>
-        <input type="number" [(ngModel)]="currentBuilding.construction_year" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Year">
+        <input type="number" [(ngModel)]="currentBuilding.construction_year" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Année de construction">
       </div>
     </div>
 
@@ -74,7 +74,7 @@
     </div>
 
     <div *ngIf="paginatedBuildings.length === 0" class="bg-blue-50 border-l-4 border-blue-500 text-blue-700 p-4 mb-4">
-      No buildings found.
+      Aucun bâtiment trouvé.
     </div>
 
     <div *ngFor="let building of paginatedBuildings" class="bg-white shadow rounded-lg p-4 mb-3 border border-gray-200">
@@ -85,8 +85,8 @@
           <small class="text-xs text-gray-400">{{ building.building_type }} <span *ngIf="building.surface_area">- {{ building.surface_area }} m²</span></small>
         </div>
         <div class="flex gap-2">
-          <button (click)="initEdit(building)" class="px-3 py-1 text-sm text-blue-600 border border-blue-600 rounded hover:bg-blue-50 transition-colors">Edit</button>
-          <button (click)="deleteBuilding(building.id)" class="px-3 py-1 text-sm text-red-600 border border-red-600 rounded hover:bg-red-50 transition-colors">Delete</button>
+          <button (click)="initEdit(building)" class="px-3 py-1 text-sm text-blue-600 border border-blue-600 rounded hover:bg-blue-50 transition-colors">Editer</button>
+          <button (click)="deleteBuilding(building.id)" class="px-3 py-1 text-sm text-red-600 border border-red-600 rounded hover:bg-red-50 transition-colors">Supprimer</button>
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@
     <!-- Pagination Controls -->
     <div class="flex justify-between items-center mt-6" *ngIf="totalPages > 1">
       <button class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed" (click)="prevPage()" [disabled]="currentPage === 1">Previous</button>
-      <span class="text-sm text-gray-600">Page {{ currentPage }} of {{ totalPages }}</span>
+      <span class="text-sm text-gray-600">Page {{ currentPage }} à {{ totalPages }}</span>
       <button class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed" (click)="nextPage()" [disabled]="currentPage === totalPages">Next</button>
     </div>
   </div>

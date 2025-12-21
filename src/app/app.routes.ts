@@ -70,15 +70,15 @@ export const routes: Routes = [
     { path: 'assurance_habitation/:id', redirectTo: 'assurance-details/habitation/:id' },
     { path: 'assurance_obseques/:id', redirectTo: 'assurance-details/obseques/:id' },
     // Dashboard intranet
-    { path: 'intranet/dashboard', component: DashboardComponent },
-    { path: 'intranet/gestion-auto', component: AutoManagementComponent },
-    { path: 'management', component: ManagementComponent },
-    { path: 'management/:type/:id', component: ManagementDetailComponent }, // Route pour l'édition détaillée
-    { path: 'management/upload/:type/:id/:preneurId', loadComponent: () => import('./pages/uploader/uploader.component').then(m => m.UploaderComponent) },
+    { path: 'intranet/dashboard', component: DashboardComponent, canActivate: [authGuard] },
+    { path: 'intranet/gestion-auto', component: AutoManagementComponent, canActivate: [authGuard] },
+    { path: 'management', component: ManagementComponent, canActivate: [authGuard] },
+    { path: 'management/:type/:id', component: ManagementDetailComponent, canActivate: [authGuard] }, // Route pour l'édition détaillée
+    { path: 'management/upload/:type/:id/:preneurId', loadComponent: () => import('./pages/uploader/uploader.component').then(m => m.UploaderComponent), canActivate: [authGuard] },
     // La navigation vers les détails se fait par programmation depuis management.component.ts
-    { path: 'assurance-details/:type/:id', component: AssurancesDetailsComponent }, // Route pour les détails depuis la gestion
-    { path: 'messagerie/:type/:id', loadComponent: () => import('./pages/messagerie/messagerie.component').then(m => m.MessagerieComponent) },
-    { path: 'management/assurance-details/:type/:id', loadComponent: () => import('./pages/assurances-details/assurances-details.component').then(m => m.AssurancesDetailsComponent) },
+    { path: 'assurance-details/:type/:id', component: AssurancesDetailsComponent, canActivate: [authGuard] }, // Route pour les détails depuis la gestion
+    { path: 'messagerie/:type/:id', loadComponent: () => import('./pages/messagerie/messagerie.component').then(m => m.MessagerieComponent), canActivate: [authGuard] },
+    { path: 'management/assurance-details/:type/:id', loadComponent: () => import('./pages/assurances-details/assurances-details.component').then(m => m.AssurancesDetailsComponent), canActivate: [authGuard] },
 
     // Redirections
     { path: '', redirectTo: 'accueil', pathMatch: 'full' }, // Redirige la racine vers l'accueil
