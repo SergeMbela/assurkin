@@ -18,7 +18,7 @@ import { ObsequesFormComponent } from './components/obseques/obseques-form.compo
 import { ObsequesDetailsComponent } from './components/obseques/obseques-details.component';
 import { CompanyDriversComponent } from './components/company-drivers/company-drivers.component';
 import { CompanyVehiclesComponent } from './components/company-vehicles/company-vehicles.component';
-import { CompanyBuildingsComponent } from '../../components/company-buildings/company-buildings.component';
+import { CompanyBuildingsComponent } from './components/company-buildings/company-buildings.component';
 
 @Component({
   selector: 'app-management-detail',
