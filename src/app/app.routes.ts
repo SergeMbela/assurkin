@@ -26,7 +26,8 @@ import { AssurancesDetailsComponent } from './pages/assurances-details/assurance
 import { ManagementDetailComponent } from './pages/management/management-detail.component';
 import { CorporateComponent } from './pages/corporate/corporate.component';
 //Page Compagnies
-import {CompaniesComponent}from './pages/companies/companies.component'
+
+import {CompaniesComponent}from './pages/companies/companies.component';
 
 export const routes: Routes = [
 
@@ -52,7 +53,7 @@ export const routes: Routes = [
     { path: 'utilities/parametres', loadComponent: () => import('./utilities/params/params.component').then(m => m.ParamsComponent) },
 
     // Routes pour les compagnies
-    { path: 'professionnel/data', loadComponent: () => import('./pages/companies/companies.component').then(m => m.CompaniesComponent) },
+    { path: 'form-prof', loadComponent: () => import('./pages/companies/companies.component').then(m => m.CompaniesComponent) },
     { path: 'professionnel/cie/:id/buildings', loadComponent: () => import('./pages/management/components/company-buildings/company-buildings.component').then(m => m.CompanyBuildingsComponent) },
     { path: 'professionnel/cie/:id/drivers', loadComponent: () => import('./pages/management/components/company-drivers/company-drivers.component').then(m => m.CompanyDriversComponent) },
     // Nouvelles routes pour l'authentification
